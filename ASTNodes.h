@@ -28,7 +28,14 @@ public:
         LET_STATEMENT,
         FOR_STATEMENT,
         FILTER_STATEMENT,
-        ORDER_BY_STATEMENT
+        ORDER_BY_STATEMENT,
+        // Phase 3: Data modifying statements
+        INSERT_STATEMENT,
+        SET_STATEMENT,
+        REMOVE_STATEMENT,
+        DELETE_STATEMENT,
+        // Phase 4: Composite query statements
+        COMPOSITE_QUERY
     };
     Type type;
     ASTNode(Type t) : type(t) {}
@@ -103,6 +110,7 @@ public:
     std::vector<std::unique_ptr<ASTNode>> patterns;  // NodePattern and EdgePattern nodes
     std::unique_ptr<ASTNode> whereClause;           // Optional WHERE clause
     std::unique_ptr<ASTNode> returnStatement;       // RETURN statement
+    bool optional = false;  // OPTIONAL MATCH flag
     
     MatchStatementNode() : ASTNode(MATCH_STATEMENT) {}
     void accept(ASTVisitor* v) override;
@@ -213,5 +221,70 @@ public:
     std::unique_ptr<ASTNode> limit;   // ExpressionNode for LIMIT
     
     OrderByStatementNode() : ASTNode(ORDER_BY_STATEMENT) {}
+    void accept(ASTVisitor* v) override;
+};
+
+// ---------- Insert Statement ----------
+class InsertStatementNode : public ASTNode {
+public:
+    std::vector<std::unique_ptr<ASTNode>> insertPatterns;  // NodePattern and EdgePattern nodes for insertion
+    
+    InsertStatementNode() : ASTNode(INSERT_STATEMENT) {}
+    void accept(ASTVisitor* v) override;
+};
+
+// ---------- Set Statement ----------
+class SetStatementNode : public ASTNode {
+public:
+    struct SetItem {
+        std::string variable;  // bindingVariableReference
+        std::string type;  // "PROPERTY", "MAP", "LABEL"
+        std::string propertyName;  // For property assignment
+        std::unique_ptr<ASTNode> valueExpression;  // For property/map assignment
+        std::string labelName;  // For label addition
+        std::map<std::string, std::string> propertyMap;  // For map assignment (raw for now)
+    };
+    std::vector<SetItem> items;
+    
+    SetStatementNode() : ASTNode(SET_STATEMENT) {}
+    void accept(ASTVisitor* v) override;
+};
+
+// ---------- Remove Statement ----------
+class RemoveStatementNode : public ASTNode {
+public:
+    struct RemoveItem {
+        std::string variable;  // bindingVariableReference
+        std::string type;  // "PROPERTY" or "LABEL"
+        std::string propertyName;  // For property removal
+        std::string labelName;  // For label removal
+    };
+    std::vector<RemoveItem> items;
+    
+    RemoveStatementNode() : ASTNode(REMOVE_STATEMENT) {}
+    void accept(ASTVisitor* v) override;
+};
+
+// ---------- Delete Statement ----------
+class DeleteStatementNode : public ASTNode {
+public:
+    std::vector<std::unique_ptr<ASTNode>> expressions;  // Variables/expressions to delete
+    bool detach = false;  // DETACH DELETE
+    bool nodetach = false;  // NODETACH DELETE
+    
+    DeleteStatementNode() : ASTNode(DELETE_STATEMENT) {}
+    void accept(ASTVisitor* v) override;
+};
+
+// ---------- Composite Query Statement ----------
+class CompositeQueryNode : public ASTNode {
+public:
+    std::unique_ptr<ASTNode> left;   // Left query (can be another CompositeQueryNode or linearQueryStatement)
+    std::unique_ptr<ASTNode> right;  // Right query (linearQueryStatement)
+    std::string operator_;           // "UNION", "EXCEPT", "INTERSECT", "OTHERWISE"
+    bool distinct = false;           // UNION DISTINCT, EXCEPT DISTINCT, etc.
+    bool all = false;                // UNION ALL, EXCEPT ALL, etc.
+    
+    CompositeQueryNode() : ASTNode(COMPOSITE_QUERY) {}
     void accept(ASTVisitor* v) override;
 };

@@ -5,6 +5,7 @@
 class ASTBuilder : public GQLBaseVisitor {
     std::unique_ptr<QueryNode> root;
     MatchStatementNode* currentMatchNode = nullptr;  // Track current MATCH statement being built
+    ReturnStatementNode* currentReturnNode = nullptr;  // Track current RETURN statement being built
 public:
     std::unique_ptr<QueryNode> build(GQLParser::GqlProgramContext* ctx);
 
@@ -46,6 +47,27 @@ public:
     antlrcpp::Any visitSortSpecification(GQLParser::SortSpecificationContext* ctx) override;
     antlrcpp::Any visitOffsetClause(GQLParser::OffsetClauseContext* ctx) override;
     antlrcpp::Any visitLimitClause(GQLParser::LimitClauseContext* ctx) override;
+    
+    // Phase 3: Data modifying statement visitors
+    antlrcpp::Any visitLinearDataModifyingStatement(GQLParser::LinearDataModifyingStatementContext* ctx) override;
+    antlrcpp::Any visitAmbientLinearDataModifyingStatement(GQLParser::AmbientLinearDataModifyingStatementContext* ctx) override;
+    antlrcpp::Any visitSimpleDataAccessingStatement(GQLParser::SimpleDataAccessingStatementContext* ctx) override;
+    antlrcpp::Any visitSimpleQueryStatement(GQLParser::SimpleQueryStatementContext* ctx) override;
+    antlrcpp::Any visitPrimitiveDataModifyingStatement(GQLParser::PrimitiveDataModifyingStatementContext* ctx) override;
+    antlrcpp::Any visitInsertGraphPattern(GQLParser::InsertGraphPatternContext* ctx) override;
+    antlrcpp::Any visitInsertPathPattern(GQLParser::InsertPathPatternContext* ctx) override;
+    antlrcpp::Any visitInsertNodePattern(GQLParser::InsertNodePatternContext* ctx) override;
+    antlrcpp::Any visitInsertEdgePattern(GQLParser::InsertEdgePatternContext* ctx) override;
+    antlrcpp::Any visitSetItem(GQLParser::SetItemContext* ctx) override;
+    antlrcpp::Any visitRemoveItem(GQLParser::RemoveItemContext* ctx) override;
+    
+    // Phase 4: Composite query statement visitors
+    antlrcpp::Any visitCompositeQueryStatement(GQLParser::CompositeQueryStatementContext* ctx) override;
+    antlrcpp::Any visitCompositeQueryExpression(GQLParser::CompositeQueryExpressionContext* ctx) override;
+    antlrcpp::Any visitQueryConjunction(GQLParser::QueryConjunctionContext* ctx) override;
+    antlrcpp::Any visitLinearQueryStatement(GQLParser::LinearQueryStatementContext* ctx) override;
+    antlrcpp::Any visitFocusedLinearQueryStatement(GQLParser::FocusedLinearQueryStatementContext* ctx) override;
+    antlrcpp::Any visitAmbientLinearQueryStatement(GQLParser::AmbientLinearQueryStatementContext* ctx) override;
     
     // Additional visitors for procedure body and statements
     antlrcpp::Any visitProcedureBody(GQLParser::ProcedureBodyContext* ctx) override;

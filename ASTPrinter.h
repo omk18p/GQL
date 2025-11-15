@@ -23,4 +23,9 @@ public:
     void visitForStatement(ForStatementNode* n) override;
     void visitFilterStatement(FilterStatementNode* n) override;
     void visitOrderByStatement(OrderByStatementNode* n) override;
+    void visitInsertStatement(InsertStatementNode* n) override;
+    void visitSetStatement(SetStatementNode* n) override;
+    void visitRemoveStatement(RemoveStatementNode* n) override;
+    void visitDeleteStatement(DeleteStatementNode* n) override;
+    void visitCompositeQuery(CompositeQueryNode* n) override;
 };

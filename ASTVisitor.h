@@ -18,6 +18,11 @@ class LetStatementNode;
 class ForStatementNode;
 class FilterStatementNode;
 class OrderByStatementNode;
+class InsertStatementNode;
+class SetStatementNode;
+class RemoveStatementNode;
+class DeleteStatementNode;
+class CompositeQueryNode;
 
 
 class ASTVisitor {
@@ -40,6 +45,11 @@ public:
     virtual void visitForStatement(ForStatementNode* n) = 0;
     virtual void visitFilterStatement(FilterStatementNode* n) = 0;
     virtual void visitOrderByStatement(OrderByStatementNode* n) = 0;
+    virtual void visitInsertStatement(InsertStatementNode* n) = 0;
+    virtual void visitSetStatement(SetStatementNode* n) = 0;
+    virtual void visitRemoveStatement(RemoveStatementNode* n) = 0;
+    virtual void visitDeleteStatement(DeleteStatementNode* n) = 0;
+    virtual void visitCompositeQuery(CompositeQueryNode* n) = 0;
 };
 
 

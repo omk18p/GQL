@@ -28,7 +28,9 @@ void ASTPrinter::visitCatalogStatement(CatalogStatementNode* n) {
     printIndent(); std::cout << "CatalogStatement: " << n->action << " " << n->objectType << " " << n->name << "\n";
 }
 void ASTPrinter::visitMatchStatement(MatchStatementNode* n) {
-    printIndent(); std::cout << "MatchStatement\n";
+    printIndent(); std::cout << "MatchStatement";
+    if (n->optional) std::cout << " (OPTIONAL)";
+    std::cout << "\n";
     indent++;
     for (auto& pattern : n->patterns) {
         pattern->accept(this);
@@ -184,6 +186,83 @@ void ASTPrinter::visitOrderByStatement(OrderByStatementNode* n) {
         printIndent(); std::cout << "Limit\n";
         indent++;
         n->limit->accept(this);
+        indent--;
+    }
+    indent--;
+}
+
+void ASTPrinter::visitInsertStatement(InsertStatementNode* n) {
+    printIndent(); std::cout << "InsertStatement\n";
+    indent++;
+    for (auto& pattern : n->insertPatterns) {
+        pattern->accept(this);
+    }
+    indent--;
+}
+
+void ASTPrinter::visitSetStatement(SetStatementNode* n) {
+    printIndent(); std::cout << "SetStatement\n";
+    indent++;
+    for (const auto& item : n->items) {
+        printIndent(); std::cout << "SetItem: " << item.variable << " Type: " << item.type;
+        if (item.type == "PROPERTY") {
+            std::cout << " Property: " << item.propertyName;
+        } else if (item.type == "LABEL") {
+            std::cout << " Label: " << item.labelName;
+        }
+        std::cout << "\n";
+        if (item.valueExpression) {
+            indent++;
+            item.valueExpression->accept(this);
+            indent--;
+        }
+    }
+    indent--;
+}
+
+void ASTPrinter::visitRemoveStatement(RemoveStatementNode* n) {
+    printIndent(); std::cout << "RemoveStatement\n";
+    indent++;
+    for (const auto& item : n->items) {
+        printIndent(); std::cout << "RemoveItem: " << item.variable << " Type: " << item.type;
+        if (item.type == "PROPERTY") {
+            std::cout << " Property: " << item.propertyName;
+        } else if (item.type == "LABEL") {
+            std::cout << " Label: " << item.labelName;
+        }
+        std::cout << "\n";
+    }
+    indent--;
+}
+
+void ASTPrinter::visitDeleteStatement(DeleteStatementNode* n) {
+    printIndent(); std::cout << "DeleteStatement";
+    if (n->detach) std::cout << " (DETACH)";
+    if (n->nodetach) std::cout << " (NODETACH)";
+    std::cout << "\n";
+    indent++;
+    for (auto& expr : n->expressions) {
+        expr->accept(this);
+    }
+    indent--;
+}
+
+void ASTPrinter::visitCompositeQuery(CompositeQueryNode* n) {
+    printIndent(); std::cout << "CompositeQuery: " << n->operator_;
+    if (n->distinct) std::cout << " DISTINCT";
+    if (n->all) std::cout << " ALL";
+    std::cout << "\n";
+    indent++;
+    if (n->left) {
+        printIndent(); std::cout << "Left:\n";
+        indent++;
+        n->left->accept(this);
+        indent--;
+    }
+    if (n->right) {
+        printIndent(); std::cout << "Right:\n";
+        indent++;
+        n->right->accept(this);
         indent--;
     }
     indent--;

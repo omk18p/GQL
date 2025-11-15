@@ -85,10 +85,13 @@ antlrcpp::Any ASTBuilder::visitPrimitiveQueryStatement(GQLParser::PrimitiveQuery
     // Handle LET statement
     if (ctx->LET()) {
         auto letNode = std::make_unique<LetStatementNode>();
+        // Push the node first so visitLetVariableDefinition can find it
+        root->children.push_back(std::move(letNode));
+        
+        // Now visit variable definitions (they will add to the node we just pushed)
         for (auto* letVarDef : ctx->letVariableDefinition()) {
             visit(letVarDef);
         }
-        root->children.push_back(std::move(letNode));
     }
     // Handle FOR statement
     if (ctx->FOR()) {
@@ -147,6 +150,12 @@ antlrcpp::Any ASTBuilder::visitStartTransactionCommand(GQLParser::StartTransacti
 // MATCH statement visitors
 antlrcpp::Any ASTBuilder::visitMatchStatement(GQLParser::MatchStatementContext* ctx) {
     auto matchNode = std::make_unique<MatchStatementNode>();
+    
+    // Check for OPTIONAL keyword
+    if (ctx->OPTIONAL()) {
+        matchNode->optional = true;
+    }
+    
     currentMatchNode = matchNode.get();  // Set current match node
     
     // Visit the graph pattern binding table
@@ -460,19 +469,40 @@ antlrcpp::Any ASTBuilder::visitPrimitiveResultStatement(GQLParser::PrimitiveResu
             returnNode->distinct = true;
         }
         
-        // Visit return items - store reference to returnNode temporarily
-        ReturnStatementNode* returnNodePtr = returnNode.get();
+        // Set current return node so visitReturnItem can attach to it
+        currentReturnNode = returnNode.get();
         
-        // Visit return items
+        // Visit return items (they will attach to currentReturnNode)
         for (auto* returnItem : ctx->returnItem()) {
             visit(returnItem);
         }
         
-        // Attach to current match node if available, otherwise to root
+        // Clear current return node
+        currentReturnNode = nullptr;
+        
+        // Attach to current match node if available, otherwise find last MatchStatement
         if (currentMatchNode) {
             currentMatchNode->returnStatement = std::move(returnNode);
         } else {
-            root->children.push_back(std::move(returnNode));
+            // Find the last MatchStatement in root children and attach RETURN to it
+            bool attached = false;
+            for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+                if ((*it)->type == ASTNode::MATCH_STATEMENT) {
+                    MatchStatementNode* matchNode = static_cast<MatchStatementNode*>(it->get());
+                    matchNode->returnStatement = std::move(returnNode);
+                    attached = true;
+                    break;
+                }
+            }
+            if (!attached) {
+                // No match statement found, add to root
+                root->children.push_back(std::move(returnNode));
+            }
+        }
+        
+        // Handle ORDER BY if present (it's part of primitiveResultStatement)
+        if (ctx->orderByAndPageStatement()) {
+            visit(ctx->orderByAndPageStatement());
         }
     }
     
@@ -485,8 +515,11 @@ antlrcpp::Any ASTBuilder::visitReturnItem(GQLParser::ReturnItemContext* ctx) {
         exprNode->type = "VARIABLE";
         exprNode->value = ctx->aggregatingValueExpression()->getText();
         
-        // Find the return statement to attach to (could be in currentMatchNode or last in root)
-        if (currentMatchNode && currentMatchNode->returnStatement) {
+        // Attach to current return node if available
+        if (currentReturnNode) {
+            currentReturnNode->expressions.push_back(std::move(exprNode));
+        } else if (currentMatchNode && currentMatchNode->returnStatement) {
+            // Fallback: attach to match statement's return statement
             ReturnStatementNode* returnNode = static_cast<ReturnStatementNode*>(currentMatchNode->returnStatement.get());
             returnNode->expressions.push_back(std::move(exprNode));
         } else {
@@ -501,6 +534,7 @@ antlrcpp::Any ASTBuilder::visitReturnItem(GQLParser::ReturnItemContext* ctx) {
                 }
             }
             if (!added) {
+                // If no return statement found, add to root
                 root->children.push_back(std::move(exprNode));
             }
         }
@@ -583,12 +617,13 @@ antlrcpp::Any ASTBuilder::visitLetVariableDefinition(GQLParser::LetVariableDefin
 }
 
 antlrcpp::Any ASTBuilder::visitOrderByAndPageStatement(GQLParser::OrderByAndPageStatementContext* ctx) {
+    // Create OrderByStatementNode and push it first so visitors can find it
     auto orderByNode = std::make_unique<OrderByStatementNode>();
+    root->children.push_back(std::move(orderByNode));
     
     // Handle orderByClause offsetClause? limitClause?
     if (ctx->orderByClause()) {
         visit(ctx->orderByClause());
-        // The orderByClause visitor should populate orderByNode
     }
     // Handle offsetClause limitClause?
     if (ctx->offsetClause()) {
@@ -599,10 +634,8 @@ antlrcpp::Any ASTBuilder::visitOrderByAndPageStatement(GQLParser::OrderByAndPage
         visit(ctx->limitClause());
     }
     
-    // Look for existing OrderByStatementNode or create new one
-    // For now, just add to root
-    root->children.push_back(std::move(orderByNode));
-    
+    // If we have a current match node, we should attach ORDER BY to it
+    // For now, ORDER BY is a separate node - could be attached to MatchStatement later
     return nullptr;
 }
 
@@ -717,6 +750,427 @@ antlrcpp::Any ASTBuilder::visitLimitClause(GQLParser::LimitClauseContext* ctx) {
         orderByNode->limit = std::move(exprNode);
     }
     
+    return nullptr;
+}
+
+// Phase 3: Data modifying statement visitors
+antlrcpp::Any ASTBuilder::visitLinearDataModifyingStatement(GQLParser::LinearDataModifyingStatementContext* ctx) {
+    if (ctx->ambientLinearDataModifyingStatement()) {
+        visit(ctx->ambientLinearDataModifyingStatement());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitAmbientLinearDataModifyingStatement(GQLParser::AmbientLinearDataModifyingStatementContext* ctx) {
+    // Visit simple data accessing statements
+    for (auto* stmt : ctx->simpleDataAccessingStatement()) {
+        visit(stmt);
+    }
+    // Visit primitive result statement if present
+    if (ctx->primitiveResultStatement()) {
+        visit(ctx->primitiveResultStatement());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitSimpleDataAccessingStatement(GQLParser::SimpleDataAccessingStatementContext* ctx) {
+    if (ctx->simpleQueryStatement()) {
+        visit(ctx->simpleQueryStatement());
+    }
+    if (ctx->primitiveDataModifyingStatement()) {
+        visit(ctx->primitiveDataModifyingStatement());
+    }
+    if (ctx->callProcedureStatement()) {
+        visit(ctx->callProcedureStatement());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitSimpleQueryStatement(GQLParser::SimpleQueryStatementContext* ctx) {
+    if (ctx->primitiveQueryStatement()) {
+        visit(ctx->primitiveQueryStatement());
+    }
+    if (ctx->callProcedureStatement()) {
+        visit(ctx->callProcedureStatement());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitPrimitiveDataModifyingStatement(GQLParser::PrimitiveDataModifyingStatementContext* ctx) {
+    // Handle INSERT statement
+    if (ctx->INSERT()) {
+        auto insertNode = std::make_unique<InsertStatementNode>();
+        InsertStatementNode* insertNodePtr = insertNode.get();
+        root->children.push_back(std::move(insertNode));
+        
+        if (ctx->insertGraphPattern()) {
+            visit(ctx->insertGraphPattern());
+        }
+    }
+    // Handle SET statement
+    else if (ctx->SET()) {
+        auto setNode = std::make_unique<SetStatementNode>();
+        SetStatementNode* setNodePtr = setNode.get();
+        root->children.push_back(std::move(setNode));
+        
+        // Visit set items
+        for (auto* setItem : ctx->setItem()) {
+            visit(setItem);
+        }
+    }
+    // Handle REMOVE statement
+    else if (ctx->REMOVE()) {
+        auto removeNode = std::make_unique<RemoveStatementNode>();
+        RemoveStatementNode* removeNodePtr = removeNode.get();
+        root->children.push_back(std::move(removeNode));
+        
+        // Visit remove items
+        for (auto* removeItem : ctx->removeItem()) {
+            visit(removeItem);
+        }
+    }
+    // Handle DELETE statement
+    else if (ctx->DELETE()) {
+        auto deleteNode = std::make_unique<DeleteStatementNode>();
+        
+        // Check for DETACH or NODETACH
+        if (ctx->DETACH()) {
+            deleteNode->detach = true;
+        } else if (ctx->NODETACH()) {
+            deleteNode->nodetach = true;
+        }
+        
+        // Extract value expressions to delete
+        for (auto* valueExpr : ctx->valueExpression()) {
+            auto exprNode = std::make_unique<ExpressionNode>();
+            exprNode->type = "DELETE_TARGET";
+            exprNode->value = valueExpr->getText();
+            deleteNode->expressions.push_back(std::move(exprNode));
+        }
+        
+        root->children.push_back(std::move(deleteNode));
+    }
+    
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitInsertGraphPattern(GQLParser::InsertGraphPatternContext* ctx) {
+    // Visit insert path patterns
+    for (auto* insertPathPattern : ctx->insertPathPattern()) {
+        visit(insertPathPattern);
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitInsertPathPattern(GQLParser::InsertPathPatternContext* ctx) {
+    // Pattern: insertNodePattern (insertEdgePattern insertNodePattern)*
+    // Visit first node pattern
+    if (!ctx->insertNodePattern().empty()) {
+        visit(ctx->insertNodePattern(0));
+    }
+    // Visit edge-node pairs
+    for (size_t i = 0; i < ctx->insertEdgePattern().size(); i++) {
+        visit(ctx->insertEdgePattern(i));
+        // Each edge is followed by a node (index i+1 since first node is at index 0)
+        if (i + 1 < ctx->insertNodePattern().size()) {
+            visit(ctx->insertNodePattern(i + 1));
+        }
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitInsertNodePattern(GQLParser::InsertNodePatternContext* ctx) {
+    // Create node pattern for insertion
+    if (ctx->insertElementPatternFiller()) {
+        auto nodePattern = std::make_unique<NodePatternNode>();
+        
+        // Extract variable and labels from insertElementPatternFiller
+        auto filler = ctx->insertElementPatternFiller();
+        if (filler->elementVariableDeclaration()) {
+            auto varDecl = filler->elementVariableDeclaration();
+            if (varDecl->elementVariable() && varDecl->elementVariable()->bindingVariable()) {
+                nodePattern->variable = varDecl->elementVariable()->bindingVariable()->getText();
+            }
+        }
+        
+        // Extract labels from labelAndPropertySetSpecification
+        if (filler->labelAndPropertySetSpecification()) {
+            auto labelSpec = filler->labelAndPropertySetSpecification();
+            if (labelSpec->labelSetSpecification()) {
+                // For now, extract as text - proper parsing would handle label sets
+                std::string labelText = labelSpec->labelSetSpecification()->getText();
+                if (!labelText.empty()) {
+                    nodePattern->labels.push_back(labelText);
+                }
+            }
+        }
+        
+        // Add to last InsertStatementNode
+        for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+            if ((*it)->type == ASTNode::INSERT_STATEMENT) {
+                InsertStatementNode* insertNode = static_cast<InsertStatementNode*>(it->get());
+                insertNode->insertPatterns.push_back(std::move(nodePattern));
+                break;
+            }
+        }
+    }
+    
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitInsertEdgePattern(GQLParser::InsertEdgePatternContext* ctx) {
+    auto edgePattern = std::make_unique<EdgePatternNode>();
+    
+    // Determine direction
+    if (ctx->LEFT_ARROW_BRACKET() && ctx->RIGHT_BRACKET_MINUS()) {
+        edgePattern->direction = "<--";
+    } else if (ctx->MINUS_LEFT_BRACKET() && ctx->BRACKET_RIGHT_ARROW()) {
+        edgePattern->direction = "-->";
+    } else if (ctx->TILDE_LEFT_BRACKET() && ctx->RIGHT_BRACKET_TILDE()) {
+        edgePattern->direction = "<->";
+    } else {
+        edgePattern->direction = "-->";  // Default
+    }
+    
+    // Extract edge filler information
+    if (ctx->insertElementPatternFiller()) {
+        auto filler = ctx->insertElementPatternFiller();
+        if (filler->elementVariableDeclaration()) {
+            auto varDecl = filler->elementVariableDeclaration();
+            if (varDecl->elementVariable() && varDecl->elementVariable()->bindingVariable()) {
+                edgePattern->variable = varDecl->elementVariable()->bindingVariable()->getText();
+            }
+        }
+        if (filler->labelAndPropertySetSpecification()) {
+            auto labelSpec = filler->labelAndPropertySetSpecification();
+            if (labelSpec->labelSetSpecification()) {
+                std::string labelText = labelSpec->labelSetSpecification()->getText();
+                if (!labelText.empty()) {
+                    edgePattern->labels.push_back(labelText);
+                }
+            }
+        }
+    }
+    
+    // Add to last InsertStatementNode
+    for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+        if ((*it)->type == ASTNode::INSERT_STATEMENT) {
+            InsertStatementNode* insertNode = static_cast<InsertStatementNode*>(it->get());
+            insertNode->insertPatterns.push_back(std::move(edgePattern));
+            break;
+        }
+    }
+    
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitSetItem(GQLParser::SetItemContext* ctx) {
+    SetStatementNode::SetItem item;
+    
+    // Extract variable
+    if (ctx->bindingVariableReference() && ctx->bindingVariableReference()->bindingVariable()) {
+        item.variable = ctx->bindingVariableReference()->bindingVariable()->getText();
+    }
+    
+    // Handle different SET item types
+    // Type 1: variable.property = expression
+    if (ctx->PERIOD() && ctx->propertyName()) {
+        item.type = "PROPERTY";
+        item.propertyName = ctx->propertyName()->getText();
+        if (ctx->valueExpression()) {
+            auto exprNode = std::make_unique<ExpressionNode>();
+            exprNode->type = "VALUE";
+            exprNode->value = ctx->valueExpression()->getText();
+            item.valueExpression = std::move(exprNode);
+        }
+    }
+    // Type 2: variable = {key: value, ...}
+    else if (ctx->LEFT_BRACE()) {
+        item.type = "MAP";
+        if (ctx->propertyKeyValuePairList()) {
+            // For now, store as raw text
+            item.propertyMap["raw"] = ctx->propertyKeyValuePairList()->getText();
+        }
+        if (ctx->valueExpression()) {
+            auto exprNode = std::make_unique<ExpressionNode>();
+            exprNode->type = "MAP_VALUE";
+            exprNode->value = ctx->valueExpression()->getText();
+            item.valueExpression = std::move(exprNode);
+        }
+    }
+    // Type 3: variable:label (label addition)
+    else if (ctx->isOrColon() && ctx->labelName()) {
+        item.type = "LABEL";
+        item.labelName = ctx->labelName()->getText();
+    }
+    
+    // Add to last SetStatementNode
+    for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+        if ((*it)->type == ASTNode::SET_STATEMENT) {
+            SetStatementNode* setNode = static_cast<SetStatementNode*>(it->get());
+            setNode->items.push_back(std::move(item));
+            break;
+        }
+    }
+    
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitRemoveItem(GQLParser::RemoveItemContext* ctx) {
+    RemoveStatementNode::RemoveItem item;
+    
+    // Extract variable
+    if (ctx->bindingVariableReference() && ctx->bindingVariableReference()->bindingVariable()) {
+        item.variable = ctx->bindingVariableReference()->bindingVariable()->getText();
+    }
+    
+    // Handle different REMOVE item types
+    // Type 1: variable.property
+    if (ctx->PERIOD() && ctx->propertyName()) {
+        item.type = "PROPERTY";
+        item.propertyName = ctx->propertyName()->getText();
+    }
+    // Type 2: variable:label
+    else if (ctx->isOrColon() && ctx->labelName()) {
+        item.type = "LABEL";
+        item.labelName = ctx->labelName()->getText();
+    }
+    
+    // Add to last RemoveStatementNode
+    for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+        if ((*it)->type == ASTNode::REMOVE_STATEMENT) {
+            RemoveStatementNode* removeNode = static_cast<RemoveStatementNode*>(it->get());
+            removeNode->items.push_back(std::move(item));
+            break;
+        }
+    }
+    
+    return nullptr;
+}
+
+// Phase 4: Composite query statement visitors
+antlrcpp::Any ASTBuilder::visitCompositeQueryStatement(GQLParser::CompositeQueryStatementContext* ctx) {
+    if (ctx->compositeQueryExpression()) {
+        visit(ctx->compositeQueryExpression());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitCompositeQueryExpression(GQLParser::CompositeQueryExpressionContext* ctx) {
+    // Handle recursive case: compositeQueryExpression queryConjunction linearQueryStatement
+    if (ctx->compositeQueryExpression()) {
+        // Build left side recursively
+        auto leftResult = visit(ctx->compositeQueryExpression());
+        std::unique_ptr<ASTNode> leftNode;
+        
+        // Extract the node from the result (it should be in root->children)
+        // Find the last node that was just added (should be the left side)
+        if (!root->children.empty()) {
+            leftNode = std::move(root->children.back());
+            root->children.pop_back();
+        }
+        
+        // Visit query conjunction to get operator info
+        std::string op = "UNION";
+        bool distinct = false;
+        bool all = false;
+        if (ctx->queryConjunction()) {
+            // We'll extract operator info in visitQueryConjunction
+            // For now, visit it to get the info
+            visit(ctx->queryConjunction());
+            // The operator info will be stored temporarily - we'll handle it below
+        }
+        
+        // Visit right side (linearQueryStatement)
+        visit(ctx->linearQueryStatement());
+        std::unique_ptr<ASTNode> rightNode;
+        if (!root->children.empty()) {
+            rightNode = std::move(root->children.back());
+            root->children.pop_back();
+        }
+        
+        // Create composite query node
+        auto compositeNode = std::make_unique<CompositeQueryNode>();
+        
+        // Extract operator from queryConjunction
+        if (ctx->queryConjunction()) {
+            if (ctx->queryConjunction()->UNION()) {
+                op = "UNION";
+            } else if (ctx->queryConjunction()->EXCEPT()) {
+                op = "EXCEPT";
+            } else if (ctx->queryConjunction()->INTERSECT()) {
+                op = "INTERSECT";
+            } else if (ctx->queryConjunction()->OTHERWISE()) {
+                op = "OTHERWISE";
+            }
+            
+            if (ctx->queryConjunction()->setQuantifier()) {
+                if (ctx->queryConjunction()->setQuantifier()->DISTINCT()) {
+                    distinct = true;
+                } else if (ctx->queryConjunction()->setQuantifier()->ALL()) {
+                    all = true;
+                }
+            }
+        }
+        
+        compositeNode->operator_ = op;
+        compositeNode->distinct = distinct;
+        compositeNode->all = all;
+        compositeNode->left = std::move(leftNode);
+        compositeNode->right = std::move(rightNode);
+        
+        root->children.push_back(std::move(compositeNode));
+    }
+    // Handle base case: linearQueryStatement
+    else if (ctx->linearQueryStatement()) {
+        visit(ctx->linearQueryStatement());
+    }
+    
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitQueryConjunction(GQLParser::QueryConjunctionContext* ctx) {
+    // This is called as part of visitCompositeQueryExpression
+    // The operator info is extracted there, so we don't need to do anything here
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitLinearQueryStatement(GQLParser::LinearQueryStatementContext* ctx) {
+    if (ctx->focusedLinearQueryStatement()) {
+        visit(ctx->focusedLinearQueryStatement());
+    } else if (ctx->ambientLinearQueryStatement()) {
+        visit(ctx->ambientLinearQueryStatement());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitFocusedLinearQueryStatement(GQLParser::FocusedLinearQueryStatementContext* ctx) {
+    // Handle useGraphClause and simpleQueryStatement+ primitiveResultStatement
+    // For now, just visit simpleQueryStatement and primitiveResultStatement
+    for (auto* stmt : ctx->simpleQueryStatement()) {
+        visit(stmt);
+    }
+    if (ctx->primitiveResultStatement()) {
+        visit(ctx->primitiveResultStatement());
+    }
+    if (ctx->nestedQuerySpecification()) {
+        visit(ctx->nestedQuerySpecification());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitAmbientLinearQueryStatement(GQLParser::AmbientLinearQueryStatementContext* ctx) {
+    // Handle simpleQueryStatement* primitiveResultStatement
+    // This is similar to ambientLinearDataModifyingStatement
+    for (auto* stmt : ctx->simpleQueryStatement()) {
+        visit(stmt);
+    }
+    if (ctx->primitiveResultStatement()) {
+        visit(ctx->primitiveResultStatement());
+    }
+    if (ctx->nestedQuerySpecification()) {
+        visit(ctx->nestedQuerySpecification());
+    }
     return nullptr;
 }
 

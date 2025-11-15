@@ -18,5 +18,10 @@ void LetStatementNode::accept(ASTVisitor* v) { v->visitLetStatement(this); }
 void ForStatementNode::accept(ASTVisitor* v) { v->visitForStatement(this); }
 void FilterStatementNode::accept(ASTVisitor* v) { v->visitFilterStatement(this); }
 void OrderByStatementNode::accept(ASTVisitor* v) { v->visitOrderByStatement(this); }
+void InsertStatementNode::accept(ASTVisitor* v) { v->visitInsertStatement(this); }
+void SetStatementNode::accept(ASTVisitor* v) { v->visitSetStatement(this); }
+void RemoveStatementNode::accept(ASTVisitor* v) { v->visitRemoveStatement(this); }
+void DeleteStatementNode::accept(ASTVisitor* v) { v->visitDeleteStatement(this); }
+void CompositeQueryNode::accept(ASTVisitor* v) { v->visitCompositeQuery(this); }
 
 
