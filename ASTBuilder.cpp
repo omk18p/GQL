@@ -322,21 +322,37 @@ antlrcpp::Any ASTBuilder::visitElementPattern(GQLParser::ElementPatternContext* 
             }
         }
         
-        // Extract properties
+        // Extract properties - parse property map properly
+        // Store reference to nodePattern before visiting properties
+        NodePatternNode* nodePatternPtr = nodePattern.get();
+        
         if (ctx->elementPatternFiller()->elementPatternPredicate()) {
             auto pred = ctx->elementPatternFiller()->elementPatternPredicate();
             if (pred->elementPropertySpecification()) {
-                auto propSpec = pred->elementPropertySpecification();
-                std::string propText = propSpec->getText();
-                if (!propText.empty() && propText[0] == '{') {
-                    nodePattern->properties["raw"] = propText;
+                // Temporarily add nodePattern to currentMatchNode so property visitor can find it
+                bool wasAdded = false;
+                if (currentMatchNode) {
+                    currentMatchNode->patterns.push_back(std::move(nodePattern));
+                    wasAdded = true;
+                }
+                
+                visit(pred->elementPropertySpecification());
+                // Property map parsing will populate nodePattern->properties
+                
+                // If we added it, we need to get it back (it's already in patterns)
+                if (wasAdded && currentMatchNode && !currentMatchNode->patterns.empty()) {
+                    nodePatternPtr = static_cast<NodePatternNode*>(currentMatchNode->patterns.back().get());
                 }
             }
         }
         
         // Add to current match node if available, otherwise to root
         if (currentMatchNode) {
-            currentMatchNode->patterns.push_back(std::move(nodePattern));
+            // Check if already added (from property parsing above)
+            if (currentMatchNode->patterns.empty() || 
+                currentMatchNode->patterns.back().get() != nodePatternPtr) {
+                currentMatchNode->patterns.push_back(std::move(nodePattern));
+            }
         } else {
             root->children.push_back(std::move(nodePattern));
         }
@@ -1626,6 +1642,11 @@ antlrcpp::Any ASTBuilder::visitValueExpressionPrimary(GQLParser::ValueExpression
             exprNode->propertyName = ctx->propertyName()->getText();
         }
     }
+    // Handle aggregate function
+    else if (ctx->aggregateFunction()) {
+        visit(ctx->aggregateFunction());
+        return nullptr; // Already added by visitAggregateFunction
+    }
     // Handle binding variable reference
     else if (ctx->bindingVariableReference()) {
         visit(ctx->bindingVariableReference());
@@ -1633,8 +1654,47 @@ antlrcpp::Any ASTBuilder::visitValueExpressionPrimary(GQLParser::ValueExpression
     }
     // Handle literals and other primaries
     else {
-        exprNode->type = "EXPRESSION";
-        exprNode->value = ctx->getText();
+        // Check if it's a literal
+        std::string text = ctx->getText();
+        exprNode->type = "LITERAL";
+        exprNode->value = text;
+        
+        // Try to determine literal type
+        if (text == "true" || text == "false") {
+            exprNode->literalType = "BOOLEAN";
+        } else if (text == "NULL" || text == "null") {
+            exprNode->literalType = "NULL";
+        } else if (!text.empty() && text[0] == '"') {
+            exprNode->literalType = "STRING";
+        } else if (!text.empty() && text[0] == '\'') {
+            exprNode->literalType = "STRING";
+        } else {
+            // Try to parse as number
+            bool isFloat = text.find('.') != std::string::npos || 
+                          text.find('e') != std::string::npos || 
+                          text.find('E') != std::string::npos;
+            if (isFloat) {
+                exprNode->literalType = "FLOAT";
+            } else {
+                // Check if it's all digits (with optional sign)
+                bool isInteger = true;
+                size_t start = 0;
+                if (!text.empty() && (text[0] == '+' || text[0] == '-')) {
+                    start = 1;
+                }
+                for (size_t i = start; i < text.size(); ++i) {
+                    if (!std::isdigit(text[i])) {
+                        isInteger = false;
+                        break;
+                    }
+                }
+                if (isInteger && text.size() > start) {
+                    exprNode->literalType = "INTEGER";
+                } else {
+                    exprNode->type = "EXPRESSION";
+                }
+            }
+        }
     }
     
     root->children.push_back(std::move(exprNode));
@@ -1656,6 +1716,278 @@ antlrcpp::Any ASTBuilder::visitBindingVariableReference(GQLParser::BindingVariab
 antlrcpp::Any ASTBuilder::visitPropertyName(GQLParser::PropertyNameContext* ctx) {
     // Property name is usually extracted as part of property access
     // This visitor is called when propertyName is visited separately
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitAddSubtractExprAlt(GQLParser::AddSubtractExprAltContext* ctx) {
+    // Handle addition/subtraction: valueExpression (+ | -) valueExpression
+    auto exprNode = std::make_unique<ExpressionNode>();
+    exprNode->type = "BINARY_OP";
+    
+    // operator_ is a token pointer, not a function
+    if (ctx->operator_) {
+        exprNode->operator_ = ctx->operator_->getText();
+    } else if (ctx->PLUS_SIGN()) {
+        exprNode->operator_ = "+";
+    } else if (ctx->MINUS_SIGN()) {
+        exprNode->operator_ = "-";
+    }
+    
+    // Visit left and right operands
+    if (ctx->valueExpression().size() >= 2) {
+        visit(ctx->valueExpression(0));
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->left = std::move(root->children.back());
+            root->children.pop_back();
+        }
+        
+        visit(ctx->valueExpression(1));
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->right = std::move(root->children.back());
+            root->children.pop_back();
+        }
+    }
+    
+    root->children.push_back(std::move(exprNode));
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitMultDivExprAlt(GQLParser::MultDivExprAltContext* ctx) {
+    // Handle multiplication/division: valueExpression (* | /) valueExpression
+    auto exprNode = std::make_unique<ExpressionNode>();
+    exprNode->type = "BINARY_OP";
+    
+    // operator_ is a token pointer
+    if (ctx->operator_) {
+        exprNode->operator_ = ctx->operator_->getText();
+    } else if (ctx->ASTERISK()) {
+        exprNode->operator_ = "*";
+    } else if (ctx->SOLIDUS()) {
+        exprNode->operator_ = "/";
+    }
+    
+    // Visit left and right operands
+    if (ctx->valueExpression().size() >= 2) {
+        visit(ctx->valueExpression(0));
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->left = std::move(root->children.back());
+            root->children.pop_back();
+        }
+        
+        visit(ctx->valueExpression(1));
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->right = std::move(root->children.back());
+            root->children.pop_back();
+        }
+    }
+    
+    root->children.push_back(std::move(exprNode));
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitSignedExprAlt(GQLParser::SignedExprAltContext* ctx) {
+    // Handle unary plus/minus: (+ | -) valueExpression
+    auto exprNode = std::make_unique<ExpressionNode>();
+    exprNode->type = "UNARY_OP";
+    
+    // sign is a token pointer - check token type
+    if (ctx->sign) {
+        std::string signText = ctx->sign->getText();
+        if (signText == "+") {
+            exprNode->operator_ = "+";
+        } else if (signText == "-") {
+            exprNode->operator_ = "-";
+        }
+    }
+    
+    // Visit the operand
+    if (ctx->valueExpression()) {
+        visit(ctx->valueExpression());
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->right = std::move(root->children.back());
+            root->children.pop_back();
+        }
+    }
+    
+    root->children.push_back(std::move(exprNode));
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitNotExprAlt(GQLParser::NotExprAltContext* ctx) {
+    // Handle NOT: NOT valueExpression
+    auto exprNode = std::make_unique<ExpressionNode>();
+    exprNode->type = "UNARY_OP";
+    exprNode->operator_ = "NOT";
+    
+    // Visit the operand
+    if (ctx->valueExpression()) {
+        visit(ctx->valueExpression());
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->right = std::move(root->children.back());
+            root->children.pop_back();
+        }
+    }
+    
+    root->children.push_back(std::move(exprNode));
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitValueFunctionExprAlt(GQLParser::ValueFunctionExprAltContext* ctx) {
+    // Handle function calls: valueFunction
+    if (ctx->valueFunction()) {
+        return visit(ctx->valueFunction());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitValueFunction(GQLParser::ValueFunctionContext* ctx) {
+    // Route to specific function types
+    if (ctx->numericValueFunction()) {
+        return visit(ctx->numericValueFunction());
+    }
+    // Add other function types as needed (datetime, string, list, etc.)
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitNumericValueFunction(GQLParser::NumericValueFunctionContext* ctx) {
+    // numericValueFunction is for non-aggregate numeric functions
+    // Aggregate functions are handled by visitAggregateFunction
+    // For now, extract as text
+    auto exprNode = std::make_unique<ExpressionNode>();
+    exprNode->type = "FUNCTION_CALL";
+    exprNode->value = ctx->getText();
+    root->children.push_back(std::move(exprNode));
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitAggregateFunction(GQLParser::AggregateFunctionContext* ctx) {
+    // Handle aggregate functions: COUNT, SUM, AVG, MIN, MAX, etc.
+    auto exprNode = std::make_unique<ExpressionNode>();
+    exprNode->type = "FUNCTION_CALL";
+    
+    // Extract function name from tokens
+    // Grammar: COUNT(*), or (AVG|COUNT|MAX|MIN|SUM|...) (valueExpression)
+    if (ctx->COUNT()) {
+        exprNode->value = "COUNT";
+    } else if (ctx->SUM()) {
+        exprNode->value = "SUM";
+    } else if (ctx->AVG()) {
+        exprNode->value = "AVG";
+    } else if (ctx->MAX()) {
+        exprNode->value = "MAX";
+    } else if (ctx->MIN()) {
+        exprNode->value = "MIN";
+    } else if (ctx->STDDEV_POP()) {
+        exprNode->value = "STDDEV_POP";
+    } else if (ctx->STDDEV_SAMP()) {
+        exprNode->value = "STDDEV_SAMP";
+    } else if (ctx->PERCENTILE_CONT()) {
+        exprNode->value = "PERCENTILE_CONT";
+    } else if (ctx->PERCENTILE_DISC()) {
+        exprNode->value = "PERCENTILE_DISC";
+    } else if (ctx->COLLECT_LIST()) {
+        exprNode->value = "COLLECT_LIST";
+    }
+    
+    // Handle COUNT(*)
+    if (ctx->ASTERISK()) {
+        auto asteriskNode = std::make_unique<ExpressionNode>();
+        asteriskNode->type = "LITERAL";
+        asteriskNode->value = "*";
+        asteriskNode->literalType = "ASTERISK";
+        exprNode->arguments.push_back(std::move(asteriskNode));
+    }
+    
+    // Extract arguments from valueExpression (returns pointer, not vector)
+    if (ctx->valueExpression()) {
+        visit(ctx->valueExpression());
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->arguments.push_back(std::move(root->children.back()));
+            root->children.pop_back();
+        }
+    }
+    
+    // Handle PERCENTILE functions with two arguments
+    if (ctx->numericValueExpression().size() >= 2) {
+        visit(ctx->numericValueExpression(0));
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->arguments.push_back(std::move(root->children.back()));
+            root->children.pop_back();
+        }
+        visit(ctx->numericValueExpression(1));
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            exprNode->arguments.push_back(std::move(root->children.back()));
+            root->children.pop_back();
+        }
+    }
+    
+    root->children.push_back(std::move(exprNode));
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitElementPropertySpecification(GQLParser::ElementPropertySpecificationContext* ctx) {
+    // Parse property map: {key: value, key2: value2}
+    if (ctx->propertyKeyValuePairList()) {
+        visit(ctx->propertyKeyValuePairList());
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitPropertyKeyValuePairList(GQLParser::PropertyKeyValuePairListContext* ctx) {
+    // Visit all property key-value pairs
+    for (auto* pair : ctx->propertyKeyValuePair()) {
+        visit(pair);
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitPropertyKeyValuePair(GQLParser::PropertyKeyValuePairContext* ctx) {
+    // Parse a single property key-value pair: propertyName: valueExpression
+    std::string key;
+    if (ctx->propertyName()) {
+        key = ctx->propertyName()->getText();
+    }
+    
+    // Find the current node pattern to attach properties to
+    // This should be called from within visitElementPattern
+    NodePatternNode* currentNode = nullptr;
+    if (currentMatchNode && !currentMatchNode->patterns.empty()) {
+        auto& lastPattern = currentMatchNode->patterns.back();
+        if (lastPattern->type == ASTNode::NODE_PATTERN) {
+            currentNode = static_cast<NodePatternNode*>(lastPattern.get());
+        }
+    } else {
+        // Also check root->children for standalone node patterns
+        for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+            if ((*it)->type == ASTNode::NODE_PATTERN) {
+                currentNode = static_cast<NodePatternNode*>(it->get());
+                break;
+            }
+        }
+    }
+    
+    // Visit the value expression
+    if (ctx->valueExpression()) {
+        visit(ctx->valueExpression());
+        if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+            auto valueExpr = std::move(root->children.back());
+            root->children.pop_back();
+            
+            if (currentNode && !key.empty()) {
+                // Store as expression node in properties map
+                // For now, store the text representation
+                if (valueExpr->type == ASTNode::EXPRESSION) {
+                    auto* expr = static_cast<ExpressionNode*>(valueExpr.get());
+                    currentNode->properties[key] = expr->value;
+                } else {
+                    // Fallback: use the expression's text representation
+                    std::string exprText = ctx->valueExpression()->getText();
+                    currentNode->properties[key] = exprText;
+                }
+            }
+        }
+    }
+    
     return nullptr;
 }
 

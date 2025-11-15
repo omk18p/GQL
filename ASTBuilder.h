@@ -91,10 +91,21 @@ public:
     antlrcpp::Any visitComparisonExprAlt(GQLParser::ComparisonExprAltContext* ctx) override;
     antlrcpp::Any visitConjunctiveExprAlt(GQLParser::ConjunctiveExprAltContext* ctx) override;
     antlrcpp::Any visitDisjunctiveExprAlt(GQLParser::DisjunctiveExprAltContext* ctx) override;
+    antlrcpp::Any visitAddSubtractExprAlt(GQLParser::AddSubtractExprAltContext* ctx) override;
+    antlrcpp::Any visitMultDivExprAlt(GQLParser::MultDivExprAltContext* ctx) override;
+    antlrcpp::Any visitSignedExprAlt(GQLParser::SignedExprAltContext* ctx) override;
+    antlrcpp::Any visitNotExprAlt(GQLParser::NotExprAltContext* ctx) override;
     antlrcpp::Any visitPrimaryExprAlt(GQLParser::PrimaryExprAltContext* ctx) override;
+    antlrcpp::Any visitValueFunctionExprAlt(GQLParser::ValueFunctionExprAltContext* ctx) override;
     antlrcpp::Any visitValueExpressionPrimary(GQLParser::ValueExpressionPrimaryContext* ctx) override;
     antlrcpp::Any visitBindingVariableReference(GQLParser::BindingVariableReferenceContext* ctx) override;
     antlrcpp::Any visitPropertyName(GQLParser::PropertyNameContext* ctx) override;
+    antlrcpp::Any visitValueFunction(GQLParser::ValueFunctionContext* ctx) override;
+    antlrcpp::Any visitNumericValueFunction(GQLParser::NumericValueFunctionContext* ctx) override;
+    antlrcpp::Any visitAggregateFunction(GQLParser::AggregateFunctionContext* ctx) override;
+    antlrcpp::Any visitElementPropertySpecification(GQLParser::ElementPropertySpecificationContext* ctx) override;
+    antlrcpp::Any visitPropertyKeyValuePairList(GQLParser::PropertyKeyValuePairListContext* ctx) override;
+    antlrcpp::Any visitPropertyKeyValuePair(GQLParser::PropertyKeyValuePairContext* ctx) override;
     
     // Additional visitors for procedure body and statements
     antlrcpp::Any visitProcedureBody(GQLParser::ProcedureBodyContext* ctx) override;
