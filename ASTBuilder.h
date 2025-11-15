@@ -36,6 +36,12 @@ public:
     antlrcpp::Any visitFullEdgePattern(GQLParser::FullEdgePatternContext* ctx) override;
     antlrcpp::Any visitAbbreviatedEdgePattern(GQLParser::AbbreviatedEdgePatternContext* ctx) override;
     antlrcpp::Any visitLabelExpressionName(GQLParser::LabelExpressionNameContext* ctx) override;
+    antlrcpp::Any visitLabelExpressionNegation(GQLParser::LabelExpressionNegationContext* ctx) override;
+    antlrcpp::Any visitLabelExpressionConjunction(GQLParser::LabelExpressionConjunctionContext* ctx) override;
+    antlrcpp::Any visitLabelExpressionDisjunction(GQLParser::LabelExpressionDisjunctionContext* ctx) override;
+    antlrcpp::Any visitLabelExpressionParenthesized(GQLParser::LabelExpressionParenthesizedContext* ctx) override;
+    antlrcpp::Any visitLabelExpressionWildcard(GQLParser::LabelExpressionWildcardContext* ctx) override;
+    antlrcpp::Any visitGraphPatternQuantifier(GQLParser::GraphPatternQuantifierContext* ctx) override;
     antlrcpp::Any visitPrimitiveResultStatement(GQLParser::PrimitiveResultStatementContext* ctx) override;
     antlrcpp::Any visitReturnItem(GQLParser::ReturnItemContext* ctx) override;
     antlrcpp::Any visitWhereClause(GQLParser::WhereClauseContext* ctx) override;
@@ -112,6 +118,8 @@ public:
     antlrcpp::Any visitStatementBlock(GQLParser::StatementBlockContext* ctx) override;
     antlrcpp::Any visitStatement(GQLParser::StatementContext* ctx) override;
     antlrcpp::Any visitPrimitiveQueryStatement(GQLParser::PrimitiveQueryStatementContext* ctx) override;
+    antlrcpp::Any visitLinearCatalogModifyingStatement(GQLParser::LinearCatalogModifyingStatementContext* ctx) override;
+    antlrcpp::Any visitPrimitiveCatalogModifyingStatement(GQLParser::PrimitiveCatalogModifyingStatementContext* ctx) override;
   
     
 };

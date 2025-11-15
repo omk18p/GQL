@@ -116,6 +116,7 @@ public:
     std::vector<std::unique_ptr<ASTNode>> patterns;  // NodePattern and EdgePattern nodes
     std::unique_ptr<ASTNode> whereClause;           // Optional WHERE clause
     std::unique_ptr<ASTNode> returnStatement;       // RETURN statement
+    std::unique_ptr<ASTNode> graphExpression;      // Graph expression (for SELECT FROM MATCH)
     bool optional = false;  // OPTIONAL MATCH flag
     
     MatchStatementNode() : ASTNode(MATCH_STATEMENT) {}

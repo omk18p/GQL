@@ -78,6 +78,114 @@ antlrcpp::Any ASTBuilder::visitStatement(GQLParser::StatementContext* ctx) {
     return nullptr;
 }
 
+antlrcpp::Any ASTBuilder::visitLinearCatalogModifyingStatement(GQLParser::LinearCatalogModifyingStatementContext* ctx) {
+    // linearCatalogModifyingStatement: (primitiveCatalogModifyingStatement | callProcedureStatement)+
+    // Visit all primitive catalog modifying statements and procedure calls
+    for (auto* stmt : ctx->primitiveCatalogModifyingStatement()) {
+        visit(stmt);
+    }
+    for (auto* stmt : ctx->callProcedureStatement()) {
+        visit(stmt);
+    }
+    return nullptr;
+}
+
+antlrcpp::Any ASTBuilder::visitPrimitiveCatalogModifyingStatement(GQLParser::PrimitiveCatalogModifyingStatementContext* ctx) {
+    auto catalogNode = std::make_unique<CatalogStatementNode>();
+    
+    // Handle CREATE SCHEMA
+    if (ctx->CREATE() && ctx->SCHEMA()) {
+        catalogNode->action = "CREATE";
+        catalogNode->objectType = "SCHEMA";
+        if (ctx->catalogSchemaParentAndName()) {
+            catalogNode->name = ctx->catalogSchemaParentAndName()->getText();
+            size_t lastSlash = catalogNode->name.find_last_of('/');
+            if (lastSlash != std::string::npos && lastSlash + 1 < catalogNode->name.length()) {
+                catalogNode->name = catalogNode->name.substr(lastSlash + 1);
+            }
+        }
+        if (ctx->IF() && ctx->NOT() && ctx->EXISTS()) {
+            catalogNode->name = "IF NOT EXISTS " + catalogNode->name;
+        }
+    }
+    // Handle DROP SCHEMA
+    else if (ctx->DROP() && ctx->SCHEMA()) {
+        catalogNode->action = "DROP";
+        catalogNode->objectType = "SCHEMA";
+        if (ctx->catalogSchemaParentAndName()) {
+            catalogNode->name = ctx->catalogSchemaParentAndName()->getText();
+            size_t lastSlash = catalogNode->name.find_last_of('/');
+            if (lastSlash != std::string::npos && lastSlash + 1 < catalogNode->name.length()) {
+                catalogNode->name = catalogNode->name.substr(lastSlash + 1);
+            }
+        }
+        if (ctx->IF() && ctx->EXISTS()) {
+            catalogNode->name = "IF EXISTS " + catalogNode->name;
+        }
+    }
+    // Handle CREATE GRAPH
+    else if (ctx->CREATE() && (ctx->GRAPH() || ctx->PROPERTY())) {
+        catalogNode->action = "CREATE";
+        catalogNode->objectType = "GRAPH";
+        if (ctx->catalogGraphParentAndName()) {
+            catalogNode->name = ctx->catalogGraphParentAndName()->getText();
+        }
+        if (ctx->IF() && ctx->NOT() && ctx->EXISTS()) {
+            catalogNode->name = "IF NOT EXISTS " + catalogNode->name;
+        } else if (ctx->OR() && ctx->REPLACE()) {
+            catalogNode->name = "OR REPLACE " + catalogNode->name;
+        }
+        // Extract graph type and source information (stored in name for now)
+        if (ctx->openGraphType() || ctx->ofGraphType()) {
+            catalogNode->name += " " + (ctx->openGraphType() ? ctx->openGraphType()->getText() : ctx->ofGraphType()->getText());
+        }
+        if (ctx->graphSource()) {
+            catalogNode->name += " " + ctx->graphSource()->getText();
+        }
+    }
+    // Handle DROP GRAPH
+    else if (ctx->DROP() && (ctx->GRAPH() || ctx->PROPERTY())) {
+        catalogNode->action = "DROP";
+        catalogNode->objectType = "GRAPH";
+        if (ctx->catalogGraphParentAndName()) {
+            catalogNode->name = ctx->catalogGraphParentAndName()->getText();
+        }
+        if (ctx->IF() && ctx->EXISTS()) {
+            catalogNode->name = "IF EXISTS " + catalogNode->name;
+        }
+    }
+    // Handle CREATE GRAPH TYPE
+    else if (ctx->CREATE() && ctx->TYPE()) {
+        catalogNode->action = "CREATE";
+        catalogNode->objectType = "GRAPH_TYPE";
+        if (ctx->catalogGraphTypeParentAndName()) {
+            catalogNode->name = ctx->catalogGraphTypeParentAndName()->getText();
+        }
+        if (ctx->IF() && ctx->NOT() && ctx->EXISTS()) {
+            catalogNode->name = "IF NOT EXISTS " + catalogNode->name;
+        } else if (ctx->OR() && ctx->REPLACE()) {
+            catalogNode->name = "OR REPLACE " + catalogNode->name;
+        }
+        if (ctx->graphTypeSource()) {
+            catalogNode->name += " " + ctx->graphTypeSource()->getText();
+        }
+    }
+    // Handle DROP GRAPH TYPE
+    else if (ctx->DROP() && ctx->TYPE()) {
+        catalogNode->action = "DROP";
+        catalogNode->objectType = "GRAPH_TYPE";
+        if (ctx->catalogGraphTypeParentAndName()) {
+            catalogNode->name = ctx->catalogGraphTypeParentAndName()->getText();
+        }
+        if (ctx->IF() && ctx->EXISTS()) {
+            catalogNode->name = "IF EXISTS " + catalogNode->name;
+        }
+    }
+    
+    root->children.push_back(std::move(catalogNode));
+    return nullptr;
+}
+
 antlrcpp::Any ASTBuilder::visitPrimitiveQueryStatement(GQLParser::PrimitiveQueryStatementContext* ctx) {
     if (ctx->matchStatement()) {
         visit(ctx->matchStatement());
@@ -587,6 +695,88 @@ antlrcpp::Any ASTBuilder::visitLabelExpressionName(GQLParser::LabelExpressionNam
         // Store label name - we'll need to attach it to the current pattern
         // For now, return it as the result so calling code can use it
         return labelName;
+    }
+    return std::string("");
+}
+
+antlrcpp::Any ASTBuilder::visitLabelExpressionNegation(GQLParser::LabelExpressionNegationContext* ctx) {
+    // Label expression negation: !labelExpression
+    // Visit the nested label expression and mark it as negated
+    if (ctx->labelExpression()) {
+        visit(ctx->labelExpression());
+        // Return the negated expression (for now as text, could be structured)
+        std::string expr = ctx->labelExpression()->getText();
+        return "!" + expr;
+    }
+    return std::string("!");
+}
+
+antlrcpp::Any ASTBuilder::visitLabelExpressionConjunction(GQLParser::LabelExpressionConjunctionContext* ctx) {
+    // Label expression conjunction: labelExpression & labelExpression
+    // Visit both expressions and combine them
+    std::string left, right;
+    if (ctx->labelExpression().size() >= 2) {
+        visit(ctx->labelExpression(0));
+        visit(ctx->labelExpression(1));
+        left = ctx->labelExpression(0)->getText();
+        right = ctx->labelExpression(1)->getText();
+        return left + "&" + right;
+    }
+    return ctx->getText();
+}
+
+antlrcpp::Any ASTBuilder::visitLabelExpressionDisjunction(GQLParser::LabelExpressionDisjunctionContext* ctx) {
+    // Label expression disjunction: labelExpression | labelExpression
+    // Visit both expressions and combine them
+    std::string left, right;
+    if (ctx->labelExpression().size() >= 2) {
+        visit(ctx->labelExpression(0));
+        visit(ctx->labelExpression(1));
+        left = ctx->labelExpression(0)->getText();
+        right = ctx->labelExpression(1)->getText();
+        return left + "|" + right;
+    }
+    return ctx->getText();
+}
+
+antlrcpp::Any ASTBuilder::visitLabelExpressionParenthesized(GQLParser::LabelExpressionParenthesizedContext* ctx) {
+    // Label expression parenthesized: (labelExpression)
+    // Visit the nested expression and wrap it in parentheses
+    if (ctx->labelExpression()) {
+        visit(ctx->labelExpression());
+        std::string expr = ctx->labelExpression()->getText();
+        return "(" + expr + ")";
+    }
+    return std::string("()");
+}
+
+antlrcpp::Any ASTBuilder::visitLabelExpressionWildcard(GQLParser::LabelExpressionWildcardContext* ctx) {
+    // Label expression wildcard: %
+    // Return the wildcard symbol
+    return std::string("%");
+}
+
+antlrcpp::Any ASTBuilder::visitGraphPatternQuantifier(GQLParser::GraphPatternQuantifierContext* ctx) {
+    // Graph pattern quantifier: *, +, {n}, {n,m}
+    // Extract the quantifier and return it as a string
+    if (ctx->ASTERISK()) {
+        return std::string("*");
+    } else if (ctx->PLUS_SIGN()) {
+        return std::string("+");
+    } else if (ctx->LEFT_BRACE()) {
+        // Handle {n} or {n,m} or {,m} or {n,}
+        std::string quantifier = "{";
+        if (ctx->unsignedInteger().size() > 0) {
+            quantifier += ctx->unsignedInteger(0)->getText();
+        }
+        if (ctx->COMMA()) {
+            quantifier += ",";
+            if (ctx->unsignedInteger().size() > 1) {
+                quantifier += ctx->unsignedInteger(1)->getText();
+            }
+        }
+        quantifier += "}";
+        return quantifier;
     }
     return std::string("");
 }
@@ -1320,6 +1510,7 @@ antlrcpp::Any ASTBuilder::visitSelectStatementBody(GQLParser::SelectStatementBod
 
 antlrcpp::Any ASTBuilder::visitSelectGraphMatch(GQLParser::SelectGraphMatchContext* ctx) {
     // Extract match statement from selectGraphMatch
+    // selectGraphMatch: graphExpression matchStatement
     if (ctx->matchStatement()) {
         // Find the SelectStatementNode first (it should be the last one)
         SelectStatementNode* selectNode = nullptr;
@@ -1333,6 +1524,14 @@ antlrcpp::Any ASTBuilder::visitSelectGraphMatch(GQLParser::SelectGraphMatchConte
         if (selectNode) {
             // Create MatchStatementNode directly for FROM clause
             auto matchNode = std::make_unique<MatchStatementNode>();
+            
+            // Extract and store graphExpression if present
+            if (ctx->graphExpression()) {
+                auto graphExprNode = std::make_unique<ExpressionNode>();
+                graphExprNode->type = "GRAPH_EXPRESSION";
+                graphExprNode->value = ctx->graphExpression()->getText();
+                matchNode->graphExpression = std::move(graphExprNode);
+            }
             
             // Check for OPTIONAL keyword
             if (ctx->matchStatement()->OPTIONAL()) {
