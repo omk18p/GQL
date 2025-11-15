@@ -1,0 +1,12 @@
+MATCH (p:Person) WHERE p.age < 18
+RETURN p.city AS location, COUNT(p) AS count, "Minor" AS category
+GROUP BY p.city
+UNION
+MATCH (p:Person) WHERE p.age >= 18 AND p.age < 65
+RETURN p.city AS location, COUNT(p) AS count, "Adult" AS category
+GROUP BY p.city
+UNION
+MATCH (p:Person) WHERE p.age >= 65
+RETURN p.city AS location, COUNT(p) AS count, "Senior" AS category
+GROUP BY p.city
+ORDER BY location, category;

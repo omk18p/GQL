@@ -1,0 +1,4 @@
+MATCH (p:Person)-[:WORKS_FOR]->(c:Company)
+WHERE (p.age > 25 AND p.salary > 50000) OR
+      (p.age < 30 AND p.education = "PhD" AND c.industry = "Tech")
+RETURN p.name, p.age, p.salary, c.name;

@@ -1,0 +1,17 @@
+MATCH (p:Person)
+LET ageGroup = CASE WHEN p.age < 18 THEN "Minor"
+                   WHEN p.age < 30 THEN "Young Adult"
+                   WHEN p.age < 50 THEN "Adult"
+                   WHEN p.age < 65 THEN "Middle Age"
+                   ELSE "Senior" END,
+    salaryCategory = CASE WHEN p.salary < 30000 THEN "Low"
+                         WHEN p.salary < 60000 THEN "Medium"
+                         WHEN p.salary < 100000 THEN "High"
+                         ELSE "Very High" END,
+    taxRate = CASE WHEN p.salary < 50000 THEN 0.15
+                  WHEN p.salary < 100000 THEN 0.25
+                  WHEN p.salary < 200000 THEN 0.35
+                  ELSE 0.40 END,
+    netSalary = p.salary * (1 - taxRate)
+RETURN p.name, p.age, ageGroup, p.salary, salaryCategory, taxRate, netSalary
+ORDER BY netSalary DESC;

@@ -1,0 +1,6 @@
+MATCH (p:Person) WHERE p.age < 18 AND p.city = "New York" RETURN p.name AS name, p.age AS age
+UNION
+MATCH (p:Person) WHERE p.age >= 65 AND p.city = "Boston" RETURN p.name AS name, p.age AS age
+UNION
+MATCH (p:Student) WHERE p.grade > 3.5 RETURN p.name AS name, p.age AS age
+ORDER BY age DESC;

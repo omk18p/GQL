@@ -1,0 +1,1 @@
+INSERT (p:Person {name: "Frank", age: 35});

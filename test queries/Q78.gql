@@ -1,0 +1,5 @@
+SELECT p.name, p.age, p.salary
+FROM MATCH (p:Person)
+WHERE p.salary > 50000
+ORDER BY p.salary DESC
+LIMIT 10;

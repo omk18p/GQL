@@ -1,0 +1,2 @@
+MATCH (p:Person)-[:KNOWS|FRIEND_OF|COLLEAGUE]->(other:Person)
+RETURN p.name, other.name;

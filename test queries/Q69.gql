@@ -1,0 +1,5 @@
+INSERT (p1:Person {name: "Alice", age: 30}),
+       (p2:Person {name: "Bob", age: 25}),
+       (p3:Person {name: "Charlie", age: 35}),
+       (p1)-[:KNOWS]->(p2),
+       (p2)-[:KNOWS]->(p3);

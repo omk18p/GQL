@@ -1,0 +1,1 @@
+MATCH (p:Person) RETURN MAX(p.age) AS maxAge, MIN(p.age) AS minAge;

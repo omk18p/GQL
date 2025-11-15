@@ -1,0 +1,2 @@
+INSERT (a:Author {name: "John Doe", born: 1980})-[:WROTE]->(b:Book {title: "My Book", year: 2023}),
+       (b)-[:PUBLISHED_BY]->(p:Publisher {name: "ABC Publishing"});

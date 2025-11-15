@@ -1,0 +1,5 @@
+START TRANSACTION READ WRITE;
+CREATE (p:Person {name: "Eve", age: 28, city: "Seattle"});
+MATCH (p:Person) WHERE p.name = "Eve"
+SET p.email = "eve@example.com";
+COMMIT;

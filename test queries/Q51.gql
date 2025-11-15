@@ -1,0 +1,2 @@
+MATCH (a:Person)-[:KNOWS]->(b:Person)-[:KNOWS]->(c:Person)-[:KNOWS]->(d:Person)
+RETURN a.name, b.name, c.name, d.name;

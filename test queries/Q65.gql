@@ -1,0 +1,5 @@
+MATCH (p:Person)
+LET ageGroup = CASE WHEN p.age < 18 THEN "Minor"
+                   WHEN p.age < 65 THEN "Adult"
+                   ELSE "Senior" END
+RETURN p.name, p.age, ageGroup;

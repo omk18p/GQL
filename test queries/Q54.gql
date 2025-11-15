@@ -1,0 +1,3 @@
+MATCH path = (start:Person)-[:KNOWS*]->(end:Person)
+WHERE start.name = "Alice"
+RETURN path;

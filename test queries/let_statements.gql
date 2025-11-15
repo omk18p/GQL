@@ -1,0 +1,9 @@
+-- LET statements
+MATCH (p:Person)
+LET x = p.age * 2
+RETURN p.name, x;
+
+MATCH (p:Person)
+LET doubledAge = p.age * 2, isSenior = p.age > 65
+RETURN p.name, doubledAge, isSenior;
+

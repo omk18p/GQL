@@ -1,0 +1,4 @@
+MATCH (p:Person)
+RETURN p.city, COUNT(p) AS count
+GROUP BY p.city
+ORDER BY count DESC;

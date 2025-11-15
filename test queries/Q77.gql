@@ -1,0 +1,4 @@
+SELECT p.city, COUNT(p) AS count
+FROM MATCH (p:Person)
+GROUP BY p.city
+HAVING COUNT(p) > 10;

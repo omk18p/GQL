@@ -1,0 +1,6 @@
+MATCH (a:Author)-[:WROTE]->(b:Book),
+      (b)-[:PUBLISHED_BY]->(p:Publisher),
+      (a)-[:LIVES_IN]->(city:City)
+WHERE b.year > 2000 AND p.country = "USA"
+RETURN a.name, b.title, p.name, city.name
+ORDER BY b.year DESC;

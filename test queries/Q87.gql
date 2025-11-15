@@ -1,0 +1,8 @@
+MATCH (p:Person)
+LET baseTax = p.salary * 0.2,
+    deductions = p.salary * 0.1,
+    netSalary = p.salary - (p.salary * 0.2) - (p.salary * 0.1),
+    taxBracket = CASE WHEN p.salary < 50000 THEN "Low"
+                     WHEN p.salary < 100000 THEN "Medium"
+                     ELSE "High" END
+RETURN p.name, p.salary, baseTax, deductions, netSalary, taxBracket;

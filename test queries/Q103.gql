@@ -1,0 +1,13 @@
+MATCH (p:Person)-[:WORKS_FOR]->(c:Company),
+      (c)-[:IN_INDUSTRY]->(i:Industry)
+RETURN i.name AS industry,
+       c.country AS country,
+       COUNT(DISTINCT c) AS companies,
+       COUNT(DISTINCT p) AS employees,
+       AVG(p.salary) AS avgSalary,
+       MAX(p.salary) AS maxSalary,
+       MIN(p.salary) AS minSalary,
+       SUM(p.salary) AS totalSalary
+GROUP BY i.name, c.country
+HAVING COUNT(DISTINCT p) > 20 AND AVG(p.salary) > 50000
+ORDER BY avgSalary DESC, employees DESC;

@@ -1,0 +1,5 @@
+INSERT (a:Author {name: "John Doe", born: 1980, country: "USA"})-[:WROTE]->(b1:Book {title: "Book 1", year: 2020}),
+       (a)-[:WROTE]->(b2:Book {title: "Book 2", year: 2023}),
+       (b1)-[:PUBLISHED_BY]->(p:Publisher {name: "ABC Publishing", country: "USA"}),
+       (b2)-[:PUBLISHED_BY]->(p),
+       (a)-[:LIVES_IN]->(city:City {name: "New York"});

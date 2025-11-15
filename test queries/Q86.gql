@@ -1,0 +1,6 @@
+MATCH (p:Person)
+OPTIONAL MATCH (p)-[:OWNS]->(c:Car)
+OPTIONAL MATCH (p)-[:LIVES_IN]->(h:House)
+OPTIONAL MATCH (p)-[:WORKS_FOR]->(company:Company)
+WHERE p.age > 25 AND (c IS NULL OR c.price > 20000)
+RETURN p.name, c.model, h.address, company.name;

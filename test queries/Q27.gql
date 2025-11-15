@@ -1,0 +1,1 @@
+MATCH (p:Person) WHERE p.age > 100 DETACH DELETE p;

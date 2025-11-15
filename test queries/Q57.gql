@@ -1,0 +1,2 @@
+MATCH (a:Author)-[:WROTE]->(b:Book), (b)-[:PUBLISHED_BY]->(p:Publisher)
+RETURN a.name, b.title, p.name;

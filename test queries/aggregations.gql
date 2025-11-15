@@ -1,0 +1,14 @@
+-- Aggregation functions
+MATCH (p:Person)
+RETURN COUNT(*) AS total;
+
+MATCH (p:Person)
+RETURN AVG(p.age) AS averageAge, MAX(p.age) AS maxAge, MIN(p.age) AS minAge;
+
+MATCH (p:Person)-[:OWNS]->(c:Car)
+RETURN p.name, COUNT(c) AS carCount;
+
+MATCH (p:Person)
+RETURN p.city, COUNT(p) AS residents
+GROUP BY p.city;
+

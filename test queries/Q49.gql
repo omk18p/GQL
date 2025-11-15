@@ -1,0 +1,3 @@
+START TRANSACTION READ WRITE;
+CREATE (p:Person {name: "Eve", age: 28});
+COMMIT;

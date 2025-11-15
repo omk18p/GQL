@@ -1,0 +1,3 @@
+SELECT p.name, p.age
+FROM MATCH (p:Person)
+WHERE p.age > 25;

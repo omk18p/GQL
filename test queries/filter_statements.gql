@@ -1,0 +1,9 @@
+-- FILTER statements
+MATCH (p:Person)
+FILTER p.age > 18
+RETURN p.name;
+
+MATCH (p:Person)
+FILTER WHERE p.age > 18 AND p.city = 'New York'
+RETURN p.name, p.age;
+

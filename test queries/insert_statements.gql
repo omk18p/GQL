@@ -1,0 +1,7 @@
+-- INSERT statements
+INSERT (p:Person {name: "Frank", age: 35});
+
+INSERT (a:Author {name: "Jane Smith"})-[:WROTE]->(b:Book {title: "New Novel", year: 2024});
+
+INSERT (p1:Person {name: "Alice"}), (p2:Person {name: "Bob"}), (p1)-[:KNOWS]->(p2);
+

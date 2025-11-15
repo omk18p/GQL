@@ -1,0 +1,1 @@
+INSERT (p1:Person {name: "Alice"}), (p2:Person {name: "Bob"}), (p1)-[:KNOWS]->(p2);

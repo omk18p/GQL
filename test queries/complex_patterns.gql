@@ -1,0 +1,11 @@
+-- Complex graph patterns
+MATCH (a:Person)-[:KNOWS]->(b:Person)-[:KNOWS]->(c:Person)
+RETURN a, b, c;
+
+MATCH (m:Movie)<-[:ACTED_IN]-(a:Actor)-[:DIRECTED]->(d:Director)
+RETURN m.title, a.name, d.name;
+
+MATCH path = (start:Person)-[:KNOWS*]->(end:Person)
+WHERE start.name = "Alice"
+RETURN path;
+

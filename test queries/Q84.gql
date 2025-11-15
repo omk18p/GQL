@@ -1,0 +1,8 @@
+MATCH (p:Person)-[:OWNS]->(c:Car)
+RETURN p.city, p.country,
+       COUNT(p) AS people,
+       COUNT(c) AS cars,
+       AVG(c.price) AS avgCarPrice,
+       MAX(p.age) AS maxAge
+GROUP BY p.city, p.country
+HAVING COUNT(p) > 5 AND AVG(c.price) > 30000;

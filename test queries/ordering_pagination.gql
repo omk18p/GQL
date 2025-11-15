@@ -1,0 +1,15 @@
+-- Ordering and pagination
+MATCH (p:Person)
+RETURN p.name, p.age
+ORDER BY p.age DESC;
+
+MATCH (p:Person)
+RETURN p.name
+ORDER BY p.name ASC
+LIMIT 10;
+
+MATCH (p:Person)
+RETURN p.name, p.age
+ORDER BY p.age DESC
+OFFSET 5 LIMIT 20;
+

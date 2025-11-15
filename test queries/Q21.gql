@@ -1,0 +1,2 @@
+MATCH (a:Person)-[:KNOWS]->(b:Person)-[:KNOWS]->(c:Person)
+RETURN a, b, c;

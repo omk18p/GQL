@@ -1,0 +1,13 @@
+-- SET and REMOVE operations
+MATCH (p:Person) WHERE p.name = "Alice"
+SET p.age = 31, p.city = "Boston";
+
+MATCH (p:Person) WHERE p.name = "Bob"
+SET p = {name: "Bob", age: 26, city: "Seattle"};
+
+MATCH (p:Person) WHERE p.name = "Charlie"
+REMOVE p.age;
+
+MATCH (p:Person) WHERE p.name = "David"
+SET p:Employee;
+

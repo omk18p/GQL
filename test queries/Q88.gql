@@ -1,0 +1,6 @@
+MATCH (p:Person)
+FILTER p.age > 18
+FILTER WHERE (p.city = "New York" AND p.salary > 60000) OR
+            (p.city = "Boston" AND p.salary > 50000) OR
+            (p.education = "PhD" AND p.age < 35)
+RETURN p.name, p.age, p.city, p.salary, p.education;

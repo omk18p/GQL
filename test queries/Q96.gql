@@ -1,0 +1,14 @@
+MATCH (p:Person)
+LET ageGroup = CASE WHEN p.age < 18 THEN "Minor"
+                   WHEN p.age < 65 THEN "Adult"
+                   ELSE "Senior" END,
+    taxRate = CASE WHEN p.salary < 50000 THEN 0.15
+                  WHEN p.salary < 100000 THEN 0.25
+                  ELSE 0.35 END,
+    netSalary = p.salary * (1 - taxRate)
+OPTIONAL MATCH (p)-[:OWNS]->(c:Car)
+OPTIONAL MATCH (p)-[:LIVES_IN]->(h:House)
+WHERE p.age > 18 AND (c IS NULL OR c.price > 15000)
+RETURN p.name, p.age, ageGroup, p.salary, taxRate, netSalary, c.model, h.address
+ORDER BY netSalary DESC, p.age ASC
+LIMIT 25;

@@ -1,0 +1,4 @@
+MATCH path = (start:Person)-[:KNOWS*2..5]->(end:Person)
+WHERE start.name = "Alice" AND end.city = "Boston"
+RETURN path, LENGTH(path) AS pathLength
+ORDER BY pathLength;

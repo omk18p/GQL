@@ -1,0 +1,4 @@
+MATCH (p:Person)
+OPTIONAL MATCH (p)-[:OWNS]->(c:Car)
+OPTIONAL MATCH (p)-[:LIVES_IN]->(h:House)
+RETURN p.name, c.model, h.address;

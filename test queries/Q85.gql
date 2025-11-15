@@ -1,0 +1,7 @@
+MATCH (p:Person)
+RETURN p.name, p.age, p.salary, p.city
+ORDER BY p.salary DESC NULLS LAST,
+         p.age ASC NULLS FIRST,
+         p.city ASC,
+         p.name ASC
+LIMIT 50;

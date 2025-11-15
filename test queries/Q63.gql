@@ -1,0 +1,4 @@
+MATCH (p:Person)
+OPTIONAL MATCH (p)-[:FRIEND_OF]->(f:Person)
+WHERE p.age > 30 AND (f IS NULL OR f.age > 25)
+RETURN p.name, f.name;

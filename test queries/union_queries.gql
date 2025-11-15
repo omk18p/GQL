@@ -1,0 +1,9 @@
+-- UNION queries
+MATCH (p:Person) WHERE p.age < 18 RETURN p.name AS name
+UNION
+MATCH (p:Person) WHERE p.age >= 65 RETURN p.name AS name;
+
+MATCH (p:Person) RETURN p.name
+UNION ALL
+MATCH (p:Employee) RETURN p.name;
+

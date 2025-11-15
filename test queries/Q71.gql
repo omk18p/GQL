@@ -1,0 +1,6 @@
+START TRANSACTION;
+MATCH (p:Person) WHERE p.age > 100 DELETE p;
+CREATE (p:Person {name: "New Person", age: 25});
+MATCH (p:Person) WHERE p.name = "New Person"
+SET p.city = "Boston";
+COMMIT;

@@ -1,0 +1,8 @@
+SELECT a.name AS author, b.title AS book, p.name AS publisher, city.name AS city
+FROM MATCH (a:Author)-[:WROTE]->(b:Book),
+     MATCH (b)-[:PUBLISHED_BY]->(p:Publisher),
+     MATCH (a)-[:LIVES_IN]->(city:City)
+WHERE b.year > 2000 AND p.country = "USA" AND city.population > 1000000
+GROUP BY a.name, b.title, p.name, city.name
+ORDER BY b.year DESC
+LIMIT 20;

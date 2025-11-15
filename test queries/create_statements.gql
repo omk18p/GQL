@@ -1,0 +1,7 @@
+-- CREATE statements
+CREATE (p:Person {name: "Alice", age: 30});
+
+CREATE (p:Person {name: "Bob", age: 25, city: "New York"});
+
+CREATE (a:Author {name: "John Doe"})-[:WROTE]->(b:Book {title: "My Book", year: 2023});
+

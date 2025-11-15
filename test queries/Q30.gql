@@ -1,0 +1,2 @@
+MATCH (p:Person) WHERE p.name = "Charlie"
+REMOVE p.age, p.city;

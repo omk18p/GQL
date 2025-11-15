@@ -1,0 +1,9 @@
+MATCH (a:Author)-[:WROTE]->(b:Book),
+      (b)-[:IN_GENRE]->(g:Genre),
+      (b)-[:PUBLISHED_BY]->(p:Publisher),
+      (a)-[:LIVES_IN]->(city:City),
+      (p)-[:LOCATED_IN]->(pubCity:City)
+WHERE b.year > 2000 AND g.name IN ["Fiction", "Mystery"] AND
+      city.country = "USA" AND pubCity.country = "USA"
+RETURN a.name, b.title, g.name, p.name, city.name, pubCity.name
+ORDER BY b.year DESC;

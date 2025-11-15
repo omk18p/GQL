@@ -1,0 +1,12 @@
+START TRANSACTION READ WRITE;
+MATCH (p:Person) WHERE p.age > 100 DELETE p;
+CREATE (p1:Person {name: "New Person 1", age: 25, city: "Boston"}),
+       (p2:Person {name: "New Person 2", age: 30, city: "Seattle"});
+MATCH (p1:Person) WHERE p1.name = "New Person 1"
+SET p1.email = "person1@example.com", p1.salary = 60000;
+MATCH (p2:Person) WHERE p2.name = "New Person 2"
+SET p2.email = "person2@example.com", p2.salary = 70000;
+MATCH (p1:Person), (p2:Person)
+WHERE p1.name = "New Person 1" AND p2.name = "New Person 2"
+CREATE (p1)-[:KNOWS]->(p2);
+COMMIT;

@@ -1,0 +1,2 @@
+MATCH (p:Person) WHERE p.name = "Alice"
+SET p.age = 31, p.city = "Boston", p.email = "newemail@example.com";

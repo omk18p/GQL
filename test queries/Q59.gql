@@ -1,0 +1,4 @@
+MATCH (p:Person)
+RETURN p.city, COUNT(p) AS residents, AVG(p.age) AS avgAge, MAX(p.age) AS maxAge
+GROUP BY p.city
+HAVING COUNT(p) > 10;

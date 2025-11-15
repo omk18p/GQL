@@ -1,0 +1,2 @@
+MATCH (p:Person) RETURN p.city, p.country, COUNT(p) AS count
+GROUP BY p.city, p.country;

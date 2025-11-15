@@ -1,0 +1,4 @@
+MATCH (p:Person)
+FILTER p.age > 18
+FILTER WHERE p.city = "New York" OR p.city = "Boston"
+RETURN p.name, p.age, p.city;

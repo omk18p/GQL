@@ -1,0 +1,5 @@
+MATCH (p:Person) WHERE p.city = "New York" RETURN p.name AS name
+UNION
+MATCH (p:Person) WHERE p.city = "Boston" RETURN p.name AS name
+UNION
+MATCH (p:Person) WHERE p.city = "Seattle" RETURN p.name AS name;

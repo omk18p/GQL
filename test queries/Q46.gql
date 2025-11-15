@@ -1,0 +1,1 @@
+INSERT (a:Author {name: "Jane Smith"})-[:WROTE]->(b:Book {title: "New Novel", year: 2024});

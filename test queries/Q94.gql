@@ -1,0 +1,4 @@
+MATCH (p:Person)-[r:KNOWS|FRIEND_OF|COLLEAGUE|FAMILY]->(other:Person)
+WHERE p.age > 25 AND other.age > 25 AND
+      (r:KNOWS OR (r:FRIEND_OF AND p.city = other.city))
+RETURN p.name, other.name, TYPE(r) AS relationshipType;

@@ -1,0 +1,4 @@
+MATCH (p:Person)
+MATCH (c:Company)
+MATCH (p)-[:WORKS_FOR]->(c)
+RETURN p.name, c.name;

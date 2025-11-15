@@ -1,0 +1,1 @@
+MATCH (p:Person) RETURN p.city, COUNT(p) AS residents GROUP BY p.city;

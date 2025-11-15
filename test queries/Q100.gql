@@ -1,0 +1,15 @@
+START TRANSACTION READ WRITE;
+SESSION SET SCHEMA mySchema;
+MATCH (p:Person)
+LET ageGroup = CASE WHEN p.age < 18 THEN "Minor"
+                   WHEN p.age < 65 THEN "Adult"
+                   ELSE "Senior" END
+OPTIONAL MATCH (p)-[:OWNS]->(c:Car)
+OPTIONAL MATCH (p)-[:LIVES_IN]->(h:House)
+OPTIONAL MATCH (p)-[:WORKS_FOR]->(company:Company)
+WHERE p.age > 18 AND (c IS NULL OR c.price > 15000) AND
+      (h IS NULL OR h.price > 200000)
+RETURN p.name, p.age, ageGroup, c.model, h.address, company.name
+ORDER BY p.age DESC, p.name ASC
+LIMIT 50;
+COMMIT;

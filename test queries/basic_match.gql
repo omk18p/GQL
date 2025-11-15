@@ -1,0 +1,7 @@
+-- Basic MATCH queries
+MATCH (n) RETURN n;
+
+MATCH (p:Person) RETURN p;
+
+MATCH (p:Person)-[:KNOWS]->(f:Person) RETURN p, f;
+

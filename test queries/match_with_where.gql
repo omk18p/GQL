@@ -1,0 +1,11 @@
+-- MATCH with WHERE clauses
+MATCH (p:Person) WHERE p.age > 25 RETURN p;
+
+MATCH (p:Person)-[:FRIEND_OF]->(f:Person)
+WHERE p.age > 25 AND f.city = 'London'
+RETURN p.name, f.name;
+
+MATCH (a:Author)-[:WROTE]->(b:Book)
+WHERE b.year > 2000 AND a.country = 'USA'
+RETURN a.name, b.title;
+

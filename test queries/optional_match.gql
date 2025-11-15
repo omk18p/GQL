@@ -1,0 +1,9 @@
+-- Optional MATCH
+MATCH (p:Person)
+OPTIONAL MATCH (p)-[:OWNS]->(c:Car)
+RETURN p.name, c.model;
+
+OPTIONAL MATCH (p:Person)-[:FRIEND_OF]->(f:Person)
+WHERE p.age > 30
+RETURN p.name, f.name;
+

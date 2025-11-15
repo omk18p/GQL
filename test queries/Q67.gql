@@ -1,0 +1,3 @@
+MATCH (p:Person)
+FILTER WHERE (p.age > 25 AND p.salary > 50000) OR (p.age < 30 AND p.education = "PhD")
+RETURN p.name, p.age, p.salary;

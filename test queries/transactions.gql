@@ -1,0 +1,13 @@
+-- Transaction examples
+START TRANSACTION;
+MATCH (n) RETURN n;
+COMMIT;
+
+START TRANSACTION READ ONLY;
+MATCH (p:Person) RETURN p;
+ROLLBACK;
+
+START TRANSACTION READ WRITE;
+CREATE (p:Person {name: "Eve", age: 28});
+COMMIT;
+
