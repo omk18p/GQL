@@ -38,14 +38,14 @@ graph TD
 
 ## Core Implementation Layers
 
-| Layer | Component | Implementation Status | Supported GQL Clauses | Key Responsibilities |
-| :--- | :--- | :--- | :--- | :--- |
-| **Parsing** | `GQLLexer / GQLParser` | Complete | ISO GQL Specification | Syntax recognition and parse tree generation via ANTLR4. |
-| **AST** | `ASTBuilder` | Complete | MATCH, INSERT, SET, RETURN | Semantic translation and structural validation. |
-| **Logical** | `LogicalPlanBuilder` | Complete | WHERE, JOIN, FILTER | Algebraic planning and high-level query optimization. |
-| **Physical** | `PhysicalPlanner` | Complete | IDX_SCAN, NL_JOIN, GROUP_BY | Operator selection and scan strategy optimization. |
-| **Execution** | `PhysicalOperator` | Complete | ORDER BY, LIMIT, CRUD | Pipelined "Open-Next-Close" iterator engine implementation. |
-| **Memory** | `Graph` | Complete | N/A | High-speed adjacency-list based property graph storage. |
+| Layer | Component | Implementation Status | Key Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **Parsing** | `GQLLexer / GQLParser` | Complete | Syntax recognition and parse tree generation via ANTLR4. |
+| **AST** | `ASTBuilder` | Complete | Semantic translation and structural validation. |
+| **Logical** | `LogicalPlanBuilder` | Complete | Algebraic planning and high-level query optimization. |
+| **Physical** | `PhysicalPlanner` | Complete | Operator selection and scan strategy optimization. |
+| **Execution** | `PhysicalOperator` | Complete | Pipelined "Open-Next-Close" iterator engine implementation. |
+| **Memory** | `Graph` | Complete | High-speed adjacency-list based property graph storage. |
 
 ---
 
