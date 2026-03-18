@@ -98,6 +98,12 @@ int main(int argc, const char* argv[]) {
     // ✅ Correct type here
     GQLParser::GqlProgramContext* tree = parser.gqlProgram();
 
+    // FAIL FAST: Check for syntax errors
+    if (parser.getNumberOfSyntaxErrors() > 0) {
+        cerr << "\n❌ Query failed due to " << parser.getNumberOfSyntaxErrors() << " syntax error(s)." << endl;
+        return 1;
+    }
+
     // ✅ Build AST correctly
     ASTBuilder builder;
     auto ast = builder.build(tree);

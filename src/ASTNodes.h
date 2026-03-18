@@ -138,6 +138,8 @@ public:
 class EdgePatternNode : public ASTNode {
 public:
     std::string variable;    // Variable name (e.g., "r")
+    std::string sourceVar;   // Left node variable
+    std::string targetVar;   // Right node variable
     std::vector<std::string> labels;  // Relationship labels (e.g., "ACTED_IN")
     std::map<std::string, std::string> properties;  // Properties {key: value}
     std::string direction;  // "->", "<-", "<->", etc.

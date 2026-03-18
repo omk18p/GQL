@@ -1,3 +1,0 @@
-MATCH (u:Users)
-WHERE u.country IN ('India', 'USA')
-RETURN u.name;

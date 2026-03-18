@@ -1,2 +1,0 @@
-INSERT (p:Person {name: "Dan", age: 50})
-MATCH (p:Person) WHERE p.name = "Dan" RETURN p

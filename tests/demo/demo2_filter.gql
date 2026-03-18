@@ -1,5 +1,5 @@
 // Demo 2: Filtered Scan
 // Goal: Find all products with a price greater than 200.
 MATCH (p:Products)
-WHERE p.price > 200
+WHERE p.price < 200
 RETURN p.name, p.price;

@@ -1,4 +1,0 @@
-INSERT (n:Users {name: "Antigravity", age: 100})
-MATCH (u:Users) WHERE u.name = "Antigravity"
-SET u.age = 101
-RETURN u.name, u.age

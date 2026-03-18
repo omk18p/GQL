@@ -228,6 +228,8 @@ struct PhysicalInsertNode {
 
 struct PhysicalInsertEdge {
     string variable;
+    string sourceVar;
+    string targetVar;
     string direction; // "->", "<-"
     vector<string> labels;
     vector<PhysicalProperty> properties;

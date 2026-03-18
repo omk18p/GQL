@@ -59,6 +59,8 @@ class EdgeScanNode : public LogicalPlanNode {
 public:
     string label;           // Edge label (e.g., "ACTED_IN")
     string variable;        // Variable name (e.g., "r")
+    string sourceVar;       // Variable of left node
+    string targetVar;       // Variable of right node
     string direction;       // "->", "<-", "<->"
     map<string, string> properties; // Property filters
     

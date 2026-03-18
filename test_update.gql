@@ -1,3 +1,0 @@
-MATCH (u:Users) WHERE u.name = "Vaibhav"
-SET u.age = 30
-RETURN u.name, u.age

@@ -252,6 +252,8 @@ void PhysicalPlanner::visitInsertOp(InsertOpNode* node) {
             EdgeScanNode* edgeScan = static_cast<EdgeScanNode*>(pattern.get());
             PhysicalInsertEdge pEdge;
             pEdge.variable = edgeScan->variable;
+            pEdge.sourceVar = edgeScan->sourceVar;
+            pEdge.targetVar = edgeScan->targetVar;
             pEdge.direction = edgeScan->direction;
             if (!edgeScan->label.empty()) {
                 pEdge.labels.push_back(edgeScan->label);
