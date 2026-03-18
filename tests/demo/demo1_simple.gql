@@ -1,0 +1,4 @@
+// Demo 1: Simple Scan
+// Goal: Retrieve all users and their basic info.
+MATCH (u:Users)
+RETURN u.name, u.country;

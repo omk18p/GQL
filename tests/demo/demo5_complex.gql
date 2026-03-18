@@ -1,0 +1,8 @@
+// Demo 5: Multi-hop Join (Analytical Query)
+// Goal: Find users who bought 'Electronics' and show the details.
+MATCH (u:Users), (o:Orders), (p:Products), (c:Categories)
+WHERE u.user_id = o.user_id
+  AND o.product_id = p.product_id
+  AND p.category_id = c.category_id
+  AND c.category_name = "Electronics"
+RETURN u.name, p.name, o.amount, c.category_name;

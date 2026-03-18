@@ -1,0 +1,1 @@
+MATCH (p:Person)-[r:ACTED_IN]->(m:Movie) WHERE m.title = "Movie_A" RETURN p.name, r.role

@@ -1,0 +1,7 @@
+// Demo 4: Aggregation & Sorting
+// Goal: Summarize total spending and order count per user.
+MATCH (o:Orders)
+RETURN o.user_id, 
+       SUM(o.amount) AS total_spent, 
+       COUNT(o.order_id) AS order_count
+ORDER BY total_spent DESC;

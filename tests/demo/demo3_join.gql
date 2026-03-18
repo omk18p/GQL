@@ -1,0 +1,6 @@
+// Demo 3: Property-based Join
+// Goal: Retrieve orders placed by user 'Vaibhav'.
+MATCH (u:Users), (o:Orders)
+WHERE u.user_id = o.user_id 
+  AND u.name = "Vaibhav"
+RETURN u.name, o.amount, o.status;

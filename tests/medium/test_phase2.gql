@@ -1,0 +1,3 @@
+// Test query for MemoryAggregate
+MATCH (p:Person) 
+RETURN p.city, COUNT(p), SUM(p.age) AS TotalAge, AVG(p.age) AS AvgAge, MAX(p.age) AS Oldest, MIN(p.age) AS Youngest

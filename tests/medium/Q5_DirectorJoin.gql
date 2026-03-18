@@ -1,0 +1,1 @@
+MATCH (p:Person)-[r:DIRECTED]->(m:Movie) RETURN p.name, m.title

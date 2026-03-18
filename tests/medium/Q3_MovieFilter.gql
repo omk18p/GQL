@@ -1,0 +1,1 @@
+MATCH (m:Movie) WHERE m.genre = "Sci-Fi" RETURN m.title, m.year
