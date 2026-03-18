@@ -4,7 +4,7 @@
 [![C++](https://img.shields.io/badge/C++-17-orange.svg)](https://isocpp.org/)
 [![ANTLR4](https://img.shields.io/badge/Parser-ANTLR4-red.svg)](https://www.antlr.org/)
 
-A robust, high-performance GQL (Graph Query Language) engine implemented in C++. This project features a full compilation pipeline—from raw GQL text to an optimized physical execution tree—enabling complex graph mutations and analytical queries on an in-memory property graph.
+A professional-grade GQL (Graph Query Language) engine implemented in C++. This project features a full compilation pipeline—from raw GQL text to an optimized physical execution tree—enabling complex graph mutations and intensive analytical queries.
 
 ---
 
@@ -38,35 +38,48 @@ graph TD
 
 ## 🛠️ Core Implementation Layers
 
-| Layer | Component | Implementation Status | Key Responsibilities |
-| :--- | :--- | :--- | :--- |
-| **Parsing** | `GQLLexer / GQLParser` | ✅ Complete | Full ISO GQL syntax recognition via ANTLR4. |
-| **AST** | `ASTBuilder` | ✅ Complete | Translates parse tree to a semantic, visitor-ready tree. |
-| **Logical** | `LogicalPlanBuilder` | ✅ Complete | High-level algebraic planning (Scans, Joins, Filters). |
-| **Physical** | `PhysicalPlanner` | ✅ Complete | Optimizes scans (Index vs. Full) and chooses Join strategies. |
-| **Execution** | `PhysicalOperator` | ✅ Complete | Pipelined "Open-Next-Close" iterator engine. |
-| **Memory** | `Graph` | ✅ Complete | In-memory property graph with Node/Edge storage. |
+| Layer | Component | Implementation Status | Supported GQL Clauses | Key Responsibilities |
+| :--- | :--- | :--- | :--- | :--- |
+| **Parsing** | `GQLLexer / GQLParser` | ✅ Complete | ALL ISO GQL Clauses | Full syntax recognition via ANTLR4. |
+| **AST** | `ASTBuilder` | ✅ Complete | `MATCH`, `INSERT`, `SET`, `REMOVE`, `DELETE` | Semantic translation to a neutral query tree. |
+| **Logical** | `LogicalPlanBuilder` | ✅ Complete | `WHERE`, `JOIN`, `FILTER`, `AGGREGATE` | Algebraic planning and scan strategy selection. |
+| **Physical** | `PhysicalPlanner` | ✅ Complete | `IDX_SCAN`, `NL_JOIN`, `GROUP_BY` | Operator selection (Index vs. Full Scan). |
+| **Execution** | `PhysicalOperator` | ✅ Complete | `RETURN`, `ORDER BY`, `LIMIT` | Open-Next-Close Pipelined Engine. |
+| **Memory** | `Graph` | ✅ Complete | N/A | High-speed Node/Edge adjacency storage. |
 
 ---
 
-## ✨ Key Features
+## 💎 Full Feature Breakdown
 
-### 1. Pipelined DML (CRUD)
-Unlike basic parsers, this engine supports real-time mutations within the same query pipeline.
-```gql
--- Match, Update, and Return in a single stream
-MATCH (u:Users) WHERE u.name = "Vaibhav"
-SET u.country = "India", u.status = "VIP"
-RETURN u.name, u.country, u.status;
-```
+### 🎯 Pattern Matching (`MATCH`)
+Comprehensive graph traversal capabilities:
+- **Node Patterns**: `(p:Products)`, `(u:Users {name: "Vaibhav"})`.
+- **Relationship Patterns**: Support for multi-hop path matching via Cartesian-Product Joins.
+- **Label Indexing**: Automatic selection of index-based scans for specific labels to avoid full graph scans.
 
-### 2. High-Performance Joins & Analytics
-Supports property-based joins and complex aggregations with `DISTINCT` support.
+### 🔍 Data Filtering (`WHERE / FILTER`)
+A robust expression evaluator with nested logic:
+- **Boolean Operators**: `AND`, `OR`, `NOT`, `XOR`.
+- **Comparison Operators**: `=`, `!=`, `<`, `>`, `<=`, `>=`.
+- **Property Resolution**: Real-time resolution of properties from both the execution row and the underlying graph.
+
+### 🏗️ CRUD Operations (DML)
+Full support for graph mutations within the execution pipeline:
+- **INSERT**: Creation of nodes and edges with property maps.
+- **UPDATE (`SET` / `REMOVE`)**: Real-time property modification and deletion.
+- **DELETE**: Support for both `DELETE` and `DETACH DELETE` (automatic edge removal).
+
+### 🤝 Joining & Relationships (`JOIN`)
+Analytical joining of disparate graph entities:
+- **Property-based Joins**: SQL-on-Graph style joins via `WHERE u.id = o.user_id`.
+- **Cartesian Product**: Implicitly handled for multi-node matches.
+- **Inner Joins**: High-performance nested-loop join implementation.
+
+### 📈 Analytics & Aggregations
+Compute business metrics directly on the graph:
 - **Aggregates**: `COUNT`, `SUM`, `AVG`, `MAX`, `MIN`.
-- **Joins**: Implicitly handled via property-matching in `WHERE` clauses (SQL-on-Graph style).
-
-### 3. Professional Error Handling (Fail Fast)
-Integrated syntax error detection that aborts execution immediately with descriptive markers, preventing invalid plans.
+- **Advanced Sorting**: `ORDER BY` with `ASC`/`DESC` support.
+- **Result Shaping**: `RETURN` with aliases, expressions, and `DISTINCT`.
 
 ---
 
@@ -104,31 +117,28 @@ g++ -O3 -std=c++17 -I/usr/local/include/antlr4-runtime -Isrc -Igenerated \
 ```
 
 ### 2. Running Demo Queries
-The engine includes a built-in eCommerce dataset (Users, Orders, Products, Categories). You can run any `.gql` file:
 ```bash
 ./gqlparser tests/demo/demo5_complex.gql
 ```
 
 ---
 
-## 📊 Demo Scenarios
-
-We have curated a set of queries to walk through the engine's capabilities:
+## 📊 Demo Highlights
 
 > [!TIP]
 > **Demo 1: Basic Retrieval**
 > `MATCH (u:Users) RETURN u.name, u.country;`
-> Simple label-based index scan.
+> Simple label-based index scan showing core connectivity.
 
 > [!IMPORTANT]
-> **Demo 5: Multi-hop Analytical Join**
-> Joins 4 different entities (Users -> Orders -> Products -> Categories) to find high-value customers in specific categories.
+> **Demo 5: Analytical Join**
+> Joins 4 entities (Users -> Orders -> Products -> Categories) to find high-value customers. Demonstrates Join logic, Filtering, and Property resolution.
 
 ---
 
 ## 📄 Academic Context
-This engine is a research prototype implementing the **ISO/IEC 39075:2024** Graph Query Language specification. It demonstrates the feasibility of a pipelined execution model for property graph mutations.
+This engine is a research prototype implementing the **ISO/IEC 39075:2024** Graph Query Language specification. It demonstrates the structural feasibility of a unified compilation-execution model for graph databases.
 
 **Developed by Vaibhav Kondekar**
-*Building the future of Graph Query Processing.*
+*Advancing the state-of-the-art in Graph Query Processing.*
 
