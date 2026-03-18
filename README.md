@@ -1,104 +1,134 @@
-# GQL Query Engine & Execution Pipeline
+# 🚀 GQL Query Engine & Execution Pipeline
 
-A complete C++ implementation of a Graph Query Language (GQL) engine, featuring an ANTLR4-based parser, a multi-stage compilation pipeline (AST -> Logical Plan -> Physical Plan), and a high-performance pipelined execution engine.
+[![License](https://img.shields.io/badge/license-Academic-blue.svg)](LICENSE)
+[![C++](https://img.shields.io/badge/C++-17-orange.svg)](https://isocpp.org/)
+[![ANTLR4](https://img.shields.io/badge/Parser-ANTLR4-red.svg)](https://www.antlr.org/)
 
-## 📋 Table of Contents
+A robust, high-performance GQL (Graph Query Language) engine implemented in C++. This project features a full compilation pipeline—from raw GQL text to an optimized physical execution tree—enabling complex graph mutations and analytical queries on an in-memory property graph.
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Project Structure](#project-structure)
-- [Architecture](#architecture)
-- [Build & Usage](#build--usage)
-- [Supported GQL Features](#supported-gql-features)
-- [Demo & Testing](#demo--testing)
+---
 
-## 🎯 Overview
+## 🏛️ Architecture Overview
 
-This project implements a fully functional GQL query engine. It goes beyond simple parsing to provide a complete execution environment where queries are compiled into physical operators that mutate and query an in-memory graph data structure.
+The engine follows a classic compiler-inspired architecture, translating high-level GQL into low-level physical operators.
 
-### Key Achievements
+```mermaid
+graph TD
+    A[GQL Query Input] --> B[ANTLR4 Lexer/Parser]
+    B --> C[AST Builder]
+    C --> D[Logical Plan Builder]
+    D --> E[Physical Planner]
+    E --> F[Execution Tree Builder]
+    F --> G[Pipelined Execution Engine]
+    G --> H[Graph Results / Mutations]
+    
+    subgraph "Compilation Pipeline"
+    C
+    D
+    E
+    end
+    
+    subgraph "Execution Layer"
+    F
+    G
+    end
+```
 
-- **Full CRUD Support**: Complete implementation of `INSERT`, `UPDATE` (SET/REMOVE), and `DELETE` (including DETACH).
-- **Pipelined Execution**: High-performance "Open-Next-Close" iterator model allowing streaming data processing.
-- **Multi-Stage Planning**: Robust translation from AST to Logical Plan, followed by Physical Plan optimization (e.g., Index vs. Full Scans).
-- **Advanced Analytics**: Support for complex joins, aggregations (`COUNT`, `SUM`, `AVG`, etc.), and sorting.
+---
+
+## 🛠️ Core Implementation Layers
+
+| Layer | Component | Implementation Status | Key Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **Parsing** | `GQLLexer / GQLParser` | ✅ Complete | Full ISO GQL syntax recognition via ANTLR4. |
+| **AST** | `ASTBuilder` | ✅ Complete | Translates parse tree to a semantic, visitor-ready tree. |
+| **Logical** | `LogicalPlanBuilder` | ✅ Complete | High-level algebraic planning (Scans, Joins, Filters). |
+| **Physical** | `PhysicalPlanner` | ✅ Complete | Optimizes scans (Index vs. Full) and chooses Join strategies. |
+| **Execution** | `PhysicalOperator` | ✅ Complete | Pipelined "Open-Next-Close" iterator engine. |
+| **Memory** | `Graph` | ✅ Complete | In-memory property graph with Node/Edge storage. |
+
+---
 
 ## ✨ Key Features
 
-- **Pipelined DML**: Run complex queries like `INSERT...MATCH...SET...RETURN` in a single execution pipeline.
-- **Real-time Property Lookups**: Live graph property resolution ensures that `RETURN` results reflect mutations immediately.
-- **Flexible Joins**: Implicit property-based joins across multiple entities (e.g., `WHERE u.id = o.user_id`).
-- **Boolean Logic**: Depth-aware expression evaluator supporting nested `AND`/`OR` chains and arithmetic.
-- **Optimized Scans**: Automatic selection of Label-based Index Scans for faster node lookup.
-
-## 📁 Project Structure
-
+### 1. Pipelined DML (CRUD)
+Unlike basic parsers, this engine supports real-time mutations within the same query pipeline.
+```gql
+-- Match, Update, and Return in a single stream
+MATCH (u:Users) WHERE u.name = "Vaibhav"
+SET u.country = "India", u.status = "VIP"
+RETURN u.name, u.country, u.status;
 ```
+
+### 2. High-Performance Joins & Analytics
+Supports property-based joins and complex aggregations with `DISTINCT` support.
+- **Aggregates**: `COUNT`, `SUM`, `AVG`, `MAX`, `MIN`.
+- **Joins**: Implicitly handled via property-matching in `WHERE` clauses (SQL-on-Graph style).
+
+### 3. Professional Error Handling (Fail Fast)
+Integrated syntax error detection that aborts execution immediately with descriptive markers, preventing invalid plans.
+
+---
+
+## 📁 Project Organization
+
+```text
 GQL/
-├── src/                            # Core engine source code
-│   ├── main.cpp                    # Entry point & eCommerce dataset
-│   ├── ASTBuilder.h/cpp            # AST construction
-│   ├── LogicalPlanBuilder.h/cpp    # Logical plan generation
-│   ├── PhysicalPlanner.h/cpp       # Physical plan & Scan optimization
-│   ├── PhysicalOperator.h/cpp      # Execution operators (Scans, Joins, DML)
-│   └── ExecutionBuilder.h/cpp      # Execution tree construction
-├── tests/                          # Categorized test suite
-│   ├── simple/                     # Basic MATCH and literal filters
-│   ├── medium/                     # Joins, Aggregations, and DML
-│   ├── difficult/                  # Complex eCommerce analytics
-│   └── demo/                       # Curated walkthrough queries
-├── generated/                      # ANTLR4 generated source
-└── grammar/                        # GQL .g4 grammar files
+├── src/                    # 💎 Engine Source Code
+│   ├── main.cpp            # Entry point & Demo Dataset
+│   ├── PhysicalOperator.cpp# Pipelined Execution Logic
+│   ├── LogicalPlanBuilder  # High-level optimization
+│   └── ASTBuilder.cpp       # Semantic translation
+├── tests/                  # 🧪 Comprehensive Test Suite
+│   ├── demo/               # Curated starter queries (Start here!)
+│   ├── simple/             # Basic MATCH & Filter tests
+│   ├── medium/             # DML, Joins & Aggregations
+│   └── difficult/          # Complex eCommerce analytics
+├── grammar/                # 📝 ISO GQL .g4 Grammar
+└── generated/              # ⚙️ ANTLR4 Generated Target Files
 ```
 
-## 🏗️ Build & Usage
+---
 
-### 1. Build the Engine
+## 🏗️ Build & Setup
+
+### Prerequisites
+- GCC 9+ (C++17 support)
+- ANTLR4 C++ Runtime (`sudo apt install libantlr4-runtime-dev`)
+
+### 1. Compilation
+Build the engine using the following command:
 ```bash
-g++ -std=c++17 -I/usr/local/include/antlr4-runtime -Isrc -Igenerated \
+g++ -O3 -std=c++17 -I/usr/local/include/antlr4-runtime -Isrc -Igenerated \
     src/*.cpp generated/*.cpp -lantlr4-runtime -L/usr/local/lib -o gqlparser
 ```
 
-### 2. Run a Demo Query
-The engine comes with a pre-loaded eCommerce dataset (Users, Orders, Products, Categories).
+### 2. Running Demo Queries
+The engine includes a built-in eCommerce dataset (Users, Orders, Products, Categories). You can run any `.gql` file:
 ```bash
 ./gqlparser tests/demo/demo5_complex.gql
 ```
 
-## 🎯 Supported GQL Features
+---
 
-### Pattern Matching & DML
-```gql
--- Insert a new user
-INSERT (n:Users {name: "Antigravity", age: 100})
+## 📊 Demo Scenarios
 
--- Match, Update, and Return in one go
-MATCH (u:Users) WHERE u.name = "Antigravity"
-SET u.age = 101
-RETURN u.name, u.age;
-```
+We have curated a set of queries to walk through the engine's capabilities:
 
-### Advanced Analytics
-```gql
-MATCH (u:Users), (o:Orders)
-WHERE u.user_id = o.user_id
-RETURN u.name, SUM(o.amount) AS total_spent
-ORDER BY total_spent DESC;
-```
+> [!TIP]
+> **Demo 1: Basic Retrieval**
+> `MATCH (u:Users) RETURN u.name, u.country;`
+> Simple label-based index scan.
 
-## 🧪 Demo & Testing
-
-We have organized 5 specialized demo queries to showcase the engine's capabilities:
-- **Demo 1**: Simple Scan (`tests/demo/demo1_simple.gql`)
-- **Demo 2**: Filtered Scan (`tests/demo/demo2_filter.gql`)
-- **Demo 3**: Property-based Join (`tests/demo/demo3_join.gql`)
-- **Demo 4**: Aggregation & Sorting (`tests/demo/demo4_aggregate.gql`)
-- **Demo 5**: Multi-hop Analytical Query (`tests/demo/demo5_complex.gql`)
-
-## 📄 License
-
-This project is part of academic research on Graph Query Language processing and follows the ISO GQL standard specifications.
+> [!IMPORTANT]
+> **Demo 5: Multi-hop Analytical Join**
+> Joins 4 different entities (Users -> Orders -> Products -> Categories) to find high-value customers in specific categories.
 
 ---
-**Developed by Vaibhav Kondekar** | A robust research prototype for GQL Query Processing.
+
+## 📄 Academic Context
+This engine is a research prototype implementing the **ISO/IEC 39075:2024** Graph Query Language specification. It demonstrates the feasibility of a pipelined execution model for property graph mutations.
+
+**Developed by Vaibhav Kondekar**
+*Building the future of Graph Query Processing.*
 
