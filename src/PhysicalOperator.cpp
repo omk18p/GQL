@@ -16,7 +16,7 @@ pair<string, string> parseVarProp(const string& s) {
 
 // Evaluate expression on a Row
 // Supports: "p.age", "30", "p.age > 30"
-Value evaluate(const Row& row, const string& expr) {
+Value evaluate(const Row& row, const string& expr, Graph& graph) {
     auto trim = [](string s) {
         if (s.empty()) return s;
         size_t start = s.find_first_not_of(" \t\n\r");
@@ -46,7 +46,7 @@ Value evaluate(const Row& row, const string& expr) {
     string tExpr = trim(expr);
     if (tExpr.empty()) return Value(false);
 
-    auto findWordDepth = [](const string& s, const string& word) -> size_t {
+    auto findWordDepth = [&row, &graph](const string& s, const string& word) -> size_t {
         int depth = 0;
         string upperS = s; for(auto &c : upperS) c = toupper(c);
         string upperW = word; for(auto &c : upperW) c = toupper(c);
@@ -68,12 +68,12 @@ Value evaluate(const Row& row, const string& expr) {
 
     size_t orPos = findWordDepth(tExpr, "OR");
     if (orPos != string::npos) {
-        return Value(evaluate(row, tExpr.substr(0, orPos)).toBool() || evaluate(row, tExpr.substr(orPos + 2)).toBool());
+        return Value(evaluate(row, tExpr.substr(0, orPos), graph).toBool() || evaluate(row, tExpr.substr(orPos + 2), graph).toBool());
     }
 
     size_t andPos = findWordDepth(tExpr, "AND");
     if (andPos != string::npos) {
-        return Value(evaluate(row, tExpr.substr(0, andPos)).toBool() && evaluate(row, tExpr.substr(andPos + 3)).toBool());
+        return Value(evaluate(row, tExpr.substr(0, andPos), graph).toBool() && evaluate(row, tExpr.substr(andPos + 3), graph).toBool());
     }
 
     auto findOpDepth = [](const string& s, const string& op) -> size_t {
@@ -92,8 +92,8 @@ Value evaluate(const Row& row, const string& expr) {
     for (const string& op : ops) {
         size_t pos = findOpDepth(tExpr, op);
         if (pos != string::npos) {
-            Value lv = evaluate(row, tExpr.substr(0, pos));
-            Value rv = evaluate(row, tExpr.substr(pos + op.length()));
+            Value lv = evaluate(row, tExpr.substr(0, pos), graph);
+            Value rv = evaluate(row, tExpr.substr(pos + op.length()), graph);
             if (op == "=") return Value(lv.toString() == rv.toString());
             if (op == ">") return Value(lv.toDouble() > rv.toDouble());
             if (op == "<") return Value(lv.toDouble() < rv.toDouble());
@@ -108,16 +108,39 @@ Value evaluate(const Row& row, const string& expr) {
         string var = tExpr.substr(0, dotPos);
         string prop = tExpr.substr(dotPos + 1);
         string fullKey = var + "." + prop;
+        
+        // 1. Try context row first (for aliases/aggregates)
         if (row.values.count(fullKey)) return row.values.at(fullKey);
-        if (row.values.count(var)) return row.values.at(var);
+        
+        // 2. Try looking up in the graph via node/edge ID in the row
+        if (row.values.count(var)) {
+            Value varVal = row.values.at(var);
+            if (holds_alternative<int>(varVal.data)) {
+                int id = get<int>(varVal.data);
+                if (graph.nodes.count(id)) {
+                    auto node = graph.nodes.at(id);
+                    if (node->properties.count(prop)) return node->properties.at(prop);
+                } else if (graph.edges.count(id)) {
+                    auto edge = graph.edges.at(id);
+                    if (edge->properties.count(prop)) return edge->properties.at(prop);
+                }
+            }
+            return varVal; // Fallback to ID if property not found
+        }
+    } else {
+        // Standalone variable lookup
+        if (row.values.count(tExpr)) return row.values.at(tExpr);
     }
     
-    if (tExpr.size() >= 2 && tExpr.front() == '\'' && tExpr.back() == '\'') {
+    // String literals: 'string' or "string"
+    if (tExpr.size() >= 2 && 
+        ((tExpr.front() == '\'' && tExpr.back() == '\'') || 
+         (tExpr.front() == '"' && tExpr.back() == '"'))) {
         return Value(tExpr.substr(1, tExpr.size() - 2));
     }
     
     try {
-        if (tExpr.find_first_not_of("0123456789.-") == string::npos) {
+        if (tExpr.find_first_not_of("0123456789.-") == string::npos && tExpr != "." && tExpr != "-") {
             return Value(stod(tExpr));
         }
     } catch (...) {}
@@ -127,6 +150,9 @@ Value evaluate(const Row& row, const string& expr) {
 
 
 // --- MemoryFullScan ---
+
+MemoryFullScan::MemoryFullScan(Graph& g, unique_ptr<PhysicalOperator> c, string v) 
+    : PhysicalOperator(g), child(move(c)), variable(v) {}
 
 void MemoryFullScan::open() {
     if (child) {
@@ -162,6 +188,9 @@ void MemoryFullScan::close() {
 
 // --- MemoryIndexScan ---
 
+MemoryIndexScan::MemoryIndexScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v) 
+    : PhysicalOperator(g), child(move(c)), label(l), variable(v) {}
+
 void MemoryIndexScan::open() {
     if (child) {
         child->open();
@@ -171,7 +200,6 @@ void MemoryIndexScan::open() {
     }
     nodes = graph.getNodesByLabel(label);
     currentIndex = 0;
-    // cout << "IndexScan opened. Found " << nodes.size() << " nodes for label " << label << endl;
 }
 
 bool MemoryIndexScan::next(Row& row) {
@@ -202,6 +230,9 @@ void MemoryIndexScan::close() {
 
 
 // --- MemoryEdgeScan ---
+
+MemoryEdgeScan::MemoryEdgeScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v) 
+    : PhysicalOperator(g), child(move(c)), label(l), variable(v) {}
 
 void MemoryEdgeScan::open() {
     if (child) {
@@ -244,17 +275,16 @@ void MemoryEdgeScan::close() {
 
 // --- MemoryFilter ---
 
+MemoryFilter::MemoryFilter(Graph& g, unique_ptr<PhysicalOperator> c, string cond) 
+    : PhysicalOperator(g), child(move(c)), condition(cond) {}
+
 void MemoryFilter::open() {
     child->open();
 }
 
 bool MemoryFilter::next(Row& row) {
     while (child->next(row)) {
-        // Evaluate condition
-        Value result = evaluate(row, condition);
-        if (holds_alternative<bool>(result.data) && get<bool>(result.data)) {
-            return true;
-        }
+        if (evaluate(row, condition, graph).toBool()) return true;
     }
     return false;
 }
@@ -266,6 +296,9 @@ void MemoryFilter::close() {
 
 // --- MemoryProject ---
 
+MemoryProject::MemoryProject(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> f) 
+    : PhysicalOperator(g), child(move(c)), fields(f) {}
+
 void MemoryProject::open() {
     child->open();
 }
@@ -275,7 +308,7 @@ bool MemoryProject::next(Row& row) {
     
     Row projectedRow;
     for (const string& field : fields) {
-        Value val = evaluate(row, field);
+        Value val = evaluate(row, field, graph);
         projectedRow.values[field] = val;
     }
     
@@ -288,6 +321,8 @@ void MemoryProject::close() {
 }
 
 // --- MemoryLimit ---
+
+MemoryLimit::MemoryLimit(Graph& g, unique_ptr<PhysicalOperator> c, int l) : PhysicalOperator(g), child(std::move(c)), limit(l) {}
 
 void MemoryLimit::open() {
     child->open();
@@ -309,6 +344,8 @@ void MemoryLimit::close() {
 }
 
 // --- MemoryOffset ---
+
+MemoryOffset::MemoryOffset(Graph& g, unique_ptr<PhysicalOperator> c, int o) : PhysicalOperator(g), child(std::move(c)), offset(o) {}
 
 void MemoryOffset::open() {
     child->open();
@@ -332,6 +369,13 @@ void MemoryOffset::close() {
 
 // --- MemorySort ---
 
+MemorySort::MemorySort(Graph& g, unique_ptr<PhysicalOperator> c, vector<pair<string, bool>> items) 
+    : PhysicalOperator(g), child(move(c)) {
+    for (auto& item : items) {
+        sortItems.push_back({item.first, item.second});
+    }
+}
+
 void MemorySort::open() {
     child->open();
     sortedRows.clear();
@@ -346,8 +390,8 @@ void MemorySort::open() {
     // 2. Sort them
     sort(sortedRows.begin(), sortedRows.end(), [this](const Row& a, const Row& b) {
         for (const auto& item : sortItems) {
-            Value valA = evaluate(a, item.field);
-            Value valB = evaluate(b, item.field);
+            Value valA = evaluate(a, item.field, graph);
+            Value valB = evaluate(b, item.field, graph);
             
             // If they are equal, move to the next sort criteria
             if (valA == valB) continue;
@@ -383,6 +427,9 @@ struct GroupState {
 
 // --- MemoryAggregate ---
 
+MemoryAggregate::MemoryAggregate(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> grp, vector<string> m) 
+    : PhysicalOperator(g), child(move(c)), groupings(grp), measures(m) {}
+
 void MemoryAggregate::open() {
     child->open();
     aggregatedRows.clear();
@@ -398,7 +445,7 @@ void MemoryAggregate::open() {
         string groupKey = "";
         Row currentGroupRow;
         for (const string& g : groupings) {
-            Value v = evaluate(row, g);
+            Value v = evaluate(row, g, graph);
             groupKey += v.toString() + "|";
             currentGroupRow.values[g] = v;
         }
@@ -433,7 +480,7 @@ void MemoryAggregate::open() {
                     alias = m; // Default to full string if no alias
                 }
                 
-                Value val = (expr.empty() || expr == "*") ? Value(1) : evaluate(row, expr);
+                Value val = (expr.empty() || expr == "*") ? Value(1) : evaluate(row, expr, graph);
                 
                 if (func == "COUNT") {
                     if (state.accumulators.find(alias) == state.accumulators.end()) {
@@ -531,6 +578,9 @@ void MemoryAggregate::close() {
 
 // --- MemoryNestedLoopJoin ---
 
+MemoryNestedLoopJoin::MemoryNestedLoopJoin(Graph& g, unique_ptr<PhysicalOperator> l, unique_ptr<PhysicalOperator> r, string cond) 
+    : PhysicalOperator(g), left(move(l)), right(move(r)), condition(cond) {}
+
 void MemoryNestedLoopJoin::open() {
     left->open();
     leftFinished = false;
@@ -559,7 +609,7 @@ bool MemoryNestedLoopJoin::next(Row& row) {
                  return true;
             }
 
-            Value res = evaluate(combinedRow, condition);
+            Value res = evaluate(combinedRow, condition, graph);
             if (holds_alternative<bool>(res.data) && get<bool>(res.data)) {
                 row = combinedRow;
                 return true;
@@ -581,6 +631,9 @@ void MemoryNestedLoopJoin::close() {
 
 // --- MemoryDelete ---
 
+MemoryDelete::MemoryDelete(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> vars, bool d)
+    : PhysicalOperator(g), child(move(c)), variables(vars), detach(d) {}
+
 void MemoryDelete::open() {
     if (child) child->open();
     deletedCount = 0;
@@ -590,24 +643,37 @@ void MemoryDelete::open() {
 bool MemoryDelete::next(Row& row) {
     if (done) return false;
     
-    Row curr;
-    while (child && child->next(curr)) {
-        for (const string& var : variables) {
-            if (curr.values.find(var) != curr.values.end()) {
-                Value val = curr.values[var];
-                // Try deleting as Node ID if it's an int
-                if (holds_alternative<int>(val.data)) {
-                    int id = get<int>(val.data);
-                    if (graph.deleteNode(id) || graph.deleteEdge(id)) {
-                        deletedCount++;
+    if (!child || !child->next(row)) {
+        done = true;
+        return false;
+    }
+    
+    for (const string& var : variables) {
+        if (row.values.find(var) != row.values.end()) {
+            Value val = row.values[var];
+            if (holds_alternative<int>(val.data)) {
+                int id = get<int>(val.data);
+                
+                if (graph.nodes.count(id)) {
+                    if (detach) {
+                        vector<int> edgesToDelete;
+                        for (const auto& pair : graph.edges) {
+                            if (pair.second->sourceId == id || pair.second->targetId == id) {
+                                edgesToDelete.push_back(pair.first);
+                            }
+                        }
+                        for (int edgeId : edgesToDelete) {
+                            graph.deleteEdge(edgeId);
+                        }
                     }
+                    if (graph.deleteNode(id)) deletedCount++;
+                } else if (graph.edges.count(id)) {
+                    if (graph.deleteEdge(id)) deletedCount++;
                 }
             }
         }
     }
     
-    row.values["deleted"] = Value(deletedCount);
-    done = true;
     return true;
 }
 
@@ -616,6 +682,9 @@ void MemoryDelete::close() {
 }
 
 // --- MemoryInsert ---
+
+MemoryInsert::MemoryInsert(Graph& g, unique_ptr<PhysicalOperator> c, vector<PhysicalInsertNode> n, vector<PhysicalInsertEdge> e)
+    : PhysicalOperator(g), child(move(c)), insertNodes(n), insertEdges(e) {}
 
 void MemoryInsert::open() {
     if (child) child->open();
@@ -627,59 +696,69 @@ void MemoryInsert::open() {
 bool MemoryInsert::next(Row& row) {
     if (done) return false;
     
-    // Process child context if any (e.g., INSERT inside a MATCH)
-    Row contextRow;
-    bool hasContext = (child != nullptr);
-    bool hasNext = hasContext ? child->next(contextRow) : true;
-    
-    while (hasNext) {
-        unordered_map<string, int> createdVarIds;
-        
-        // Insert Nodes
-        for (const auto& n : insertNodes) {
-            unordered_map<string, Value> props;
-            for (auto& p : n.properties) {
-                // Simplify: Try to treat expressionString directly as a literal for now
-                string expr = p.expressionString;
-                if (!expr.empty() && expr.front() == '"' && expr.back() == '"') {
-                    props[p.key] = Value(expr.substr(1, expr.length() - 2));
-                } else {
-                    try { props[p.key] = Value(stoi(expr)); } 
-                    catch (...) { props[p.key] = Value(expr); }
-                }
-            }
-            auto node = graph.createNode(n.labels, props);
-            createdVarIds[n.variable] = node->id;
-            insertedNodesCount++;
-        }
-        
-        // Insert Edges
-        for (const auto& e : insertEdges) {
-            unordered_map<string, Value> props;
-            for (auto& p : e.properties) {
-                string expr = p.expressionString;
-                if (!expr.empty() && expr.front() == '"' && expr.back() == '"') {
-                    props[p.key] = Value(expr.substr(1, expr.length() - 2));
-                } else {
-                    try { props[p.key] = Value(stoi(expr)); } 
-                    catch (...) { props[p.key] = Value(expr); }
-                }
-            }
-            // Realistically, edges need source and target ids evaluated from variables.
-            // But for simple INSERTS matching the test queries, we'll hardcode dummy 0s
-            // if we don't know the exact bindings here natively inside PhysicalInsertEdge without more planner work.
-            int sourceId = 0, targetId = 0;
-            auto edge = graph.createEdge(sourceId, targetId, e.labels.empty() ? "" : e.labels[0], props);
-            insertedEdgesCount++;
-        }
-        
-        if (!hasContext) break;
-        hasNext = child->next(contextRow);
+    bool hasNext = false;
+    if (child) {
+        hasNext = child->next(row);
+    } else {
+        // Simple INSERT with no child (e.g. INSERT (n))
+        // We only do this once
+        hasNext = !done;
     }
     
-    row.values["nodes_inserted"] = Value(insertedNodesCount);
-    row.values["edges_inserted"] = Value(insertedEdgesCount);
-    done = true;
+    if (!hasNext) {
+        done = true;
+        return false;
+    }
+    
+    unordered_map<string, int> createdVarIds;
+    
+    // Insert Nodes
+    for (const auto& n : insertNodes) {
+        unordered_map<string, Value> props;
+        for (auto& p : n.properties) {
+            props[p.key] = evaluate(row, p.expressionString, graph);
+        }
+        auto node = graph.createNode(n.labels, props);
+        createdVarIds[n.variable] = node->id;
+        row.values[n.variable] = Value((int)node->id); // Feed newly created node into context
+        insertedNodesCount++;
+    }
+    
+    // Insert Edges
+    for (const auto& e : insertEdges) {
+        unordered_map<string, Value> props;
+        for (auto& p : e.properties) {
+            props[p.key] = evaluate(row, p.expressionString, graph);
+        }
+        
+        int sourceId = -1;
+        int targetId = -1;
+        
+        if (row.values.count(e.sourceVar) && holds_alternative<int>(row.values.at(e.sourceVar).data)) {
+            sourceId = get<int>(row.values.at(e.sourceVar).data);
+        } else if (createdVarIds.count(e.sourceVar)) {
+            sourceId = createdVarIds[e.sourceVar];
+        }
+        
+        if (row.values.count(e.targetVar) && holds_alternative<int>(row.values.at(e.targetVar).data)) {
+            targetId = get<int>(row.values.at(e.targetVar).data);
+        } else if (createdVarIds.count(e.targetVar)) {
+            targetId = createdVarIds[e.targetVar];
+        }
+        
+        if (sourceId != -1 && targetId != -1) {
+            auto edge = graph.createEdge(sourceId, targetId, e.labels.empty() ? "" : e.labels[0], props);
+            if (edge) {
+                createdVarIds[e.variable] = edge->id;
+                row.values[e.variable] = Value((int)edge->id);
+                insertedEdgesCount++;
+            }
+        } else {
+            cout << "[Warning] Could not resolve endpoints for inserting edge '" << e.variable << "'. Source=" << e.sourceVar << " (id:" << sourceId << "), Target=" << e.targetVar << " (id:" << targetId << ")\n";
+        }
+    }
+    
+    if (!child) done = true; // Simple INSERT finishes after one row
     return true;
 }
 
@@ -688,6 +767,9 @@ void MemoryInsert::close() {
 }
 
 // --- MemoryUpdate ---
+
+MemoryUpdate::MemoryUpdate(Graph& g, unique_ptr<PhysicalOperator> c, vector<PhysicalUpdateItem> i)
+    : PhysicalOperator(g), child(move(c)), items(i) {}
 
 void MemoryUpdate::open() {
     if (child) child->open();
@@ -698,51 +780,40 @@ void MemoryUpdate::open() {
 bool MemoryUpdate::next(Row& row) {
     if (done) return false;
     
-    Row curr;
-    while (child && child->next(curr)) {
-        for (const auto& item : items) {
-            if (curr.values.find(item.variable) != curr.values.end()) {
-                Value val = curr.values[item.variable];
-                if (holds_alternative<int>(val.data)) {
-                    int id = get<int>(val.data);
-                    
-                    if (graph.nodes.find(id) != graph.nodes.end()) {
-                        auto node = graph.nodes[id];
-                        if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
-                            // Evaluate value - cheating slightly for literals right now.
-                            string expr = item.expressionString;
-                            Value propVal;
-                            if (!expr.empty() && expr.front() == '"' && expr.back() == '"') {
-                                propVal = Value(expr.substr(1, expr.length() - 2));
-                            } else {
-                                try { propVal = Value(stoi(expr)); } 
-                                catch (...) { propVal = Value(expr); }
-                            }
-                            node->properties[item.key] = propVal;
-                            updatedCount++;
-                        }
-                    } else if (graph.edges.find(id) != graph.edges.end()) {
-                        auto edge = graph.edges[id];
-                        if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
-                            string expr = item.expressionString;
-                            Value propVal;
-                            if (!expr.empty() && expr.front() == '"' && expr.back() == '"') {
-                                propVal = Value(expr.substr(1, expr.length() - 2));
-                            } else {
-                                try { propVal = Value(stoi(expr)); } 
-                                catch (...) { propVal = Value(expr); }
-                            }
-                            edge->properties[item.key] = propVal;
-                            updatedCount++;
-                        }
+    if (!child || !child->next(row)) {
+        done = true;
+        return false;
+    }
+    
+    for (const auto& item : items) {
+        if (row.values.find(item.variable) != row.values.end()) {
+            Value val = row.values[item.variable];
+            if (holds_alternative<int>(val.data)) {
+                int id = get<int>(val.data);
+                
+                if (graph.nodes.find(id) != graph.nodes.end()) {
+                    auto node = graph.nodes[id];
+                    if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
+                        node->properties[item.key] = evaluate(row, item.expressionString, graph);
+                        updatedCount++;
+                    } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
+                        node->properties.erase(item.key);
+                        updatedCount++;
+                    }
+                } else if (graph.edges.find(id) != graph.edges.end()) {
+                    auto edge = graph.edges[id];
+                    if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
+                        edge->properties[item.key] = evaluate(row, item.expressionString, graph);
+                        updatedCount++;
+                    } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
+                        edge->properties.erase(item.key);
+                        updatedCount++;
                     }
                 }
             }
         }
     }
     
-    row.values["properties_set"] = Value(updatedCount);
-    done = true;
     return true;
 }
 

@@ -12,6 +12,8 @@ using namespace std;
 // Base Physical Operator
 class PhysicalOperator {
 public:
+    Graph& graph;
+    PhysicalOperator(Graph& g) : graph(g) {}
     virtual void open() = 0;
     virtual bool next(Row& row) = 0;
     virtual void close() = 0;
@@ -21,15 +23,13 @@ public:
 // Memory Full Scan
 class MemoryFullScan : public PhysicalOperator {
 private:
-    Graph& graph;
     unique_ptr<PhysicalOperator> child;
     string variable;
     vector<shared_ptr<Node>> nodes;
     size_t currentIndex = 0;
 
 public:
-    MemoryFullScan(Graph& g, unique_ptr<PhysicalOperator> c, string v) 
-        : graph(g), child(move(c)), variable(v) {}
+    MemoryFullScan(Graph& g, unique_ptr<PhysicalOperator> c, string v);
 
     void open() override;
     bool next(Row& row) override;
@@ -39,7 +39,6 @@ public:
 // Memory Index Scan
 class MemoryIndexScan : public PhysicalOperator {
 private:
-    Graph& graph;
     unique_ptr<PhysicalOperator> child;
     string label;
     string variable;
@@ -47,8 +46,7 @@ private:
     size_t currentIndex = 0;
 
 public:
-    MemoryIndexScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v) 
-        : graph(g), child(move(c)), label(l), variable(v) {}
+    MemoryIndexScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v);
 
     void open() override;
     bool next(Row& row) override;
@@ -58,7 +56,6 @@ public:
 // Memory Edge Scan
 class MemoryEdgeScan : public PhysicalOperator {
 private:
-    Graph& graph;
     unique_ptr<PhysicalOperator> child;
     string label;
     string variable;
@@ -66,8 +63,7 @@ private:
     size_t currentIndex = 0;
 
 public:
-    MemoryEdgeScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v) 
-        : graph(g), child(move(c)), label(l), variable(v) {}
+    MemoryEdgeScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v);
 
     void open() override;
     bool next(Row& row) override;
@@ -81,8 +77,7 @@ private:
     string condition; // "p.age > 30"
 
 public:
-    MemoryFilter(unique_ptr<PhysicalOperator> c, string cond) 
-        : child(move(c)), condition(cond) {}
+    MemoryFilter(Graph& g, unique_ptr<PhysicalOperator> c, string cond);
 
     void open() override;
     bool next(Row& row) override;
@@ -96,8 +91,7 @@ private:
     vector<string> fields; // "p.name", "p.age"
 
 public:
-    MemoryProject(unique_ptr<PhysicalOperator> c, vector<string> f) 
-        : child(move(c)), fields(f) {}
+    MemoryProject(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> f);
 
     void open() override;
     bool next(Row& row) override;
@@ -112,8 +106,7 @@ private:
     int count = 0;
 
 public:
-    MemoryLimit(unique_ptr<PhysicalOperator> c, int l) 
-        : child(move(c)), limit(l) {}
+    MemoryLimit(Graph& g, unique_ptr<PhysicalOperator> c, int l);
 
     void open() override;
     bool next(Row& row) override;
@@ -128,8 +121,7 @@ private:
     int count = 0;
 
 public:
-    MemoryOffset(unique_ptr<PhysicalOperator> c, int o) 
-        : child(move(c)), offset(o) {}
+    MemoryOffset(Graph& g, unique_ptr<PhysicalOperator> c, int o);
 
     void open() override;
     bool next(Row& row) override;
@@ -149,12 +141,7 @@ private:
     size_t currentIndex = 0;
 
 public:
-    MemorySort(unique_ptr<PhysicalOperator> c, vector<pair<string, bool>> items) 
-        : child(move(c)) {
-            for (auto& item : items) {
-                sortItems.push_back({item.first, item.second});
-            }
-        }
+    MemorySort(Graph& g, unique_ptr<PhysicalOperator> c, vector<pair<string, bool>> items);
 
     void open() override;
     bool next(Row& row) override;
@@ -173,8 +160,7 @@ private:
     size_t currentIndex = 0;
 
 public:
-    MemoryAggregate(unique_ptr<PhysicalOperator> c, vector<string> g, vector<string> m)
-        : child(move(c)), groupings(g), measures(m) {}
+    MemoryAggregate(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> g_list, vector<string> m);
 
     void open() override;
     bool next(Row& row) override;
@@ -192,8 +178,7 @@ private:
     bool rightOpen = false;
 
 public:
-    MemoryNestedLoopJoin(unique_ptr<PhysicalOperator> l, unique_ptr<PhysicalOperator> r, string cond) 
-        : left(move(l)), right(move(r)), condition(cond) {}
+    MemoryNestedLoopJoin(Graph& g, unique_ptr<PhysicalOperator> l, unique_ptr<PhysicalOperator> r, string cond);
 
     void open() override;
     bool next(Row& row) override;
@@ -203,7 +188,6 @@ public:
 // Memory Delete
 class MemoryDelete : public PhysicalOperator {
 private:
-    Graph& graph;
     unique_ptr<PhysicalOperator> child;
     vector<string> variables;
     bool detach;
@@ -211,8 +195,7 @@ private:
     bool done = false;
 
 public:
-    MemoryDelete(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> vars, bool d)
-        : graph(g), child(move(c)), variables(vars), detach(d) {}
+    MemoryDelete(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> vars, bool d);
 
     void open() override;
     bool next(Row& row) override;
@@ -222,7 +205,6 @@ public:
 // Memory Insert
 class MemoryInsert : public PhysicalOperator {
 private:
-    Graph& graph;
     unique_ptr<PhysicalOperator> child;
     vector<PhysicalInsertNode> insertNodes;
     vector<PhysicalInsertEdge> insertEdges;
@@ -231,8 +213,7 @@ private:
     bool done = false;
 
 public:
-    MemoryInsert(Graph& g, unique_ptr<PhysicalOperator> c, vector<PhysicalInsertNode> n, vector<PhysicalInsertEdge> e)
-        : graph(g), child(move(c)), insertNodes(n), insertEdges(e) {}
+    MemoryInsert(Graph& g, unique_ptr<PhysicalOperator> c, vector<PhysicalInsertNode> n, vector<PhysicalInsertEdge> e);
 
     void open() override;
     bool next(Row& row) override;
@@ -242,15 +223,13 @@ public:
 // Memory Update
 class MemoryUpdate : public PhysicalOperator {
 private:
-    Graph& graph;
     unique_ptr<PhysicalOperator> child;
     vector<PhysicalUpdateItem> items;
     int updatedCount = 0;
     bool done = false;
 
 public:
-    MemoryUpdate(Graph& g, unique_ptr<PhysicalOperator> c, vector<PhysicalUpdateItem> i)
-        : graph(g), child(move(c)), items(i) {}
+    MemoryUpdate(Graph& g, unique_ptr<PhysicalOperator> c, vector<PhysicalUpdateItem> i);
 
     void open() override;
     bool next(Row& row) override;

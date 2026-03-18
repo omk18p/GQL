@@ -35,28 +35,28 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
         case PhysicalOperatorType::MEM_FILTER: {
             auto filterNode = dynamic_cast<PhysicalFilter*>(plan);
             if (filterNode && childOp) {
-                return make_unique<MemoryFilter>(move(childOp), filterNode->conditionDescription);
+                return make_unique<MemoryFilter>(graph, move(childOp), filterNode->conditionDescription);
             }
             break;
         }
         case PhysicalOperatorType::MEM_PROJECT: {
             auto projectNode = dynamic_cast<PhysicalProject*>(plan);
             if (projectNode && childOp) {
-                return make_unique<MemoryProject>(move(childOp), projectNode->fields);
+                return make_unique<MemoryProject>(graph, move(childOp), projectNode->fields);
             }
             break;
         }
         case PhysicalOperatorType::MEM_LIMIT: {
             auto limitNode = dynamic_cast<PhysicalLimit*>(plan);
             if (limitNode && childOp) {
-                return make_unique<MemoryLimit>(move(childOp), limitNode->limit);
+                return make_unique<MemoryLimit>(graph, move(childOp), limitNode->limit);
             }
             break;
         }
         case PhysicalOperatorType::MEM_OFFSET: {
             auto offsetNode = dynamic_cast<PhysicalOffset*>(plan);
             if (offsetNode && childOp) {
-                return make_unique<MemoryOffset>(move(childOp), offsetNode->offset);
+                return make_unique<MemoryOffset>(graph, move(childOp), offsetNode->offset);
             }
             break;
         }
@@ -67,14 +67,14 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
                 for (const auto& item : sortNode->items) {
                     items.push_back({item.field, item.ascending});
                 }
-                return make_unique<MemorySort>(move(childOp), items);
+                return make_unique<MemorySort>(graph, move(childOp), items);
             }
             break;
         }
         case PhysicalOperatorType::MEM_AGGREGATE: {
             auto aggNode = dynamic_cast<PhysicalAggregate*>(plan);
             if (aggNode && childOp) {
-                return make_unique<MemoryAggregate>(move(childOp), aggNode->groupings, aggNode->measures);
+                return make_unique<MemoryAggregate>(graph, move(childOp), aggNode->groupings, aggNode->measures);
             }
             break;
         }
@@ -84,7 +84,7 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
                 auto left = build(plan->children[0].get());
                 auto right = build(plan->children[1].get());
                 if (left && right) {
-                    return make_unique<MemoryNestedLoopJoin>(move(left), move(right), joinNode->condition);
+                    return make_unique<MemoryNestedLoopJoin>(graph, move(left), move(right), joinNode->condition);
                 }
             }
             break;

@@ -126,9 +126,18 @@ void LogicalPlanBuilder::visitSetStatement(SetStatementNode* n) {
     }
     
     if (previousPlan) {
-        updateOp->children.push_back(move(previousPlan));
+        if (previousPlan->type == LogicalPlanNode::PROJECT) {
+            // Swap: UpdateOp should be child of Project
+            updateOp->children.push_back(move(previousPlan->children[0]));
+            previousPlan->children[0] = move(updateOp);
+            currentPlan = move(previousPlan);
+        } else {
+            updateOp->children.push_back(move(previousPlan));
+            currentPlan = move(updateOp);
+        }
+    } else {
+        currentPlan = move(updateOp);
     }
-    currentPlan = move(updateOp);
 }
 
 void LogicalPlanBuilder::visitRemoveStatement(RemoveStatementNode* n) {
@@ -148,9 +157,17 @@ void LogicalPlanBuilder::visitRemoveStatement(RemoveStatementNode* n) {
     }
     
     if (previousPlan) {
-        updateOp->children.push_back(move(previousPlan));
+        if (previousPlan->type == LogicalPlanNode::PROJECT) {
+            updateOp->children.push_back(move(previousPlan->children[0]));
+            previousPlan->children[0] = move(updateOp);
+            currentPlan = move(previousPlan);
+        } else {
+            updateOp->children.push_back(move(previousPlan));
+            currentPlan = move(updateOp);
+        }
+    } else {
+        currentPlan = move(updateOp);
     }
-    currentPlan = move(updateOp);
 }
 
 void LogicalPlanBuilder::visitDeleteStatement(DeleteStatementNode* n) {
@@ -167,9 +184,17 @@ void LogicalPlanBuilder::visitDeleteStatement(DeleteStatementNode* n) {
     }
     
     if (previousPlan) {
-        deleteOp->children.push_back(move(previousPlan));
+        if (previousPlan->type == LogicalPlanNode::PROJECT) {
+            deleteOp->children.push_back(move(previousPlan->children[0]));
+            previousPlan->children[0] = move(deleteOp);
+            currentPlan = move(previousPlan);
+        } else {
+            deleteOp->children.push_back(move(previousPlan));
+            currentPlan = move(deleteOp);
+        }
+    } else {
+        currentPlan = move(deleteOp);
     }
-    currentPlan = move(deleteOp);
 }
 
 void LogicalPlanBuilder::visitMatchStatement(MatchStatementNode* n) {
@@ -213,9 +238,17 @@ void LogicalPlanBuilder::visitMatchStatement(MatchStatementNode* n) {
             // Logic: if left is Node and right is Edge -> node.id = edge._source
             // if left is Edge and right is Node -> edge._target = node.id
             if (previousNode->type == LogicalPlanNode::NODE_SCAN && newScan->type == LogicalPlanNode::EDGE_SCAN) {
+                // Set the sourceVar on the new edge scan from the left node scan
+                auto rightEdgeScan = static_cast<EdgeScanNode*>(newScan.get());
+                rightEdgeScan->sourceVar = leftVar;
+                
                 binOp->left = make_unique<PropertyAccessNode>(leftVar, "id");
                 binOp->right = make_unique<PropertyAccessNode>(rightVar, "_source");
             } else if (previousNode->type == LogicalPlanNode::EDGE_SCAN && newScan->type == LogicalPlanNode::NODE_SCAN) {
+                // Set the targetVar on the previous edge scan from the right node scan
+                auto leftEdgeScan = static_cast<EdgeScanNode*>(previousNode);
+                leftEdgeScan->targetVar = rightVar;
+                
                 binOp->left = make_unique<PropertyAccessNode>(leftVar, "_target");
                 binOp->right = make_unique<PropertyAccessNode>(rightVar, "id");
             } else {
@@ -348,6 +381,8 @@ void LogicalPlanBuilder::visitEdgePattern(EdgePatternNode* n) {
     auto edgeScan = make_unique<EdgeScanNode>();
     
     edgeScan->variable = n->variable;
+    edgeScan->sourceVar = n->sourceVar;
+    edgeScan->targetVar = n->targetVar;
     edgeScan->direction = n->direction;
     
     // Extract label (first label for now)
@@ -367,7 +402,48 @@ void LogicalPlanBuilder::visitWhereClause(WhereClauseNode* n) {
 }
 
 void LogicalPlanBuilder::visitReturnStatement(ReturnStatementNode* n) {
-    // No-op: handled in visitMatchStatement
+    unique_ptr<LogicalPlanNode> previousPlan = move(currentPlan);
+    unique_ptr<LogicalPlanNode> plan;
+    
+    if (containsAggregations(n->expressions)) {
+        auto aggregate = make_unique<AggregateNode>();
+        for (auto& expr : n->expressions) {
+            if (expr->type == ASTNode::EXPRESSION) {
+                ExpressionNode* exprNode = static_cast<ExpressionNode*>(expr.get());
+                if (isAggregateExpression(exprNode)) {
+                    AggregateNode::AggregateItem aggItem;
+                    aggItem.functionName = exprNode->value;
+                    aggItem.distinct = (exprNode->operator_ == "DISTINCT");
+                    aggItem.alias = exprNode->alias;
+                    if (!exprNode->arguments.empty()) {
+                        aggItem.expression = buildExpression(exprNode->arguments[0].get());
+                    }
+                    aggregate->aggregateItems.push_back(move(aggItem));
+                } else {
+                    aggregate->groupingExpressions.push_back(buildExpression(exprNode));
+                    aggregate->groupingAliases.push_back(exprNode->alias.empty() ? exprNode->value : exprNode->alias);
+                }
+            }
+        }
+        if (previousPlan) aggregate->children.push_back(move(previousPlan));
+        plan = move(aggregate);
+    } else {
+        auto project = make_unique<ProjectNode>();
+        for (auto& expr : n->expressions) {
+            if (expr->type == ASTNode::EXPRESSION) {
+                ExpressionNode* exprNode = static_cast<ExpressionNode*>(expr.get());
+                string field = exprNode->value;
+                size_t dotPos = field.find('.');
+                if (dotPos != string::npos) field = field.substr(dotPos + 1);
+                project->fields.push_back(field);
+                project->expressions.push_back(buildExpression(exprNode));
+            }
+        }
+        if (previousPlan) project->children.push_back(move(previousPlan));
+        plan = move(project);
+    }
+    
+    currentPlan = move(plan);
 }
 
 void LogicalPlanBuilder::visitExpression(ExpressionNode* n) {
