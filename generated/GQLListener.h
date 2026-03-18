@@ -1,5 +1,5 @@
 
-// Generated from GQL.g4 by ANTLR 4.13.1
+// Generated from grammar/GQL.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -649,6 +649,9 @@ public:
 
   virtual void enterBindingTableExprAlt(GQLParser::BindingTableExprAltContext *ctx) = 0;
   virtual void exitBindingTableExprAlt(GQLParser::BindingTableExprAltContext *ctx) = 0;
+
+  virtual void enterInExprAlt(GQLParser::InExprAltContext *ctx) = 0;
+  virtual void exitInExprAlt(GQLParser::InExprAltContext *ctx) = 0;
 
   virtual void enterSignedExprAlt(GQLParser::SignedExprAltContext *ctx) = 0;
   virtual void exitSignedExprAlt(GQLParser::SignedExprAltContext *ctx) = 0;

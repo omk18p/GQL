@@ -1,5 +1,5 @@
 
-// Generated from grammar/GQL.g4 by ANTLR 4.13.1
+// Generated from grammar/GQL.g4 by ANTLR 4.13.2
 
 
 #include "GQLLexer.h"
@@ -45,7 +45,7 @@ struct GQLLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-GQLLexerStaticData *gqllexerLexerStaticData = nullptr;
+std::unique_ptr<GQLLexerStaticData> gqllexerLexerStaticData = nullptr;
 
 void gqllexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -1832,7 +1832,7 @@ void gqllexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  gqllexerLexerStaticData = staticData.release();
+  gqllexerLexerStaticData = std::move(staticData);
 }
 
 }

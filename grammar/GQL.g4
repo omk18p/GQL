@@ -55,7 +55,7 @@ options { caseInsensitive = true; }
 // ===============================================================
 
 gqlProgram
-    : programActivity (SEMICOLON? programActivity)* EOF
+    : (programActivity | SEMICOLON)* EOF
     ;
 
 programActivity
