@@ -213,11 +213,37 @@ public:
 };
 
 // --- Modification ---
+
+// Structs to mirror AST but independent of AST Nodes to decouple dependencies
+struct PhysicalProperty {
+    string key;
+    string expressionString; // E.g., "\"Dan\"" or "50" from ASTNode
+};
+
+struct PhysicalInsertNode {
+    string variable;
+    vector<string> labels;
+    vector<PhysicalProperty> properties;
+};
+
+struct PhysicalInsertEdge {
+    string variable;
+    string direction; // "->", "<-"
+    vector<string> labels;
+    vector<PhysicalProperty> properties;
+};
+
 class PhysicalInsert : public PhysicalPlanNode {
 public:
-    string details;
-    PhysicalInsert(string d) : PhysicalPlanNode(PhysicalOperatorType::MEM_INSERT), details(d) {}
-    string toString() const override { return "MemInsert(" + details + ")"; }
+    vector<PhysicalInsertNode> insertNodes;
+    vector<PhysicalInsertEdge> insertEdges;
+
+    PhysicalInsert() : PhysicalPlanNode(PhysicalOperatorType::MEM_INSERT) {}
+    
+    string toString() const override { 
+        string s = "MemInsert(Nodes: " + to_string(insertNodes.size()) + ", Edges: " + to_string(insertEdges.size()) + ")"; 
+        return s;
+    }
 };
 
 class PhysicalDelete : public PhysicalPlanNode {
@@ -229,17 +255,31 @@ public:
     string toString() const override { 
         string s = "MemDelete(vars: [";
         for(auto& v : variables) s += v + " ";
-        s += "], detach: " + to_string(detach) + ")";
+        s += "], detach: " + (detach ? string("true") : string("false")) + ")";
         return s;
     }
 };
 
+struct PhysicalUpdateItem {
+    enum Type { SET_PROPERTY, SET_LABEL, REMOVE_PROPERTY, REMOVE_LABEL };
+    Type type;
+    string variable;
+    string key; // Property name or Label name
+    string expressionString;
+};
+
 class PhysicalUpdate : public PhysicalPlanNode {
 public: 
-    string updateOps;
-    PhysicalUpdate(string ops) 
-        : PhysicalPlanNode(PhysicalOperatorType::MEM_UPDATE), updateOps(ops) {}
-    string toString() const override { return "MemUpdate(" + updateOps + ")"; }
+    vector<PhysicalUpdateItem> items;
+    
+    PhysicalUpdate() : PhysicalPlanNode(PhysicalOperatorType::MEM_UPDATE) {}
+    string toString() const override { 
+        string s = "MemUpdate(Items: " + to_string(items.size()) + ")"; 
+        for (auto& i : items) {
+            s += "\n    - " + i.variable + "." + i.key + " = " + i.expressionString;
+        }
+        return s; 
+    }
 };
 
 class PhysicalUnion : public PhysicalPlanNode {

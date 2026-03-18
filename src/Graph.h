@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <algorithm>
 #include "Value.h"
 
 using namespace std;
@@ -102,5 +103,52 @@ public:
             result.push_back(pair.second);
         }
         return result;
+    }
+    // updates
+    bool deleteNode(int id) {
+        if (nodes.find(id) == nodes.end()) return false;
+        
+        // Remove from label index
+        auto node = nodes[id];
+        for (const auto& label : node->labels) {
+            auto& vec = labelIndex[label];
+            vec.erase(remove(vec.begin(), vec.end(), id), vec.end());
+            if (vec.empty()) labelIndex.erase(label);
+        }
+        
+        // Find all connected edges
+        vector<int> edgesToDelete;
+        for (const auto& pair : edges) {
+            if (pair.second->sourceId == id || pair.second->targetId == id) {
+                edgesToDelete.push_back(pair.first);
+            }
+        }
+        
+        // Delete connected edges
+        for (int edgeId : edgesToDelete) {
+            deleteEdge(edgeId);
+        }
+        
+        nodes.erase(id);
+        return true;
+    }
+
+    bool deleteEdge(int id) {
+        if (edges.find(id) == edges.end()) return false;
+        
+        auto edge = edges[id];
+        
+        // Remove from label index
+        auto& vec = edgeLabelIndex[edge->label];
+        vec.erase(remove(vec.begin(), vec.end(), id), vec.end());
+        if (vec.empty()) edgeLabelIndex.erase(edge->label);
+        
+        // Remove from outEdges index
+        auto& outVec = outEdges[edge->sourceId];
+        outVec.erase(remove(outVec.begin(), outVec.end(), id), outVec.end());
+        if (outVec.empty()) outEdges.erase(edge->sourceId);
+        
+        edges.erase(id);
+        return true;
     }
 };

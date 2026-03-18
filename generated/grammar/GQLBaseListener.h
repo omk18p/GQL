@@ -652,6 +652,9 @@ public:
   virtual void enterBindingTableExprAlt(GQLParser::BindingTableExprAltContext * /*ctx*/) override { }
   virtual void exitBindingTableExprAlt(GQLParser::BindingTableExprAltContext * /*ctx*/) override { }
 
+  virtual void enterInExprAlt(GQLParser::InExprAltContext * /*ctx*/) override { }
+  virtual void exitInExprAlt(GQLParser::InExprAltContext * /*ctx*/) override { }
+
   virtual void enterSignedExprAlt(GQLParser::SignedExprAltContext * /*ctx*/) override { }
   virtual void exitSignedExprAlt(GQLParser::SignedExprAltContext * /*ctx*/) override { }
 

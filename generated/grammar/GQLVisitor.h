@@ -443,6 +443,8 @@ public:
 
     virtual std::any visitBindingTableExprAlt(GQLParser::BindingTableExprAltContext *context) = 0;
 
+    virtual std::any visitInExprAlt(GQLParser::InExprAltContext *context) = 0;
+
     virtual std::any visitSignedExprAlt(GQLParser::SignedExprAltContext *context) = 0;
 
     virtual std::any visitIsNotExprAlt(GQLParser::IsNotExprAltContext *context) = 0;

@@ -57,7 +57,7 @@ public:
     void visitLetStatement(LetStatementNode* n) override {}
     void visitForStatement(ForStatementNode* n) override {}
     void visitFilterStatement(FilterStatementNode* n) override {}
-    void visitOrderByStatement(OrderByStatementNode* n) override {}
+    void visitOrderByStatement(OrderByStatementNode* n) override;
     void visitInsertStatement(InsertStatementNode* n) override;
     void visitSetStatement(SetStatementNode* n) override;
     void visitRemoveStatement(RemoveStatementNode* n) override;

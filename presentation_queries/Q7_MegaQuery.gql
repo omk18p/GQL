@@ -1,0 +1,17 @@
+INSERT (p:Person {name: "John", age: 30, salary: 100})
+INSERT (p:Person {name: "Alice", age: 25, salary: 200})
+INSERT (p:Person {name: "Bob", age: 40, salary: 150})
+INSERT (p:Person {name: "Charlie", age: 35, salary: 120})
+INSERT (p:Person {name: "David", age: 10, salary: 0})
+
+MATCH (p:Person) WHERE p.age > 20
+SET p.adult = 1
+
+MATCH (p:Person) WHERE p.age < 18
+DELETE p
+
+MATCH (p:Person)
+RETURN p.adult, COUNT(p.name) AS EmpCount, SUM(p.salary) AS TotalSalary, AVG(p.age) AS AvgAge, MAX(p.salary) AS MaxSal, MIN(p.salary) AS MinSal
+ORDER BY AvgAge DESC
+LIMIT 10
+OFFSET 0

@@ -26,13 +26,63 @@ struct Value {
         if (auto pval = get_if<bool>(&data)) return *pval ? "true" : "false";
         return "NULL";
     }
+
+    double toDouble() const {
+        if (auto pval = get_if<int>(&data)) return (double)*pval;
+        if (auto pval = get_if<double>(&data)) return *pval;
+        if (auto pval = get_if<string>(&data)) {
+            try { return stod(*pval); } catch(...) { return 0.0; }
+        }
+        return 0.0;
+    }
+
+    bool toBool() const {
+        if (auto pval = get_if<bool>(&data)) return *pval;
+        if (auto pval = get_if<int>(&data)) return *pval != 0;
+        if (auto pval = get_if<string>(&data)) return *pval == "true" || *pval == "TRUE";
+        return false;
+    }
     
     // Comparison helpers
     bool operator>(const Value& other) const {
          if (holds_alternative<int>(data) && holds_alternative<int>(other.data)) {
              return get<int>(data) > get<int>(other.data);
          }
-         // Add other type comparisons as needed for the simple demo
+         if (holds_alternative<double>(data) && holds_alternative<double>(other.data)) {
+             return get<double>(data) > get<double>(other.data);
+         }
+         if (holds_alternative<string>(data) && holds_alternative<string>(other.data)) {
+             return get<string>(data) > get<string>(other.data);
+         }
+         return false; 
+    }
+
+    bool operator<(const Value& other) const {
+         if (holds_alternative<int>(data) && holds_alternative<int>(other.data)) {
+             return get<int>(data) < get<int>(other.data);
+         }
+         if (holds_alternative<double>(data) && holds_alternative<double>(other.data)) {
+             return get<double>(data) < get<double>(other.data);
+         }
+         if (holds_alternative<string>(data) && holds_alternative<string>(other.data)) {
+             return get<string>(data) < get<string>(other.data);
+         }
+         return false; 
+    }
+
+    bool operator==(const Value& other) const {
+         if (holds_alternative<int>(data) && holds_alternative<int>(other.data)) {
+             return get<int>(data) == get<int>(other.data);
+         }
+         if (holds_alternative<double>(data) && holds_alternative<double>(other.data)) {
+             return get<double>(data) == get<double>(other.data);
+         }
+         if (holds_alternative<string>(data) && holds_alternative<string>(other.data)) {
+             return get<string>(data) == get<string>(other.data);
+         }
+         if (holds_alternative<bool>(data) && holds_alternative<bool>(other.data)) {
+             return get<bool>(data) == get<bool>(other.data);
+         }
          return false; 
     }
 };

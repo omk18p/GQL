@@ -1271,6 +1271,7 @@ valueExpression
     | PROPERTY? GRAPH graphExpression                                       #propertyGraphExprAlt
     | BINDING? TABLE bindingTableExpression                                 #bindingTableExprAlt
     | valueFunction                                                         #valueFunctionExprAlt
+    | valueExpression IN LEFT_PAREN valueExpression (COMMA valueExpression)* RIGHT_PAREN   #inExprAlt
     | valueExpressionPrimary                                                #primaryExprAlt
     ;
 

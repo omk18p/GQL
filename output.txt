@@ -1,0 +1,119 @@
+
+==================== PARSE TREE ====================
+└── gqlProgram
+    ├── programActivity
+    │   └── transactionActivity
+    │       └── procedureBody
+    │           └── statementBlock
+    │               └── statement
+    │                   └── linearDataModifyingStatement
+    │                       └── ambientLinearDataModifyingStatement
+    │                           ├── simpleDataAccessingStatement
+    │                           │   └── simpleQueryStatement
+    │                           │       └── primitiveQueryStatement
+    │                           │           └── matchStatement
+    │                           │               ├── 'MATCH'
+    │                           │               └── graphPatternBindingTable
+    │                           │                   └── graphPattern
+    │                           │                       ├── pathPattern
+    │                           │                       │   └── pathPatternExpression
+    │                           │                       │       └── pathTerm
+    │                           │                       │           └── pathFactor
+    │                           │                       │               └── pathPrimary
+    │                           │                       │                   └── elementPattern
+    │                           │                       │                       ├── '('
+    │                           │                       │                       ├── elementPatternFiller
+    │                           │                       │                       │   ├── elementVariableDeclaration
+    │                           │                       │                       │   │   └── elementVariable
+    │                           │                       │                       │   │       └── bindingVariable
+    │                           │                       │                       │   │           └── regularIdentifier
+    │                           │                       │                       │   │               └── 'p'
+    │                           │                       │                       │   └── isLabelExpression
+    │                           │                       │                       │       ├── isOrColon
+    │                           │                       │                       │       │   └── ':'
+    │                           │                       │                       │       └── labelExpression
+    │                           │                       │                       │           └── labelName
+    │                           │                       │                       │               └── identifier
+    │                           │                       │                       │                   └── regularIdentifier
+    │                           │                       │                       │                       └── 'Person'
+    │                           │                       │                       └── ')'
+    │                           │                       ├── 'WHERE'
+    │                           │                       └── searchCondition
+    │                           │                           └── booleanValueExpression
+    │                           │                               └── valueExpression
+    │                           │                                   ├── valueExpression
+    │                           │                                   │   └── valueExpressionPrimary
+    │                           │                                   │       ├── valueExpressionPrimary
+    │                           │                                   │       │   └── bindingVariableReference
+    │                           │                                   │       │       └── bindingVariable
+    │                           │                                   │       │           └── regularIdentifier
+    │                           │                                   │       │               └── 'p'
+    │                           │                                   │       ├── '.'
+    │                           │                                   │       └── propertyName
+    │                           │                                   │           └── identifier
+    │                           │                                   │               └── regularIdentifier
+    │                           │                                   │                   └── 'age'
+    │                           │                                   ├── compOp
+    │                           │                                   │   └── '>'
+    │                           │                                   └── valueExpression
+    │                           │                                       └── valueExpressionPrimary
+    │                           │                                           └── unsignedValueSpecification
+    │                           │                                               └── unsignedLiteral
+    │                           │                                                   └── unsignedNumericLiteral
+    │                           │                                                       └── exactNumericLiteral
+    │                           │                                                           └── unsignedInteger
+    │                           │                                                               └── '30'
+    │                           └── primitiveResultStatement
+    │                               ├── 'RETURN'
+    │                               └── returnItem
+    │                                   └── aggregatingValueExpression
+    │                                       └── valueExpression
+    │                                           └── valueExpressionPrimary
+    │                                               ├── valueExpressionPrimary
+    │                                               │   └── bindingVariableReference
+    │                                               │       └── bindingVariable
+    │                                               │           └── regularIdentifier
+    │                                               │               └── 'p'
+    │                                               ├── '.'
+    │                                               └── propertyName
+    │                                                   └── identifier
+    │                                                       └── regularIdentifier
+    │                                                           └── 'name'
+    └── 'EOF'
+
+
+==================== AST ====================
+Query
+  MatchStatement
+    NodePattern: p:Person
+    WhereClause
+      Expression: BINARY_OP [>]
+        Expression: PROPERTY_ACCESS
+          Object:
+            Expression: VARIABLE (p)
+        Property: age
+        Expression: LITERAL (30) <INTEGER>
+    ReturnStatement
+      Expression: PROPERTY_ACCESS
+        Object:
+          Expression: VARIABLE (p)
+      Property: name
+
+==================== LOGICAL PLAN ====================
+Project([])
+  EXPRESSIONS:
+    PropertyAccess(p.name)
+  Filter
+    BinaryExpression(>)
+      PropertyAccess(p.age)
+      Literal(30 : INTEGER)
+    NodeScan(Person, var=p)
+
+==================== PHYSICAL PLAN ====================
+MemProject([p.name])
+  MemFilter(condition: (p.age > 30))
+    MemIndexScan(label: Person, variable: p)
+
+==================== EXECUTION RESULTS ====================
+Row 1: { p.name: Bob, }
+Row 2: { p.name: Charlie, }

@@ -246,7 +246,11 @@ antlrcpp::Any ASTBuilder::visitPrimitiveQueryStatement(GQLParser::PrimitiveQuery
         if (ctx->valueExpression()) {
             auto exprNode = std::make_unique<ExpressionNode>();
             exprNode->type = "COLLECTION";
-            exprNode->value = ctx->valueExpression()->getText();
+            // exprNode->value = ctx->valueExpression()->getText();
+            auto start = ctx->valueExpression()->start->getStartIndex();
+            auto stop = ctx->valueExpression()->stop->getStopIndex();
+            auto input = ctx->valueExpression()->start->getInputStream();
+            exprNode->value = input->getText(antlr4::misc::Interval(start, stop));
             forNode->collectionExpression = std::move(exprNode);
         }
         if (ctx->WITH()) {
@@ -272,7 +276,11 @@ antlrcpp::Any ASTBuilder::visitPrimitiveQueryStatement(GQLParser::PrimitiveQuery
         } else if (ctx->searchCondition()) {
             auto exprNode = std::make_unique<ExpressionNode>();
             exprNode->type = "CONDITION";
-            exprNode->value = ctx->searchCondition()->getText();
+            // exprNode->value = ctx->searchCondition()->getText();
+            auto start = ctx->searchCondition()->start->getStartIndex();
+            auto stop = ctx->searchCondition()->stop->getStopIndex();
+            auto input = ctx->searchCondition()->start->getInputStream();
+            exprNode->value = input->getText(antlr4::misc::Interval(start, stop));
             filterNode->condition = std::move(exprNode);
         }
         root->children.push_back(std::move(filterNode));
@@ -331,16 +339,11 @@ antlrcpp::Any ASTBuilder::visitGraphPattern(GQLParser::GraphPatternContext* ctx)
         auto whereNode = std::make_unique<WhereClauseNode>();
         
         // Build expression tree from searchCondition
-        if (ctx->searchCondition()->booleanValueExpression()) {
-            auto expr = buildExpressionFromContext(ctx->searchCondition()->booleanValueExpression());
-            if (expr) {
-                whereNode->condition = std::move(expr);
-            } else {
-                // Fallback to raw text
-                auto exprNode = std::make_unique<ExpressionNode>();
-                exprNode->type = "CONDITION";
-                exprNode->value = ctx->searchCondition()->getText();
-                whereNode->condition = std::move(exprNode);
+        if (ctx->searchCondition()) {
+            visit(ctx->searchCondition());
+            if (!root->children.empty() && root->children.back()->type == ASTNode::EXPRESSION) {
+                whereNode->condition = std::unique_ptr<ExpressionNode>(static_cast<ExpressionNode*>(root->children.back().release()));
+                root->children.pop_back();
             }
         }
         
@@ -710,6 +713,11 @@ antlrcpp::Any ASTBuilder::visitReturnItem(GQLParser::ReturnItemContext* ctx) {
             auto exprNode = std::unique_ptr<ExpressionNode>(static_cast<ExpressionNode*>(root->children.back().release()));
             root->children.pop_back();
             
+            // Extract AS alias
+            if (ctx->identifier()) {
+                exprNode->alias = ctx->identifier()->getText();
+            }
+            
             // Attach to current return node if available
             if (currentReturnNode) {
                 currentReturnNode->expressions.push_back(std::move(exprNode));
@@ -736,7 +744,13 @@ antlrcpp::Any ASTBuilder::visitWhereClause(GQLParser::WhereClauseContext* ctx) {
             // Fallback: use text if tree building failed
             auto exprNode = std::make_unique<ExpressionNode>();
             exprNode->type = "CONDITION";
-            exprNode->value = ctx->searchCondition()->getText();
+            
+            // Get original text with spaces
+            auto start = ctx->searchCondition()->start->getStartIndex();
+            auto stop = ctx->searchCondition()->stop->getStopIndex();
+            auto input = ctx->searchCondition()->start->getInputStream();
+            exprNode->value = input->getText(antlr4::misc::Interval(start, stop));
+            
             whereNode->condition = std::move(exprNode);
         }
     }
@@ -770,7 +784,11 @@ antlrcpp::Any ASTBuilder::visitLabelExpressionNegation(GQLParser::LabelExpressio
     if (ctx->labelExpression()) {
         visit(ctx->labelExpression());
         // Return the negated expression (for now as text, could be structured)
-        std::string expr = ctx->labelExpression()->getText();
+        // std::string expr = ctx->labelExpression()->getText();
+        auto start = ctx->labelExpression()->start->getStartIndex();
+        auto stop = ctx->labelExpression()->stop->getStopIndex();
+        auto input = ctx->labelExpression()->start->getInputStream();
+        std::string expr = input->getText(antlr4::misc::Interval(start, stop));
         return "!" + expr;
     }
     return std::string("!");
@@ -1767,57 +1785,24 @@ antlrcpp::Any ASTBuilder::visitUseGraphClause(GQLParser::UseGraphClauseContext* 
 
 // Phase 8: Expression parsing visitors
 antlrcpp::Any ASTBuilder::visitSearchCondition(GQLParser::SearchConditionContext* ctx) {
-    // searchCondition is a booleanValueExpression
-    if (ctx->booleanValueExpression()) {
-        // Manually build the expression tree by examining the parse tree structure
-        auto expr = buildExpressionFromContext(ctx->booleanValueExpression());
-        if (expr) {
-            root->children.push_back(std::move(expr));
-        }
+    if (ctx) {
+        auto start = ctx->start->getStartIndex();
+        auto stop = ctx->stop->getStopIndex();
+        auto input = ctx->start->getInputStream();
+        std::string text = input->getText(antlr4::misc::Interval(start, stop));
+        
+        // std::cout << "DEBUG SearchCondition Text: [" << text << "]" << std::endl;
+        
+        auto exprNode = std::make_unique<ExpressionNode>();
+        exprNode->type = "CONDITION";
+        exprNode->value = text;
+        root->children.push_back(std::move(exprNode));
     }
     return nullptr;
 }
 
-// Helper method to build expression tree from booleanValueExpression context
-std::unique_ptr<ExpressionNode> ASTBuilder::buildExpressionFromContext(GQLParser::BooleanValueExpressionContext* ctx) {
-    if (!ctx) return nullptr;
-    
-    // Get the text to check for operators
-    std::string text = ctx->getText();
-    
-    // Check if it contains AND
-    if (text.find("AND") != std::string::npos && ctx->valueExpression()) {
-        auto exprNode = std::make_unique<ExpressionNode>();
-        exprNode->type = "BINARY_OP";
-        exprNode->operator_ = "AND";
-        
-        // Try to split by AND
-        // This is a simplified approach - we'll parse the valueExpression children
-        auto valueExpr = ctx->valueExpression();
-        if (valueExpr) {
-            // Visit children to build sub-expressions
-            auto children = valueExpr->children;
-            if (children.size() >= 3) { // left AND right
-                // Build left expression
-                if (auto leftCtx = dynamic_cast<antlr4::ParserRuleContext*>(children[0])) {
-                    exprNode->left = buildExpressionFromValueExpression(leftCtx);
-                }
-                // Build right expression  
-                if (auto rightCtx = dynamic_cast<antlr4::ParserRuleContext*>(children[2])) {
-                    exprNode->right = buildExpressionFromValueExpression(rightCtx);
-                }
-            }
-        }
-        return exprNode;
-    }
-    
-    // Otherwise, it's a simple comparison or value
-    if (ctx->valueExpression()) {
-        return buildExpressionFromValueExpression(ctx->valueExpression());
-    }
-    
-    return nullptr;
-}
+// End of expressions section
+                       
 
 // Helper to build expression from valueExpression
 std::unique_ptr<ExpressionNode> ASTBuilder::buildExpressionFromValueExpression(antlr4::ParserRuleContext* ctx) {
@@ -1832,6 +1817,20 @@ std::unique_ptr<ExpressionNode> ASTBuilder::buildExpressionFromValueExpression(a
         exprNode->operator_ = ">";
         
         // Split by >
+        auto children = ctx->children;
+        if (children.size() >= 3) {
+            if (auto leftCtx = dynamic_cast<antlr4::ParserRuleContext*>(children[0])) {
+                exprNode->left = buildExpressionFromPrimary(leftCtx);
+            }
+            if (auto rightCtx = dynamic_cast<antlr4::ParserRuleContext*>(children[2])) {
+                exprNode->right = buildExpressionFromPrimary(rightCtx);
+            }
+        }
+        return exprNode;
+    } else if (text.find("<") != std::string::npos && text.find("<=") == std::string::npos) {
+        exprNode->type = "BINARY_OP";
+        exprNode->operator_ = "<";
+        
         auto children = ctx->children;
         if (children.size() >= 3) {
             if (auto leftCtx = dynamic_cast<antlr4::ParserRuleContext*>(children[0])) {

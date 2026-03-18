@@ -136,41 +136,48 @@ int main(int argc, const char* argv[]) {
                 // ✅ EXECUTION ENGINE
                 cout << "\n==================== EXECUTION RESULTS ====================\n";
                 
-                // 1. Init Graph with Sample Data
+                // 1. Init Graph
                 Graph graph;
                 
-                // --- Sample Data for MATCH Demo ---
+                // --- eCommerce Dataset ---
                 
-                // People in different cities
-                graph.createNode({"Person"}, {
-                    {"name", Value("Alice")},
-                    {"age", Value(25)},
-                    {"city", Value("London")}
-                });
-                
-                graph.createNode({"Person"}, {
-                    {"name", Value("Bob")},
-                    {"age", Value(35)},
-                    {"city", Value("New York")}
-                });
-                
-                graph.createNode({"Person"}, {
-                    {"name", Value("Charlie")},
-                    {"age", Value(40)},
-                    {"city", Value("London")}
-                });
+                // Categories
+                auto cat1 = graph.createNode({"Categories"}, {{"category_id", Value(1)}, {"category_name", Value("Electronics")}});
+                auto cat2 = graph.createNode({"Categories"}, {{"category_id", Value(2)}, {"category_name", Value("Appliances")}});
+                auto cat3 = graph.createNode({"Categories"}, {{"category_id", Value(3)}, {"category_name", Value("Books")}});
 
-                graph.createNode({"Person"}, {
-                    {"name", Value("David")},
-                    {"age", Value(30)},
-                    {"city", Value("Paris")}
-                });
+                // Categories
+                auto c1 = graph.createNode({"Categories"}, {{"category_id", Value(1)}, {"category_name", Value("Electronics")}});
+                auto c2 = graph.createNode({"Categories"}, {{"category_id", Value(2)}, {"category_name", Value("Appliances")}});
+                auto c3 = graph.createNode({"Categories"}, {{"category_id", Value(3)}, {"category_name", Value("Books")}});
 
-                // A different label to test label filtering
-                graph.createNode({"City"}, {
-                    {"name", Value("London")},
-                    {"population", Value(9000000)}
-                });
+                // Products
+                auto pr1 = graph.createNode({"Products"}, {{"product_id", Value(1)}, {"category_id", Value(1)}, {"name", Value("Smartphone")}, {"price", Value(500)}});
+                auto pr2 = graph.createNode({"Products"}, {{"product_id", Value(2)}, {"category_id", Value(1)}, {"name", Value("Laptop")}, {"price", Value(1200)}});
+                auto pr3 = graph.createNode({"Products"}, {{"product_id", Value(3)}, {"category_id", Value(2)}, {"name", Value("Microwave")}, {"price", Value(150)}});
+                auto pr4 = graph.createNode({"Products"}, {{"product_id", Value(4)}, {"category_id", Value(3)}, {"name", Value("Novel")}, {"price", Value(20)}});
+
+                // Users
+                auto u1 = graph.createNode({"Users"}, {{"user_id", Value(101)}, {"name", Value("Vaibhav")}, {"country", Value("India")}});
+                auto u2 = graph.createNode({"Users"}, {{"user_id", Value(102)}, {"name", Value("John")}, {"country", Value("USA")}});
+                auto u3 = graph.createNode({"Users"}, {{"user_id", Value(103)}, {"name", Value("Max")}, {"country", Value("Germany")}});
+                auto u4 = graph.createNode({"Users"}, {{"user_id", Value(104)}, {"name", Value("Yuki")}, {"country", Value("Japan")}});
+
+                // Orders
+                // Vaibhav (India): 6 orders, all DELIVERED, high value
+                auto o1 = graph.createNode({"Orders"}, {{"order_id", Value(1001)}, {"user_id", Value(101)}, {"product_id", Value(2)}, {"amount", Value(1200)}, {"order_date", Value("2023-05-01")}, {"status", Value("DELIVERED")}});
+                auto o2 = graph.createNode({"Orders"}, {{"order_id", Value(1002)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-01-10")}, {"status", Value("DELIVERED")}});
+                auto o3 = graph.createNode({"Orders"}, {{"order_id", Value(1003)}, {"user_id", Value(101)}, {"product_id", Value(3)}, {"amount", Value(150)}, {"order_date", Value("2023-02-15")}, {"status", Value("DELIVERED")}});
+                auto o4 = graph.createNode({"Orders"}, {{"order_id", Value(1004)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-03-20")}, {"status", Value("DELIVERED")}});
+                auto o5 = graph.createNode({"Orders"}, {{"order_id", Value(1005)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-04-25")}, {"status", Value("DELIVERED")}});
+                auto o6 = graph.createNode({"Orders"}, {{"order_id", Value(1006)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-05-30")}, {"status", Value("DELIVERED")}});
+
+                // Edges (Optional for this specific query as it joins on properties, but good for completeness)
+                if (u1 && o1) graph.createEdge(u1->id, o1->id, "PLACED", {});
+                if (o1 && pr2) graph.createEdge(o1->id, pr2->id, "CONTAINS", {});
+                if (pr2 && c1) graph.createEdge(pr2->id, c1->id, "BELONGS_TO", {});
+                // ... (rest would be similar)
+
 
                 // 2. Build Execution Tree
                 // ExecutionBuilder execBuilder(graph);
@@ -186,10 +193,13 @@ int main(int argc, const char* argv[]) {
                     while (rootOp->next(row)) {
                         rowCount++;
                         cout << "Row " << rowCount << ": { ";
+                        bool first = true;
                         for (const auto& pair : row.values) {
-                            cout << pair.first << ": " << pair.second.toString() << ", ";
+                            if (!first) cout << ", ";
+                            cout << pair.first << ": " << pair.second.toString();
+                            first = false;
                         }
-                        cout << "}" << endl;
+                        cout << " }" << endl;
                     }
                     
                     rootOp->close();

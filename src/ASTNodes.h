@@ -178,6 +178,7 @@ public:
     std::string propertyName; // Property name for property access
     std::vector<std::unique_ptr<ASTNode>> arguments; // Function call arguments
     std::string literalType; // "INTEGER", "FLOAT", "STRING", "BOOLEAN", "NULL" for literals
+    std::string alias; // "AS alias"
     
     ExpressionNode() : ASTNode(EXPRESSION) {}
     void accept(ASTVisitor* v) override;

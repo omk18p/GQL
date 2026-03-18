@@ -863,6 +863,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitInExprAlt(GQLParser::InExprAltContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitSignedExprAlt(GQLParser::SignedExprAltContext *ctx) override {
     return visitChildren(ctx);
   }

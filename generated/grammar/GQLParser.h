@@ -4449,6 +4449,23 @@ public:
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  InExprAltContext : public ValueExpressionContext {
+  public:
+    InExprAltContext(ValueExpressionContext *ctx);
+
+    std::vector<ValueExpressionContext *> valueExpression();
+    ValueExpressionContext* valueExpression(size_t i);
+    antlr4::tree::TerminalNode *IN();
+    antlr4::tree::TerminalNode *LEFT_PAREN();
+    antlr4::tree::TerminalNode *RIGHT_PAREN();
+    std::vector<antlr4::tree::TerminalNode *> COMMA();
+    antlr4::tree::TerminalNode* COMMA(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  SignedExprAltContext : public ValueExpressionContext {
   public:
     SignedExprAltContext(ValueExpressionContext *ctx);

@@ -10,15 +10,34 @@ unique_ptr<PhysicalPlanNode> PhysicalPlanner::build(LogicalPlanNode* logicalPlan
 }
 
 void PhysicalPlanner::visitNodeScan(NodeScanNode* node) {
+    unique_ptr<PhysicalPlanNode> scanNode;
     if (node->label.empty()) {
-        currentPhysicalNode = make_unique<PhysicalFullScan>(node->variable);
+        scanNode = make_unique<PhysicalFullScan>(node->variable);
     } else {
-        currentPhysicalNode = make_unique<PhysicalIndexScan>(node->label, node->variable);
+        scanNode = make_unique<PhysicalIndexScan>(node->label, node->variable);
     }
+    
+    if (!node->children.empty()) {
+        node->children[0]->accept(this);
+        if (currentPhysicalNode) {
+            scanNode->children.push_back(move(currentPhysicalNode));
+        }
+    }
+    
+    currentPhysicalNode = move(scanNode);
 }
 
 void PhysicalPlanner::visitEdgeScan(EdgeScanNode* node) {
-    currentPhysicalNode = make_unique<PhysicalEdgeScan>(node->label, node->variable, node->direction);
+    auto scanNode = make_unique<PhysicalEdgeScan>(node->label, node->variable, node->direction);
+    
+    if (!node->children.empty()) {
+        node->children[0]->accept(this);
+        if (currentPhysicalNode) {
+            scanNode->children.push_back(move(currentPhysicalNode));
+        }
+    }
+    
+    currentPhysicalNode = move(scanNode);
 }
 
 void PhysicalPlanner::visitFilter(FilterNode* node) {
@@ -215,7 +234,42 @@ void PhysicalPlanner::visitDeleteOp(DeleteOpNode* node) {
 }
 
 void PhysicalPlanner::visitInsertOp(InsertOpNode* node) {
-    auto insertOp = make_unique<PhysicalInsert>("(Insert Content Placeholder)");
+    auto insertOp = make_unique<PhysicalInsert>();
+    
+    for (auto& pattern : node->patterns) {
+        if (pattern->type == LogicalPlanNode::NODE_SCAN) {
+            NodeScanNode* nodeScan = static_cast<NodeScanNode*>(pattern.get());
+            PhysicalInsertNode pNode;
+            pNode.variable = nodeScan->variable;
+            if (!nodeScan->label.empty()) {
+                pNode.labels.push_back(nodeScan->label);
+            }
+            for (auto& prop : nodeScan->properties) {
+                pNode.properties.push_back({prop.first, prop.second});
+            }
+            insertOp->insertNodes.push_back(pNode);
+        } else if (pattern->type == LogicalPlanNode::EDGE_SCAN) {
+            EdgeScanNode* edgeScan = static_cast<EdgeScanNode*>(pattern.get());
+            PhysicalInsertEdge pEdge;
+            pEdge.variable = edgeScan->variable;
+            pEdge.direction = edgeScan->direction;
+            if (!edgeScan->label.empty()) {
+                pEdge.labels.push_back(edgeScan->label);
+            }
+            for (auto& prop : edgeScan->properties) {
+                pEdge.properties.push_back({prop.first, prop.second});
+            }
+            insertOp->insertEdges.push_back(pEdge);
+        }
+    }
+    
+    unique_ptr<PhysicalPlanNode> childPlan = nullptr;
+    if (!node->children.empty()) {
+        node->children[0]->accept(this);
+        childPlan = move(currentPhysicalNode);
+    }
+    if (childPlan) insertOp->children.push_back(move(childPlan));
+    
     currentPhysicalNode = move(insertOp);
 }
 
@@ -226,12 +280,30 @@ void PhysicalPlanner::visitUpdateOp(UpdateOpNode* node) {
         childPlan = move(currentPhysicalNode);
     }
     
-    string desc;
+    auto update = make_unique<PhysicalUpdate>();
+    
     for (const auto& item : node->items) {
-        desc += item.variable + "." + item.key + " ";
+        PhysicalUpdateItem pItem;
+        pItem.variable = item.variable;
+        pItem.key = item.key;
+        
+        switch (item.type) {
+            case UpdateOpNode::SET_PROPERTY: pItem.type = PhysicalUpdateItem::SET_PROPERTY; break;
+            case UpdateOpNode::SET_LABEL: pItem.type = PhysicalUpdateItem::SET_LABEL; break;
+            case UpdateOpNode::REMOVE_PROPERTY: pItem.type = PhysicalUpdateItem::REMOVE_PROPERTY; break;
+            case UpdateOpNode::REMOVE_LABEL: pItem.type = PhysicalUpdateItem::REMOVE_LABEL; break;
+            default: break;
+        }
+        
+        if (item.value) {
+            currentExpressionString = "";
+            item.value->accept(this);
+            pItem.expressionString = currentExpressionString;
+        }
+        
+        update->items.push_back(pItem);
     }
     
-    auto update = make_unique<PhysicalUpdate>(desc);
     if (childPlan) update->children.push_back(move(childPlan));
     currentPhysicalNode = move(update);
 }

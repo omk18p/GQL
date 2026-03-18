@@ -11,17 +11,24 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
     }
     
     switch (plan->type) {
+        case PhysicalOperatorType::MEM_SCAN_FULL: {
+            auto scanNode = dynamic_cast<PhysicalFullScan*>(plan);
+            if (scanNode) {
+                return make_unique<MemoryFullScan>(graph, move(childOp), scanNode->variable);
+            }
+            break;
+        }
         case PhysicalOperatorType::MEM_SCAN_INDEX: {
             auto scanNode = dynamic_cast<PhysicalIndexScan*>(plan);
             if (scanNode) {
-                return make_unique<MemoryIndexScan>(graph, scanNode->label, scanNode->variable);
+                return make_unique<MemoryIndexScan>(graph, move(childOp), scanNode->label, scanNode->variable);
             }
             break;
         }
         case PhysicalOperatorType::MEM_SCAN_EDGE: {
             auto scanNode = dynamic_cast<PhysicalEdgeScan*>(plan);
             if (scanNode) {
-                return make_unique<MemoryEdgeScan>(graph, scanNode->label, scanNode->variable);
+                return make_unique<MemoryEdgeScan>(graph, move(childOp), scanNode->label, scanNode->variable);
             }
             break;
         }
@@ -39,6 +46,38 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
             }
             break;
         }
+        case PhysicalOperatorType::MEM_LIMIT: {
+            auto limitNode = dynamic_cast<PhysicalLimit*>(plan);
+            if (limitNode && childOp) {
+                return make_unique<MemoryLimit>(move(childOp), limitNode->limit);
+            }
+            break;
+        }
+        case PhysicalOperatorType::MEM_OFFSET: {
+            auto offsetNode = dynamic_cast<PhysicalOffset*>(plan);
+            if (offsetNode && childOp) {
+                return make_unique<MemoryOffset>(move(childOp), offsetNode->offset);
+            }
+            break;
+        }
+        case PhysicalOperatorType::MEM_SORT: {
+            auto sortNode = dynamic_cast<PhysicalSort*>(plan);
+            if (sortNode && childOp) {
+                vector<pair<string, bool>> items;
+                for (const auto& item : sortNode->items) {
+                    items.push_back({item.field, item.ascending});
+                }
+                return make_unique<MemorySort>(move(childOp), items);
+            }
+            break;
+        }
+        case PhysicalOperatorType::MEM_AGGREGATE: {
+            auto aggNode = dynamic_cast<PhysicalAggregate*>(plan);
+            if (aggNode && childOp) {
+                return make_unique<MemoryAggregate>(move(childOp), aggNode->groupings, aggNode->measures);
+            }
+            break;
+        }
         case PhysicalOperatorType::MEM_NESTED_LOOP_JOIN: {
             auto joinNode = dynamic_cast<PhysicalNestedLoopJoin*>(plan);
             if (joinNode && plan->children.size() >= 2) {
@@ -47,6 +86,27 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
                 if (left && right) {
                     return make_unique<MemoryNestedLoopJoin>(move(left), move(right), joinNode->condition);
                 }
+            }
+            break;
+        }
+        case PhysicalOperatorType::MEM_INSERT: {
+            auto insertNode = dynamic_cast<PhysicalInsert*>(plan);
+            if (insertNode) {
+                return make_unique<MemoryInsert>(graph, move(childOp), insertNode->insertNodes, insertNode->insertEdges);
+            }
+            break;
+        }
+        case PhysicalOperatorType::MEM_DELETE: {
+            auto deleteNode = dynamic_cast<PhysicalDelete*>(plan);
+            if (deleteNode) {
+                return make_unique<MemoryDelete>(graph, move(childOp), deleteNode->variables, deleteNode->detach);
+            }
+            break;
+        }
+        case PhysicalOperatorType::MEM_UPDATE: {
+            auto updateNode = dynamic_cast<PhysicalUpdate*>(plan);
+            if (updateNode) {
+                return make_unique<MemoryUpdate>(graph, move(childOp), updateNode->items);
             }
             break;
         }

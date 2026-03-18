@@ -1,0 +1,5 @@
+// Query 1: Test MemoryFullScan
+MATCH (n) RETURN n.name, n.age
+
+// Query 2: Test OrderBy, Limit, Offset
+MATCH (p:Person) WHERE p.age > 20 RETURN p.name, p.age ORDER BY p.age DESC LIMIT 2 OFFSET 1
