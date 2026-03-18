@@ -1,2 +1,0 @@
-INSERT (a:Person {name: "Bob", age: 30})
-RETURN a

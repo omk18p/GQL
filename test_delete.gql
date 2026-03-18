@@ -1,2 +1,0 @@
-MATCH (p:Person) WHERE p.name = "Dan"
-DELETE p
