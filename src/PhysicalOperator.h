@@ -36,8 +36,8 @@ public:
     void close() override;
 };
 
-// Memory Index Scan
-class MemoryIndexScan : public PhysicalOperator {
+// Memory Label Scan
+class MemoryLabelScan : public PhysicalOperator {
 private:
     unique_ptr<PhysicalOperator> child;
     string label;
@@ -46,7 +46,7 @@ private:
     size_t currentIndex = 0;
 
 public:
-    MemoryIndexScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v);
+    MemoryLabelScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v);
 
     void open() override;
     bool next(Row& row) override;

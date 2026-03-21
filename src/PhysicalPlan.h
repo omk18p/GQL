@@ -13,7 +13,7 @@ using namespace std;
 
 enum class PhysicalOperatorType {
     MEM_SCAN_FULL,
-    MEM_SCAN_INDEX,
+    MEM_SCAN_LABEL,
     MEM_SCAN_EDGE,
     MEM_FILTER,
     MEM_PROJECT,
@@ -64,16 +64,16 @@ public:
     }
 };
 
-class PhysicalIndexScan : public PhysicalPlanNode {
+class PhysicalLabelScan : public PhysicalPlanNode {
 public:
     string label;
     string variable;
 
-    PhysicalIndexScan(string l, string v) 
-        : PhysicalPlanNode(PhysicalOperatorType::MEM_SCAN_INDEX), label(l), variable(v) {}
+    PhysicalLabelScan(string l, string v) 
+        : PhysicalPlanNode(PhysicalOperatorType::MEM_SCAN_LABEL), label(l), variable(v) {}
 
     string toString() const override {
-        return "MemIndexScan(label: " + label + ", variable: " + variable + ")";
+        return "MemLabelScan(label: " + label + ", variable: " + variable + ")";
     }
 };
 

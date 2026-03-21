@@ -186,12 +186,12 @@ void MemoryFullScan::close() {
 }
 
 
-// --- MemoryIndexScan ---
+// --- MemoryLabelScan ---
 
-MemoryIndexScan::MemoryIndexScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v) 
+MemoryLabelScan::MemoryLabelScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v) 
     : PhysicalOperator(g), child(move(c)), label(l), variable(v) {}
 
-void MemoryIndexScan::open() {
+void MemoryLabelScan::open() {
     if (child) {
         child->open();
         Row dummy;
@@ -202,7 +202,7 @@ void MemoryIndexScan::open() {
     currentIndex = 0;
 }
 
-bool MemoryIndexScan::next(Row& row) {
+bool MemoryLabelScan::next(Row& row) {
     if (currentIndex >= nodes.size()) return false;
     
     // Load current node into row
@@ -224,7 +224,7 @@ bool MemoryIndexScan::next(Row& row) {
     return true;
 }
 
-void MemoryIndexScan::close() {
+void MemoryLabelScan::close() {
     nodes.clear();
 }
 

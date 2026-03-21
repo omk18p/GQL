@@ -18,10 +18,10 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
             }
             break;
         }
-        case PhysicalOperatorType::MEM_SCAN_INDEX: {
-            auto scanNode = dynamic_cast<PhysicalIndexScan*>(plan);
+        case PhysicalOperatorType::MEM_SCAN_LABEL: {
+            auto scanNode = dynamic_cast<PhysicalLabelScan*>(plan);
             if (scanNode) {
-                return make_unique<MemoryIndexScan>(graph, move(childOp), scanNode->label, scanNode->variable);
+                return make_unique<MemoryLabelScan>(graph, move(childOp), scanNode->label, scanNode->variable);
             }
             break;
         }

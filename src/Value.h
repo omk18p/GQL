@@ -108,8 +108,8 @@ struct Row {
     // Let's add a generic "Object" or "Pointer" type to Value if needed, 
     // or just assume for this "Scan->Filter->Project" flow on properties, 
     // we can stick to simple types for properties.
-    // But `IndexScan` returns a "Node".
+    // But `LabelScan` returns a "Node".
     // Let's add a "Node*" to Value? Or just keep it as a map of properties for now.
-    // The prompt says: "MemoryIndexScan ... next() returns one node at a time".
+    // The prompt says: "MemoryLabelScan ... next() returns one node at a time".
     // So Row should contain "p" -> Node.
 };

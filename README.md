@@ -69,7 +69,7 @@ The `LogicalPlanBuilder` transforms the AST into an algebraic representation of 
 
 ### 4. Physical Planning Layer
 The `PhysicalPlanner` optimizes the logical plan by choosing specific execution strategies.
-- **Scan Optimization**: Automatically selects `MemIndexScan` over `MemFullScan` when label-based search is identified, significantly reducing search space.
+- **Scan Optimization**: Automatically selects `MemLabelScan` over `MemFullScan` when label-based search is identified, significantly reducing search space.
 - **Join Strategy**: Maps logical joins to `MemNestedLoopJoin` or other optimized physical operators.
 - **DML Ordering**: Ensures that mutations (SET, DELETE) occur at the correct stage in the pipeline to maintain data integrity and visibility.
 
@@ -124,9 +124,8 @@ The engine includes a built-in eCommerce dataset. Execution of demonstration que
 
 ## Technical Highlights
 
-> [!NOTE]
-> **Index-Based Search**
-> The engine utilizes label-based indexing to optimize node retrieval, ensuring that `MATCH (n:Label)` operations bypass full graph iterations.
+> **Label-Based Search**
+> The engine utilizes label-based scans to optimize node retrieval, ensuring that `MATCH (n:Label)` operations bypass full graph iterations.
 
 > [!IMPORTANT]
 > **Atomic Mutations**

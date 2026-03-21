@@ -14,7 +14,7 @@ void PhysicalPlanner::visitNodeScan(NodeScanNode* node) {
     if (node->label.empty()) {
         scanNode = make_unique<PhysicalFullScan>(node->variable);
     } else {
-        scanNode = make_unique<PhysicalIndexScan>(node->label, node->variable);
+        scanNode = make_unique<PhysicalLabelScan>(node->label, node->variable);
     }
     
     if (!node->children.empty()) {
