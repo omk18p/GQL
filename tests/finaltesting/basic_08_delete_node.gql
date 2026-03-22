@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests deleting a node matching a predicate.
+//
+// EXPECTED BEHAVIOR:
+// Deletes the product named 'Novel'. Re-querying should yield no results for it.
+// ==========================================
+
+MATCH (p:Products) WHERE p.name = 'Novel' DELETE p;

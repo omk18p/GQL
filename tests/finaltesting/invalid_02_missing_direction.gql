@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests strict edge matching compliance (ISO standard requires arrows).
+//
+// EXPECTED BEHAVIOR:
+// Throws a parse error if undirected dash syntax '--' or '-' is not allowed strictly.
+// ==========================================
+
+MATCH (u:Users)-[r:PLACED]-(o:Orders) RETURN u;

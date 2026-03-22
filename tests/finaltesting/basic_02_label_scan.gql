@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests filtering by a specific Label from main.cpp.
+//
+// EXPECTED BEHAVIOR:
+// Outputs only the 'name' and 'country' properties of all 'Users' nodes.
+// ==========================================
+
+MATCH (u:Users) RETURN u.name, u.country;

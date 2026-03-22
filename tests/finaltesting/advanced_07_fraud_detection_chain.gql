@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests identifying suspicious chains (e.g. money laundering rings) by analyzing endpoints of deep traversals.
+//
+// EXPECTED BEHAVIOR:
+// Maps money chains. Only returns triplets where money source was rich, and destination was explicitly flagged.
+// ==========================================
+
+MATCH (a:Accounts)-[:TRANSFERRED_TO]->(b:Accounts)-[:TRANSFERRED_TO]->(c:Accounts) WHERE a.balance > 10000 AND c.is_flagged = 'true' RETURN a.id, c.id, b.id;

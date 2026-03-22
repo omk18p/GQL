@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests joining entities but restricting the output via a property filter on the child node.
+//
+// EXPECTED BEHAVIOR:
+// Returns user names and order dates, but only for orders exceeding 500 in amount.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) WHERE o.amount > 500 RETURN u.name, o.order_date;

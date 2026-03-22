@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests handling logical breaks in valid data (Users exist, but lack this edge).
+//
+// EXPECTED BEHAVIOR:
+// Filters normally on Users but finds zero connecting lines (NON_EXISTENT_EDGE). Returns strict empty set.
+// ==========================================
+
+MATCH (u:Users)-[:NON_EXISTENT_EDGE]->(o:Orders) RETURN u, o;

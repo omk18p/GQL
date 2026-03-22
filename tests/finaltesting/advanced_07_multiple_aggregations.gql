@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests parsing and executing multiple distinct aggregation calculations on the same logical grouping.
+//
+// EXPECTED BEHAVIOR:
+// Groups by user_id and identically calculates both their total spend (SUM) and total transactions (COUNT).
+// ==========================================
+
+MATCH (o:Orders) RETURN o.user_id, SUM(o.amount), COUNT(o) ORDER BY SUM(o.amount) DESC;

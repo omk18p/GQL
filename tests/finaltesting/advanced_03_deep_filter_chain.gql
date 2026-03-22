@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests filtering at the absolute end of a complex traversal chain.
+//
+// EXPECTED BEHAVIOR:
+// Finds Users who ultimately bought an 'Electronics' category item, traversing 3 hops simply to evaluate the category filter.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' RETURN u.name, p.name;

@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the engine's capability of isolating existing edges.
+//
+// EXPECTED BEHAVIOR:
+// Returns all relationships labeled 'PLACED' (between Users and Orders).
+// ==========================================
+
+MATCH ()-[r:PLACED]->() RETURN r;

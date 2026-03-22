@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests updating an existing node property.
+//
+// EXPECTED BEHAVIOR:
+// Finds the product named 'Smartphone' and updates its price from 500 to 450.
+// ==========================================
+
+MATCH (p:Products) WHERE p.name = 'Smartphone' SET p.price = 450;

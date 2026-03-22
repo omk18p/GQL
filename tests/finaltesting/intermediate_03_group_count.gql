@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests implicit grouping mapped with an aggregation function (COUNT).
+//
+// EXPECTED BEHAVIOR:
+// Collects identical country strings and returns a total count of users residing in each.
+// ==========================================
+
+MATCH (u:Users) RETURN u.country, COUNT(u);

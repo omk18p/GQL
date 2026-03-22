@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multiple order-by clauses with conflict breakers.
+//
+// EXPECTED BEHAVIOR:
+// Orders are returned by user_id ascending, and for the same user, by amount descending.
+// ==========================================
+
+MATCH (o:Orders) RETURN o.order_id, o.user_id, o.amount ORDER BY o.user_id ASC, o.amount DESC;

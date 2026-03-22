@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests traversing in a loop without infinite hang loops. Uses alias equality reference back to the start node.
+//
+// EXPECTED BEHAVIOR:
+// Finds situations where `KNOWS` creates a literal circle back to user 1. Extremely tough edge case.
+// ==========================================
+
+MATCH (u1:Users)-[:KNOWS]->(u2:Users)-[:KNOWS]->(u1:Users) RETURN u1;

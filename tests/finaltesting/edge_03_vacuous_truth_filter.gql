@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests predicate filters that result in absolute zero valid comparisons on real data.
+//
+// EXPECTED BEHAVIOR:
+// Returns zero rows. Evaluates condition safely without breaking since no Users belong to 'Mars'.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country = 'Mars' RETURN u;

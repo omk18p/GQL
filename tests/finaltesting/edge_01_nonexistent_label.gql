@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests structural isolation where data does NOT exist in main.cpp.
+//
+// EXPECTED BEHAVIOR:
+// Produces an empty execution result because 'NonExistentLabel' is not hardcoded. Must safely return empty.
+// ==========================================
+
+MATCH (u:NonExistentLabel) RETURN u;

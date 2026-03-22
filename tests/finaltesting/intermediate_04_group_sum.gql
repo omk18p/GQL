@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests numerical aggregations mapped over groups (Total amount per User ID).
+//
+// EXPECTED BEHAVIOR:
+// Returns the list of user IDs mapped against the total sum of their order amounts.
+// ==========================================
+
+MATCH (o:Orders) RETURN o.user_id, SUM(o.amount);

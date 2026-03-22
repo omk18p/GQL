@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests numerical averaging across items passing a string filter.
+//
+// EXPECTED BEHAVIOR:
+// Calculates the average order amount strictly for 'DELIVERED' status orders grouped by user_id.
+// ==========================================
+
+MATCH (o:Orders) WHERE o.status = 'DELIVERED' RETURN o.user_id, AVG(o.amount) ORDER BY AVG(o.amount);

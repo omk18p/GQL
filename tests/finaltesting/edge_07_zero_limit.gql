@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests pipeline circuit breaking parameters.
+//
+// EXPECTED BEHAVIOR:
+// Instantly terminates with zero processing cycles, empty output.
+// ==========================================
+
+MATCH (n) RETURN n LIMIT 0;

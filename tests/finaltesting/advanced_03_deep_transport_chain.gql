@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests long chain edge traversal using purely structural mappings (repeated labels).
+//
+// EXPECTED BEHAVIOR:
+// Finds itineraries spanning exactly 3 flight segments across city nodes.
+// ==========================================
+
+MATCH (u:Users)-[:FLIGHT]->(c1:Cities)-[:FLIGHT]->(c2:Cities)-[:FLIGHT]->(c3:Cities) RETURN u.name, c3.name;

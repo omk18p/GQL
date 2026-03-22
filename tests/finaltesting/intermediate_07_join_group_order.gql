@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests a full intermediate compilation chain (Join -> Aggregate -> Sort).
+//
+// EXPECTED BEHAVIOR:
+// Finds the number of orders each user placed, sorts them descending, identifying top buyers.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, COUNT(o) ORDER BY COUNT(o) DESC;

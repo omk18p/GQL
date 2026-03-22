@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests deep recursive parser depth breakage catching.
+//
+// EXPECTED BEHAVIOR:
+// Fails structure validation explicitly.
+// ==========================================
+
+MATCH ((u:Users) RETURN u;

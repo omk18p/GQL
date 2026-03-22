@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests fail-fast mechanism of ANTLR4 parser catching unbalanced structural declarations.
+//
+// EXPECTED BEHAVIOR:
+// Produces an immediate syntax parser error. Node pattern definition missing parentheses.
+// ==========================================
+
+MATCH u:Users RETURN u;

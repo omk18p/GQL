@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests extreme operation mixing: Multijoin chaining into counting, coupled with ordering on a trailing entity.
+//
+// EXPECTED BEHAVIOR:
+// Finds ad revenue maps against influence metrics (Follower count of the ad's poster).
+// ==========================================
+
+MATCH (u:Users)-[:FOLLOWS]->(influencer:Users)-[:POSTED]->(ad:Ads) RETURN influencer.name, COUNT(u), ad.revenue ORDER BY ad.revenue DESC;

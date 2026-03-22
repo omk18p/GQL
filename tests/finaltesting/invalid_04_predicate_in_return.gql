@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests semantic analysis separating boolean expressions from projectable values.
+//
+// EXPECTED BEHAVIOR:
+// Returns syntax error if evaluating boolean statements inside RETURN is prohibited.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country = 'India' RETURN u.country = 'India';

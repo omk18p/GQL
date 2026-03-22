@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests rejection of SQL keyword overlap.
+//
+// EXPECTED BEHAVIOR:
+// Fails instantly recognizing SELECT block keyword instead of MATCH.
+// ==========================================
+
+SELECT * FROM Users;

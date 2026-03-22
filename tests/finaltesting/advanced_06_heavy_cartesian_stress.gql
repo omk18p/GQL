@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests structural limits by skipping all edge and node labels, forcing raw dataset resolution.
+//
+// EXPECTED BEHAVIOR:
+// Matches ANY sequence of 3 hops (n1->n2->n3->n4). Will execute full cartesian looping, heavily testing physical memory execution.
+// ==========================================
+
+MATCH (n1)-[r1]->(n2)-[r2]->(n3)-[r3]->(n4) RETURN n1.name, n4.name;

@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests projecting a field mapping that isn't hardcoded in internal property maps.
+//
+// EXPECTED BEHAVIOR:
+// Returns mapped rows, but the projected nonexistent field evaluates to null/empty.
+// ==========================================
+
+MATCH (u:Users) RETURN u.name, u.non_existent_property;

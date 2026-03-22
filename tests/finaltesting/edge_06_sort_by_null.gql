@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the ranking logic when sorting uniformly across missing attributes on real data.
+//
+// EXPECTED BEHAVIOR:
+// Resolves neutrally or drops missing to bottom safely.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN o.order_id ORDER BY o.non_existent DESC;

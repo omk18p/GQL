@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests logical edge-joins across explicitly mapped nodes (Users to Orders).
+//
+// EXPECTED BEHAVIOR:
+// Returns the names of users mapped directly to their order amounts.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, o.amount;

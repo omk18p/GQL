@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests core grammatical recognition rejection.
+//
+// EXPECTED BEHAVIOR:
+// ANTLR4 fails mapping lexeme RETORN, throwing instant Line/Char exceptions.
+// ==========================================
+
+MATCH (u:Users) RETORN u;

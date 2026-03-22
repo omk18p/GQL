@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests exact string matching inside the WHERE clause using Users.
+//
+// EXPECTED BEHAVIOR:
+// Returns only the country of the user exactly named 'Vaibhav' (which should be India).
+// ==========================================
+
+MATCH (u:Users) WHERE u.name = 'Vaibhav' RETURN u.country;

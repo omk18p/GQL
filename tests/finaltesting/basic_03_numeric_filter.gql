@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the WHERE clause using a numeric comparison on Orders.
+//
+// EXPECTED BEHAVIOR:
+// Returns Orders where the order amount is strictly greater than 500.
+// ==========================================
+
+MATCH (o:Orders) WHERE o.amount > 500 RETURN o.order_id, o.amount;

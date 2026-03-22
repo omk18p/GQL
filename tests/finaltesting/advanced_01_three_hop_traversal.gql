@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests deep multi-hop traversal covering the entire schema.
+//
+// EXPECTED BEHAVIOR:
+// Spans Users -> Orders -> Products -> Categories. Returns the User's name and the Category name they bought from.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) RETURN u.name, c.category_name;

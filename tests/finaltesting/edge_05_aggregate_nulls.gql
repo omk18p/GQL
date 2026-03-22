@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests counting functions reacting to purely null/non-existent input contexts.
+//
+// EXPECTED BEHAVIOR:
+// Returns 0 or null depending on implementation spec, avoiding pointer crashes.
+// ==========================================
+
+MATCH (u:Users) RETURN COUNT(u.non_existent);

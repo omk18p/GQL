@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests logic boundary bounds regarding raw nulls.
+//
+// EXPECTED BEHAVIOR:
+// Fails the WHERE clause gracefully for missing labels, empty return.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country = null RETURN u.name;

@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests post-scan sorting algorithms pipeline execution.
+//
+// EXPECTED BEHAVIOR:
+// Outputs product names sorted strictly descending by their price.
+// ==========================================
+
+MATCH (p:Products) RETURN p.name ORDER BY p.price DESC;

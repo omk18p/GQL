@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-join resolution spanning three distinct definitions (User -> Order -> Product).
+//
+// EXPECTED BEHAVIOR:
+// Finds the triplet showing what User placed an Order containing what Product name.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, o.order_id, p.name;

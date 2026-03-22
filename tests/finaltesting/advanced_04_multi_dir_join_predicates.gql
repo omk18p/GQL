@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests relationships and multiple complex AND predicates spread across different nodes.
+//
+// EXPECTED BEHAVIOR:
+// Finds Indian users who bought items priced above 200. Evaluates conditions on both ends of the join chain.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) WHERE u.country = 'India' AND p.price > 200 RETURN u.name, p.name, o.amount;

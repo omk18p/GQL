@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests a full sequence spanning domain entities down to financial tracking (Revenue by Category).
+//
+// EXPECTED BEHAVIOR:
+// Calculates the total revenue (SUM of order amount) generated per product category.
+// ==========================================
+
+MATCH (cat:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders) RETURN cat.category_name, SUM(o.amount) ORDER BY SUM(o.amount) DESC;

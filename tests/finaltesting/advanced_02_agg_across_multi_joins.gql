@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests maintaining complex implicit groupings across wide path queries.
+//
+// EXPECTED BEHAVIOR:
+// Groups by Category name, counting total distinct products purchased within that category by any user.
+// ==========================================
+
+MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders)<-[:PLACED]-(u:Users) RETURN c.category_name, COUNT(p) ORDER BY COUNT(p) DESC;

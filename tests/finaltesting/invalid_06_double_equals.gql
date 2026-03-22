@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests strict logic operand parser. GQL explicitly enforces single '='.
+//
+// EXPECTED BEHAVIOR:
+// Throws a scanner/token error matching '==' instead of '='.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country == 'India' RETURN u;

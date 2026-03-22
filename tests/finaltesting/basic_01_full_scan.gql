@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the engine's ability to scan and retrieve all nodes in the graph without any filtering.
+//
+// EXPECTED BEHAVIOR:
+// Returns every node (Users, Orders, Products, Categories) with all their properties.
+// ==========================================
+
+MATCH (n) RETURN n;
