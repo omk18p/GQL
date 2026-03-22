@@ -241,7 +241,11 @@ void MemoryEdgeScan::open() {
         while(child->next(dummy)) {}
         child->close();
     }
-    edges = graph.getEdgesByLabel(label);
+    if (label.empty()) {
+        edges = graph.getAllEdges();
+    } else {
+        edges = graph.getEdgesByLabel(label);
+    }
     currentIndex = 0;
 }
 

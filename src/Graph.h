@@ -104,6 +104,14 @@ public:
         }
         return result;
     }
+
+    vector<shared_ptr<Edge>> getAllEdges() {
+        vector<shared_ptr<Edge>> result;
+        for (auto& pair : edges) {
+            result.push_back(pair.second);
+        }
+        return result;
+    }
     // updates
     bool deleteNode(int id) {
         if (nodes.find(id) == nodes.end()) return false;
