@@ -245,19 +245,25 @@ void LogicalPlanBuilder::visitMatchStatement(MatchStatementNode* n) {
             // Logic: if left is Node and right is Edge -> node.id = edge._source
             // if left is Edge and right is Node -> edge._target = node.id
             if (previousNode->type == LogicalPlanNode::NODE_SCAN && newScan->type == LogicalPlanNode::EDGE_SCAN) {
-                // Set the sourceVar on the new edge scan from the left node scan
                 auto rightEdgeScan = static_cast<EdgeScanNode*>(newScan.get());
-                rightEdgeScan->sourceVar = leftVar;
-                
                 binOp->left = make_unique<PropertyAccessNode>(leftVar, "id");
-                binOp->right = make_unique<PropertyAccessNode>(rightVar, "_source");
+                if (rightEdgeScan->direction == "<--") {
+                    rightEdgeScan->targetVar = leftVar;
+                    binOp->right = make_unique<PropertyAccessNode>(rightVar, "_target");
+                } else {
+                    rightEdgeScan->sourceVar = leftVar;
+                    binOp->right = make_unique<PropertyAccessNode>(rightVar, "_source");
+                }
             } else if (previousNode->type == LogicalPlanNode::EDGE_SCAN && newScan->type == LogicalPlanNode::NODE_SCAN) {
-                // Set the targetVar on the previous edge scan from the right node scan
                 auto leftEdgeScan = static_cast<EdgeScanNode*>(previousNode);
-                leftEdgeScan->targetVar = rightVar;
-                
-                binOp->left = make_unique<PropertyAccessNode>(leftVar, "_target");
                 binOp->right = make_unique<PropertyAccessNode>(rightVar, "id");
+                if (leftEdgeScan->direction == "<--") {
+                    leftEdgeScan->sourceVar = rightVar;
+                    binOp->left = make_unique<PropertyAccessNode>(leftVar, "_source");
+                } else {
+                    leftEdgeScan->targetVar = rightVar;
+                    binOp->left = make_unique<PropertyAccessNode>(leftVar, "_target");
+                }
             } else {
                 // Fallback to Cartesian product (always true) for property joins
                 auto leftLit = make_unique<LiteralNode>("1", "NUMBER");
