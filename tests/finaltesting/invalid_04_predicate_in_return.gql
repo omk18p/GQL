@@ -1,9 +1,9 @@
 // ==========================================
 // WHY IT IS INCLUDED:
-// Tests semantic analysis separating boolean expressions from projectable values.
+// Tests the requirement of the RETURN keyword to project variables at the end.
 //
 // EXPECTED BEHAVIOR:
-// Returns syntax error if evaluating boolean statements inside RETURN is prohibited.
+// Throws a syntax error because the RETURN keyword is missing before evaluating the projection fields.
 // ==========================================
 
-MATCH (u:Users) WHERE u.country = 'India' RETURN u.country = 'India';
+MATCH (u:Users) WHERE u.country = 'India' u.country;

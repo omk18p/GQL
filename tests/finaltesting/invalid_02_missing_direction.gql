@@ -1,9 +1,9 @@
 // ==========================================
 // WHY IT IS INCLUDED:
-// Tests strict edge matching compliance (ISO standard requires arrows).
+// Tests the requirement of the MATCH keyword at the start of a query.
 //
 // EXPECTED BEHAVIOR:
-// Throws a parse error if undirected dash syntax '--' or '-' is not allowed strictly.
+// Throws a parse error because the MATCH keyword is entirely missing before the pattern.
 // ==========================================
 
-MATCH (u:Users)-[r:PLACED]-(o:Orders) RETURN u;
+(u:Users)-[:PLACED]->(o:Orders) RETURN u;

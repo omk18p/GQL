@@ -54,9 +54,16 @@ void LogicalPlanBuilder::visitOrderByStatement(OrderByStatementNode* n) {
             sortOp->sortFields.push_back(sf);
         }
         if (currentPlan) {
-            sortOp->children.push_back(move(currentPlan));
+            if (currentPlan->type == LogicalPlanNode::PROJECT) {
+                sortOp->children.push_back(move(currentPlan->children[0]));
+                currentPlan->children[0] = move(sortOp);
+            } else {
+                sortOp->children.push_back(move(currentPlan));
+                currentPlan = move(sortOp);
+            }
+        } else {
+            currentPlan = move(sortOp);
         }
-        currentPlan = move(sortOp);
     }
     
     // 2. Offset
