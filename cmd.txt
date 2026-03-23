@@ -11,3 +11,16 @@ g++ -O0 -std=c++17 -I/usr/local/include/antlr4-runtime -Isrc -Igenerated src/mai
 3. Test a Query
 
 ./gqlparser test_query.gql
+
+
+
+4.Terminal 1 (Backend API):
+
+
+cd web/backend
+node server.js
+
+5.Terminal 2 (Frontend UI):
+
+cd web/frontend
+npm run dev

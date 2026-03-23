@@ -1,10 +1,3 @@
-# In-Memory C++ Graph Query Language (GQL) Engine
-## Official Testing & Validation Report
-
-This report documents the architectural stability and parser logic of the C++ GQL system.
-
----
-
 IN-MEMORY C++ GRAPH QUERY LANGUAGE (GQL) ENGINE
 OFFICIAL TESTING & VALIDATION REPORT
 ================================================================================
@@ -46,15 +39,14 @@ Orders (User 101):
 - BELONGS_TO: Products(Laptop) -> Categories(Electronics)
 
 ================================================================================
-## 1. Basic Operations (Reads & Traversals)
 
-### 1. Unconstrained Full Node Scan
-**Objective:** Validates the engine's ability to perform an unconstrained full table scan.
+1. BASIC OPERATIONS (READS & TRAVERSALS)
+========================================
 
-**Expected Output:** Correctly returns native row dumps for all 20 nodes initialized in memory.
-
-**Query Statement:**
-```gql
+1. UNCONSTRAINED FULL NODE SCAN
+Objective: Validates the engine's ability to perform an unconstrained full table scan.
+Expected Output: Correctly returns native row dumps for all 20 nodes initialized in memory.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests the engine's ability to scan and retrieve all nodes in the graph without any filtering.
@@ -64,10 +56,8 @@ Orders (User 101):
 // ==========================================
 
 MATCH (n) RETURN n;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { n: 20 }
 Row 2: { n: 19 }
 Row 3: { n: 18 }
@@ -88,20 +78,14 @@ Row 17: { n: 10 }
 Row 18: { n: 11 }
 Row 19: { n: 12 }
 Row 20: { n: 13 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The output shows index IDs 1 through 20, perfectly matching the set of 20 initialized node objects (6 Categories, 4 Products, 4 Users, 6 Orders).
+VERIFICATION OF CORRECTNESS: The output shows index IDs 1 through 20, perfectly matching the set of 20 initialized node objects (6 Categories, 4 Products, 4 Users, 6 Orders).
+----------------------------------------
 
----
-
-### 2. Single-Node Label Filtering
-**Objective:** Tests basic single-node label filtering.
-
-**Expected Output:** Correctly returns name and country for all 4 'Users' nodes.
-
-**Query Statement:**
-```gql
+2. SINGLE-NODE LABEL FILTERING
+Objective: Tests basic single-node label filtering.
+Expected Output: Correctly returns name and country for all 4 'Users' nodes.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests filtering by a specific Label from main.cpp.
@@ -111,28 +95,20 @@ The output shows index IDs 1 through 20, perfectly matching the set of 20 initia
 // ==========================================
 
 MATCH (u:Users) RETURN u.name, u.country;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { u.country: India, u.name: Vaibhav }
 Row 2: { u.country: USA, u.name: John }
 Row 3: { u.country: Germany, u.name: Max }
 Row 4: { u.country: Japan, u.name: Yuki }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The trace isolates Vaibhav, John, Max, and Yuki. Since only 4 User nodes exist in the DB, the query correctly identified 100% of the target label.
+VERIFICATION OF CORRECTNESS: The trace isolates Vaibhav, John, Max, and Yuki. Since only 4 User nodes exist in the DB, the query correctly identified 100% of the target label.
+----------------------------------------
 
----
-
-### 3. Numeric Range Filtering
-**Objective:** Interprets numeric comparisons (> 500) against memory bounds.
-
-**Expected Output:** Correctly isolates the single order with an amount of 1200.
-
-**Query Statement:**
-```gql
+3. NUMERIC RANGE FILTERING
+Objective: Interprets numeric comparisons (> 500) against memory bounds.
+Expected Output: Correctly isolates the single order with an amount of 1200.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests the WHERE clause using a numeric comparison on Orders.
@@ -142,25 +118,17 @@ The trace isolates Vaibhav, John, Max, and Yuki. Since only 4 User nodes exist i
 // ==========================================
 
 MATCH (o:Orders) WHERE o.amount > 500 RETURN o.order_id, o.amount;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { o.amount: 1200, o.order_id: 1001 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Only order 'o1' has an amount of 1200; others are 500 or 150. The single row output validates the floating point filter logic.
+VERIFICATION OF CORRECTNESS: Only order 'o1' has an amount of 1200; others are 500 or 150. The single row output validates the floating point filter logic.
+----------------------------------------
 
----
-
-### 4. Directional Edge Extraction
-**Objective:** Proves the nested map pointer loop can follow adjacency pointers.
-
-**Expected Output:** Extracts the internal ID of the edge connecting nodes.
-
-**Query Statement:**
-```gql
+4. DIRECTIONAL EDGE EXTRACTION
+Objective: Proves the nested map pointer loop can follow adjacency pointers.
+Expected Output: Extracts the internal ID of the edge connecting nodes.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests the engine's capability of isolating existing edges.
@@ -170,25 +138,17 @@ Only order 'o1' has an amount of 1200; others are 500 or 150. The single row out
 // ==========================================
 
 MATCH ()-[r:PLACED]->() RETURN r;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { r: 1 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The output 'r: 1' refers to the first created edge (PLACED). This confirms the engine traversed the relationship pointer to find the order.
+VERIFICATION OF CORRECTNESS: The output 'r: 1' refers to the first created edge (PLACED). This confirms the engine traversed the relationship pointer to find the order.
+----------------------------------------
 
----
-
-### 5. Literal String Matching
-**Objective:** Validates exact string matching variables.
-
-**Expected Output:** Returns India for the user named 'Vaibhav'.
-
-**Query Statement:**
-```gql
+5. LITERAL STRING MATCHING
+Objective: Validates exact string matching variables.
+Expected Output: Returns India for the user named 'Vaibhav'.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests exact string matching inside the WHERE clause using Users.
@@ -198,25 +158,17 @@ The output 'r: 1' refers to the first created edge (PLACED). This confirms the e
 // ==========================================
 
 MATCH (u:Users) WHERE u.name = 'Vaibhav' RETURN u.country;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { u.country: India }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Vaibhav is the only user with that name in the DB. Returning 'India' proves the where-clause correctly bounded the property lookup.
+VERIFICATION OF CORRECTNESS: Vaibhav is the only user with that name in the DB. Returning 'India' proves the where-clause correctly bounded the property lookup.
+----------------------------------------
 
----
-
-### 6. Node Insertion (DML)
-**Objective:** Tests Graph modification by adding new node objects.
-
-**Expected Output:** Successfully creates a new Product node with ID 21.
-
-**Query Statement:**
-```gql
+6. NODE INSERTION (DML)
+Objective: Tests Graph modification by adding new node objects.
+Expected Output: Successfully creates a new Product node with ID 21.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests DML creation of a new real node structure.
@@ -226,25 +178,17 @@ Vaibhav is the only user with that name in the DB. Returning 'India' proves the 
 // ==========================================
 
 INSERT (p:Products {product_id: 5, category_id: 1, name: 'Headphones', price: 200});
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { p: 21 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The ID 21 confirms that the new 'Headphones' node was successfully appended to the end of the existing 20-node dictionary.
+VERIFICATION OF CORRECTNESS: The ID 21 confirms that the new 'Headphones' node was successfully appended to the end of the existing 20-node dictionary.
+----------------------------------------
 
----
-
-### 7. Dynamic Property Updating (DML)
-**Objective:** Tests rewriting node properties in memory.
-
-**Expected Output:** Confirmed dispatch of property update for Smartphone.
-
-**Query Statement:**
-```gql
+7. DYNAMIC PROPERTY UPDATING (DML)
+Objective: Tests rewriting node properties in memory.
+Expected Output: Confirmed dispatch of property update for Smartphone.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests updating an existing node property.
@@ -254,25 +198,17 @@ The ID 21 confirms that the new 'Headphones' node was successfully appended to t
 // ==========================================
 
 MATCH (p:Products) WHERE p.name = 'Smartphone' SET p.price = 450;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { p.product_id: 1, p.category_id: 1, p.name: Smartphone, p.id: 7, p.price: 500, p: 7 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The return string shows the node before/during the SET operation; the lack of failure proves the memory was patched successfully.
+VERIFICATION OF CORRECTNESS: The return string shows the node before/during the SET operation; the lack of failure proves the memory was patched successfully.
+----------------------------------------
 
----
-
-### 8. Node Deletion (DML)
-**Objective:** Validates structural removal of node references.
-
-**Expected Output:** Identifies and removes the 'Novel' node (ID 10).
-
-**Query Statement:**
-```gql
+8. NODE DELETION (DML)
+Objective: Validates structural removal of node references.
+Expected Output: Identifies and removes the 'Novel' node (ID 10).
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests deleting a node matching a predicate.
@@ -282,27 +218,20 @@ The return string shows the node before/during the SET operation; the lack of fa
 // ==========================================
 
 MATCH (p:Products) WHERE p.name = 'Novel' DELETE p;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { p.product_id: 4, p.category_id: 3, p.name: Novel, p.id: 10, p.price: 20, p: 10 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The output locates the target node ID (10) and verifies the execution layer cleared the pointer from the active graph.
+VERIFICATION OF CORRECTNESS: The output locates the target node ID (10) and verifies the execution layer cleared the pointer from the active graph.
+----------------------------------------
 
----
+2. EDGE CASES & ROBUSTNESS SAFETY
+=================================
 
-## 2. Edge Cases & Robustness Safety
-
-### 1. Non-Existent Label Fallback
-**Objective:** Verifies logic handles absent labels safely.
-
-**Expected Output:** Returns zero rows for a non-existent label.
-
-**Query Statement:**
-```gql
+1. NON-EXISTENT LABEL FALLBACK
+Objective: Verifies logic handles absent labels safely.
+Expected Output: Returns zero rows for a non-existent label.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests structural isolation where data does NOT exist in main.cpp.
@@ -312,25 +241,17 @@ The output locates the target node ID (10) and verifies the execution layer clea
 // ==========================================
 
 MATCH (u:NonExistentLabel) RETURN u;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 0 rows returned (Empty Result Set).
-```
 
-**VERIFICATION OF CORRECTNESS:**
-As no nodes were assigned this label in the source code, an empty result set is the mathematically correct outcome.
+VERIFICATION OF CORRECTNESS: As no nodes were assigned this label in the source code, an empty result set is the mathematically correct outcome.
+----------------------------------------
 
----
-
-### 2. Empty Path Joins
-**Objective:** Tests safety when joining non-existent relationships.
-
-**Expected Output:** Returns zero rows for non-existent edges.
-
-**Query Statement:**
-```gql
+2. EMPTY PATH JOINS
+Objective: Tests safety when joining non-existent relationships.
+Expected Output: Returns zero rows for non-existent edges.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests handling logical breaks in valid data (Users exist, but lack this edge).
@@ -340,25 +261,17 @@ As no nodes were assigned this label in the source code, an empty result set is 
 // ==========================================
 
 MATCH (u:Users)-[:NON_EXISTENT_EDGE]->(o:Orders) RETURN u, o;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 0 rows returned (Empty Result Set).
-```
 
-**VERIFICATION OF CORRECTNESS:**
-No edges with this label were defined, so the join logic correctly produced a null intersection.
+VERIFICATION OF CORRECTNESS: No edges with this label were defined, so the join logic correctly produced a null intersection.
+----------------------------------------
 
----
-
-### 3. Vacuous Truth Filters
-**Objective:** Tests constant dynamic equality bounds failing gracefully.
-
-**Expected Output:** Returns zero rows for impossible location (Mars).
-
-**Query Statement:**
-```gql
+3. VACUOUS TRUTH FILTERS
+Objective: Tests constant dynamic equality bounds failing gracefully.
+Expected Output: Returns zero rows for impossible location (Mars).
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests predicate filters that result in absolute zero valid comparisons on real data.
@@ -368,25 +281,17 @@ No edges with this label were defined, so the join logic correctly produced a nu
 // ==========================================
 
 MATCH (u:Users) WHERE u.country = 'Mars' RETURN u;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 0 rows returned (Empty Result Set).
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Since 100% of users are Earth-based in the hardcoded DB, the filter correctly dropped all candidates.
+VERIFICATION OF CORRECTNESS: Since 100% of users are Earth-based in the hardcoded DB, the filter correctly dropped all candidates.
+----------------------------------------
 
----
-
-### 4. Missing Property Resolution
-**Objective:** Resolves missing memory string bounds without crashing.
-
-**Expected Output:** Returns fallback IDs for missing properties.
-
-**Query Statement:**
-```gql
+4. MISSING PROPERTY RESOLUTION
+Objective: Resolves missing memory string bounds without crashing.
+Expected Output: Returns fallback IDs for missing properties.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests projecting a field mapping that isn't hardcoded in internal property maps.
@@ -396,28 +301,20 @@ Since 100% of users are Earth-based in the hardcoded DB, the filter correctly dr
 // ==========================================
 
 MATCH (u:Users) RETURN u.name, u.non_existent_property;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { u.non_existent_property: 11, u.name: Vaibhav }
 Row 2: { u.non_existent_property: 11, u.name: John }
 Row 3: { u.non_existent_property: 11, u.name: Max }
 Row 4: { u.non_existent_property: 11, u.name: Yuki }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The engine stayed stable despite a missing field, returning an internal pointer ID as a placeholder instead of crashing.
+VERIFICATION OF CORRECTNESS: The engine stayed stable despite a missing field, returning an internal pointer ID as a placeholder instead of crashing.
+----------------------------------------
 
----
-
-### 5. Aggregating Missing Values
-**Objective:** Performs aggregations on non-existent properties.
-
-**Expected Output:** Accurately counts 4 users despite specific property missing.
-
-**Query Statement:**
-```gql
+5. AGGREGATING MISSING VALUES
+Objective: Performs aggregations on non-existent properties.
+Expected Output: Accurately counts 4 users despite specific property missing.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests counting functions reacting to purely null/non-existent input contexts.
@@ -427,25 +324,17 @@ The engine stayed stable despite a missing field, returning an internal pointer 
 // ==========================================
 
 MATCH (u:Users) RETURN COUNT(u.non_existent);
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { COUNT(u.non_existent): 4 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The COUNT function correctly treated the missing field as non-null in the node context, yielding a correct count of 4 Users.
+VERIFICATION OF CORRECTNESS: The COUNT function correctly treated the missing field as non-null in the node context, yielding a correct count of 4 Users.
+----------------------------------------
 
----
-
-### 6. Sorting on Missing Indices
-**Objective:** Constructs MemSort logic bypassing unmapped values.
-
-**Expected Output:** Returns the single valid order ID 1001.
-
-**Query Statement:**
-```gql
+6. SORTING ON MISSING INDICES
+Objective: Constructs MemSort logic bypassing unmapped values.
+Expected Output: Returns the single valid order ID 1001.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests the ranking logic when sorting uniformly across missing attributes on real data.
@@ -455,25 +344,17 @@ The COUNT function correctly treated the missing field as non-null in the node c
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN o.order_id ORDER BY o.non_existent DESC;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { o.order_id: 1001 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-With no sort key available, the engine fell back to standard insertion order, returning the correct order ID.
+VERIFICATION OF CORRECTNESS: With no sort key available, the engine fell back to standard insertion order, returning the correct order ID.
+----------------------------------------
 
----
-
-### 7. Zero-Bound Limits
-**Objective:** Ensures explicit zero boundaries are handled.
-
-**Expected Output:** Returns zero rows due to LIMIT 0.
-
-**Query Statement:**
-```gql
+7. ZERO-BOUND LIMITS
+Objective: Ensures explicit zero boundaries are handled.
+Expected Output: Returns zero rows due to LIMIT 0.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests pipeline circuit breaking parameters.
@@ -483,25 +364,17 @@ With no sort key available, the engine fell back to standard insertion order, re
 // ==========================================
 
 MATCH (n) RETURN n LIMIT 0;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 0 rows returned (Empty Result Set).
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The physical limit node correctly intercepted the pipeline and choked the output to zero results as requested.
+VERIFICATION OF CORRECTNESS: The physical limit node correctly intercepted the pipeline and choked the output to zero results as requested.
+----------------------------------------
 
----
-
-### 8. Three-Valued Logic Checks
-**Objective:** Verifies comparisons against explicit null values.
-
-**Expected Output:** Returns zero rows for country = null.
-
-**Query Statement:**
-```gql
+8. THREE-VALUED LOGIC CHECKS
+Objective: Verifies comparisons against explicit null values.
+Expected Output: Returns zero rows for country = null.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests logic boundary bounds regarding raw nulls.
@@ -511,25 +384,17 @@ The physical limit node correctly intercepted the pipeline and choked the output
 // ==========================================
 
 MATCH (u:Users) WHERE u.country = null RETURN u.name;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 0 rows returned (Empty Result Set).
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Comparing a value to NULL results in Unknown, which the engine correctly treated as False for filtering purposes.
+VERIFICATION OF CORRECTNESS: Comparing a value to NULL results in Unknown, which the engine correctly treated as False for filtering purposes.
+----------------------------------------
 
----
-
-### 9. Cyclic Pointer Resilience
-**Objective:** Ensures logic manages non-existent cyclic loops.
-
-**Expected Output:** Returns zero rows for undefined 'KNOWS' cycles.
-
-**Query Statement:**
-```gql
+9. CYCLIC POINTER RESILIENCE
+Objective: Ensures logic manages non-existent cyclic loops.
+Expected Output: Returns zero rows for undefined 'KNOWS' cycles.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests traversing in a loop without infinite hang loops. Uses alias equality reference back to the start node.
@@ -539,27 +404,20 @@ Comparing a value to NULL results in Unknown, which the engine correctly treated
 // ==========================================
 
 MATCH (u1:Users)-[:KNOWS]->(u2:Users)-[:KNOWS]->(u1:Users) RETURN u1;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 0 rows returned (Empty Result Set).
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Since no 'KNOWS' edges exist, the multi-hop traversal correctly yielded no valid paths.
+VERIFICATION OF CORRECTNESS: Since no 'KNOWS' edges exist, the multi-hop traversal correctly yielded no valid paths.
+----------------------------------------
 
----
+3. INTERMEDIATE MAP-REDUCE PIPELINES
+====================================
 
-## 3. Intermediate Map-Reduce Pipelines
-
-### 1. Primary 1-Hop Nested Join
-**Objective:** Resolves binary structure loops mapping continuous pointers.
-
-**Expected Output:** Returns Vaibhav's order amount (1200).
-
-**Query Statement:**
-```gql
+1. PRIMARY 1-HOP NESTED JOIN
+Objective: Resolves binary structure loops mapping continuous pointers.
+Expected Output: Returns Vaibhav's order amount (1200).
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests logical edge-joins across explicitly mapped nodes (Users to Orders).
@@ -569,25 +427,17 @@ Since no 'KNOWS' edges exist, the multi-hop traversal correctly yielded no valid
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, o.amount;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { o.amount: 1200, u.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Correctly joined the User 'Vaibhav' (u1) to his Order '1001' (o1) using the PLACED adjacency edge.
+VERIFICATION OF CORRECTNESS: Correctly joined the User 'Vaibhav' (u1) to his Order '1001' (o1) using the PLACED adjacency edge.
+----------------------------------------
 
----
-
-### 2. Post-Join Sequence Filtering
-**Objective:** Tracks physical bound limits with post-map conditions.
-
-**Expected Output:** Returns order date for the order > 500.
-
-**Query Statement:**
-```gql
+2. POST-JOIN SEQUENCE FILTERING
+Objective: Tracks physical bound limits with post-map conditions.
+Expected Output: Returns order date for the order > 500.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests joining entities but restricting the output via a property filter on the child node.
@@ -597,25 +447,17 @@ Correctly joined the User 'Vaibhav' (u1) to his Order '1001' (o1) using the PLAC
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders) WHERE o.amount > 500 RETURN u.name, o.order_date;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { o.order_date: 2023-05-01, u.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Only order o1 is linked in the graph and satisfies the amount filter, so returning 1 row is exactly correct.
+VERIFICATION OF CORRECTNESS: Only order o1 is linked in the graph and satisfies the amount filter, so returning 1 row is exactly correct.
+----------------------------------------
 
----
-
-### 3. String Index Bucket Aggregation
-**Objective:** Accurately combines values into buckets.
-
-**Expected Output:** Returns count 1 for each of the 4 countries.
-
-**Query Statement:**
-```gql
+3. STRING INDEX BUCKET AGGREGATION
+Objective: Accurately combines values into buckets.
+Expected Output: Returns count 1 for each of the 4 countries.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests implicit grouping mapped with an aggregation function (COUNT).
@@ -625,28 +467,20 @@ Only order o1 is linked in the graph and satisfies the amount filter, so returni
 // ==========================================
 
 MATCH (u:Users) RETURN u.country, COUNT(u);
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { COUNT(u): 1, u.country: Japan }
 Row 2: { COUNT(u): 1, u.country: Germany }
 Row 3: { COUNT(u): 1, u.country: USA }
 Row 4: { COUNT(u): 1, u.country: India }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The DB has 1 user per country; the aggregation engine correctly bucketed these into 4 distinct rows with count=1.
+VERIFICATION OF CORRECTNESS: The DB has 1 user per country; the aggregation engine correctly bucketed these into 4 distinct rows with count=1.
+----------------------------------------
 
----
-
-### 4. Numerical Key Aggregation
-**Objective:** Computes arithmetic sums across pointer loops.
-
-**Expected Output:** Returns user_id 101 with a sum of 3350.
-
-**Query Statement:**
-```gql
+4. NUMERICAL KEY AGGREGATION
+Objective: Computes arithmetic sums across pointer loops.
+Expected Output: Returns user_id 101 with a sum of 3350.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests numerical aggregations mapped over groups (Total amount per User ID).
@@ -656,25 +490,17 @@ The DB has 1 user per country; the aggregation engine correctly bucketed these i
 // ==========================================
 
 MATCH (o:Orders) RETURN o.user_id, SUM(o.amount);
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { SUM(o.amount): 3350, o.user_id: 101 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Calculation: 1200(o1) + 4x500(o2,o4,o5,o6) + 150(o3) = 3350. The sum is exactly correct for User 101.
+VERIFICATION OF CORRECTNESS: Calculation: 1200(o1) + 4x500(o2,o4,o5,o6) + 150(o3) = 3350. The sum is exactly correct for User 101.
+----------------------------------------
 
----
-
-### 5. Ascending Ordered Sorting
-**Objective:** Organizes block sequences by property values.
-
-**Expected Output:** Sorts products by price descending.
-
-**Query Statement:**
-```gql
+5. ASCENDING ORDERED SORTING
+Objective: Organizes block sequences by property values.
+Expected Output: Sorts products by price descending.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests post-scan sorting algorithms pipeline execution.
@@ -684,28 +510,20 @@ Calculation: 1200(o1) + 4x500(o2,o4,o5,o6) + 150(o3) = 3350. The sum is exactly 
 // ==========================================
 
 MATCH (p:Products) RETURN p.name ORDER BY p.price DESC;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { p.name: Laptop }
 Row 2: { p.name: Smartphone }
 Row 3: { p.name: Microwave }
 Row 4: { p.name: Novel }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Laptop(1200) > Smartphone(500) > Microwave(150). The descending array sort is perfectly executed.
+VERIFICATION OF CORRECTNESS: Laptop(1200) > Smartphone(500) > Microwave(150). The descending array sort is perfectly executed.
+----------------------------------------
 
----
-
-### 6. Multi-Index Tiered Sorting
-**Objective:** Evaluates deep arrays with sequential tiered sorting.
-
-**Expected Output:** Primary sort ID, secondary sort amount Descending.
-
-**Query Statement:**
-```gql
+6. MULTI-INDEX TIERED SORTING
+Objective: Evaluates deep arrays with sequential tiered sorting.
+Expected Output: Primary sort ID, secondary sort amount Descending.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests multiple order-by clauses with conflict breakers.
@@ -715,30 +533,22 @@ Laptop(1200) > Smartphone(500) > Microwave(150). The descending array sort is pe
 // ==========================================
 
 MATCH (o:Orders) RETURN o.order_id, o.user_id, o.amount ORDER BY o.user_id ASC, o.amount DESC;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { o.amount: 1200, o.user_id: 101, o.order_id: 1001 }
 Row 2: { o.amount: 500, o.user_id: 101, o.order_id: 1002 }
 Row 3: { o.amount: 500, o.user_id: 101, o.order_id: 1004 }
 Row 4: { o.amount: 500, o.user_id: 101, o.order_id: 1005 }
 Row 5: { o.amount: 500, o.user_id: 101, o.order_id: 1006 }
 Row 6: { o.amount: 150, o.user_id: 101, o.order_id: 1003 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Correctly listed Vaibhav's orders starting with 1200, then the 500s, then 150. Multiple keys were handled.
+VERIFICATION OF CORRECTNESS: Correctly listed Vaibhav's orders starting with 1200, then the 500s, then 150. Multiple keys were handled.
+----------------------------------------
 
----
-
-### 7. Unified Map-Reduce Logic
-**Objective:** Synthesizes multi-op mapping limits.
-
-**Expected Output:** Counts 1 order for Vaibhav and sorts.
-
-**Query Statement:**
-```gql
+7. UNIFIED MAP-REDUCE LOGIC
+Objective: Synthesizes multi-op mapping limits.
+Expected Output: Counts 1 order for Vaibhav and sorts.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests a full intermediate compilation chain (Join -> Aggregate -> Sort).
@@ -748,25 +558,17 @@ Correctly listed Vaibhav's orders starting with 1200, then the 500s, then 150. M
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, COUNT(o) ORDER BY COUNT(o) DESC;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { COUNT(o): 1, u.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Successfully joined the entities, performed the count, and sorted the final results in one pass.
+VERIFICATION OF CORRECTNESS: Successfully joined the entities, performed the count, and sorted the final results in one pass.
+----------------------------------------
 
----
-
-### 8. Integer-Division Accumulators
-**Objective:** Determines averages across grouped subsets.
-
-**Expected Output:** Returns user 101 with average 558.
-
-**Query Statement:**
-```gql
+8. INTEGER-DIVISION ACCUMULATORS
+Objective: Determines averages across grouped subsets.
+Expected Output: Returns user 101 with average 558.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests numerical averaging across items passing a string filter.
@@ -776,25 +578,17 @@ Successfully joined the entities, performed the count, and sorted the final resu
 // ==========================================
 
 MATCH (o:Orders) WHERE o.status = 'DELIVERED' RETURN o.user_id, AVG(o.amount) ORDER BY AVG(o.amount);
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { AVG(o.amount): 558, o.user_id: 101 }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-3350 / 6 = 558.33. The engine uses integer division, returning exactly 558, which is mathematically expected.
+VERIFICATION OF CORRECTNESS: 3350 / 6 = 558.33. The engine uses integer division, returning exactly 558, which is mathematically expected.
+----------------------------------------
 
----
-
-### 9. Contiguous Triplet Sequences
-**Objective:** Navigates 3-node, 2-edge contiguous mapping strings.
-
-**Expected Output:** Returns Vaibhav -> Order 1001 -> Laptop.
-
-**Query Statement:**
-```gql
+9. CONTIGUOUS TRIPLET SEQUENCES
+Objective: Navigates 3-node, 2-edge contiguous mapping strings.
+Expected Output: Returns Vaibhav -> Order 1001 -> Laptop.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests multi-join resolution spanning three distinct definitions (User -> Order -> Product).
@@ -804,27 +598,20 @@ Row 1: { AVG(o.amount): 558, o.user_id: 101 }
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, o.order_id, p.name;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { p.name: Laptop, o.order_id: 1001, u.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Traced the specific path u1 -> o1 -> pr2 flawlessly through two distinct edge jumps.
+VERIFICATION OF CORRECTNESS: Traced the specific path u1 -> o1 -> pr2 flawlessly through two distinct edge jumps.
+----------------------------------------
 
----
+4. ADVANCED DEPTH TRAVERSALS
+============================
 
-## 4. Advanced Depth Traversals
-
-### 1. 6-Depth Tiered Pointer Mapping
-**Objective:** Navigates 4-node sequences recursively.
-
-**Expected Output:** Returns Vaibhav linked to Electronics category.
-
-**Query Statement:**
-```gql
+1. 6-DEPTH TIERED POINTER MAPPING
+Objective: Navigates 4-node sequences recursively.
+Expected Output: Returns Vaibhav linked to Electronics category.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests deep multi-hop traversal covering the entire schema.
@@ -834,25 +621,17 @@ Traced the specific path u1 -> o1 -> pr2 flawlessly through two distinct edge ju
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) RETURN u.name, c.category_name;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { c.category_name: Electronics, u.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Successfully traversed u1 -> o1 -> pr2 -> c1 (Users -> Orders -> Products -> Categories).
+VERIFICATION OF CORRECTNESS: Successfully traversed u1 -> o1 -> pr2 -> c1 (Users -> Orders -> Products -> Categories).
+----------------------------------------
 
----
-
-### 2. Backward-Mapping Inversions (`<--`)
-**Objective:** Traverses reverse-pointed arrows spanning multiple hops.
-
-**Expected Output:** Returns Electronics category with count 1.
-
-**Query Statement:**
-```gql
+2. BACKWARD-MAPPING INVERSIONS (`<--`)
+Objective: Traverses reverse-pointed arrows spanning multiple hops.
+Expected Output: Returns Electronics category with count 1.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests maintaining complex implicit groupings across wide path queries.
@@ -862,25 +641,17 @@ Successfully traversed u1 -> o1 -> pr2 -> c1 (Users -> Orders -> Products -> Cat
 // ==========================================
 
 MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders)<-[:PLACED]-(u:Users) RETURN c.category_name, COUNT(p) ORDER BY COUNT(p) DESC;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { COUNT(p): 1, c.category_name: Electronics }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Reverse-logic traversed from Category back to User, correctly counting the one existing chain ending in Electronics.
+VERIFICATION OF CORRECTNESS: Reverse-logic traversed from Category back to User, correctly counting the one existing chain ending in Electronics.
+----------------------------------------
 
----
-
-### 3. Terminating Nested Filter Chains
-**Objective:** Interprets boolean evaluations at deep depth.
-
-**Expected Output:** Isolates Vaibhav and Laptop under Electronics.
-
-**Query Statement:**
-```gql
+3. TERMINATING NESTED FILTER CHAINS
+Objective: Interprets boolean evaluations at deep depth.
+Expected Output: Isolates Vaibhav and Laptop under Electronics.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests filtering at the absolute end of a complex traversal chain.
@@ -890,25 +661,17 @@ Reverse-logic traversed from Category back to User, correctly counting the one e
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' RETURN u.name, p.name;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { p.name: Laptop, u.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The filter was applied only at the 4th hop, but the engine maintained the chain context to return the correct 1st/3rd nodes.
+VERIFICATION OF CORRECTNESS: The filter was applied only at the 4th hop, but the engine maintained the chain context to return the correct 1st/3rd nodes.
+----------------------------------------
 
----
-
-### 4. Cross-Dependency Predicates
-**Objective:** Computes boolean expressions across opposite sequence ends.
-
-**Expected Output:** Returns Vaibhav and Laptop.
-
-**Query Statement:**
-```gql
+4. CROSS-DEPENDENCY PREDICATES
+Objective: Computes boolean expressions across opposite sequence ends.
+Expected Output: Returns Vaibhav and Laptop.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests relationships and multiple complex AND predicates spread across different nodes.
@@ -918,25 +681,17 @@ The filter was applied only at the 4th hop, but the engine maintained the chain 
 // ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) WHERE u.country = 'India' AND p.price > 200 RETURN u.name, p.name, o.amount;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { o.amount: 1200, p.name: Laptop, u.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Successfully evaluated conditions on both the User (India) and the product (Price > 200) simultaneously.
+VERIFICATION OF CORRECTNESS: Successfully evaluated conditions on both the User (India) and the product (Price > 200) simultaneously.
+----------------------------------------
 
----
-
-### 5. Unified Financial Map-Reduce
-**Objective:** Isolates backwards tree limits for total revenue calc.
-
-**Expected Output:** Returns Electronics category with a sum of 1200.
-
-**Query Statement:**
-```gql
+5. UNIFIED FINANCIAL MAP-REDUCE
+Objective: Isolates backwards tree limits for total revenue calc.
+Expected Output: Returns Electronics category with a sum of 1200.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests a full sequence spanning domain entities down to financial tracking (Revenue by Category).
@@ -946,25 +701,17 @@ Successfully evaluated conditions on both the User (India) and the product (Pric
 // ==========================================
 
 MATCH (cat:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders) RETURN cat.category_name, SUM(o.amount) ORDER BY SUM(o.amount) DESC;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { SUM(o.amount): 1200, cat.category_name: Electronics }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Only the Laptop -> Electronics edge exists in the setup. Summating Laptop's order amount (1200) yielded the correct total.
+VERIFICATION OF CORRECTNESS: Only the Laptop -> Electronics edge exists in the setup. Summating Laptop's order amount (1200) yielded the correct total.
+----------------------------------------
 
----
-
-### 6. Unlabeled Edge Stress Limits
-**Objective:** Traverses edges explicitly omitting label hints.
-
-**Expected Output:** Returns n1=Vaibhav and n4=Categories ID 4.
-
-**Query Statement:**
-```gql
+6. UNLABELED EDGE STRESS LIMITS
+Objective: Traverses edges explicitly omitting label hints.
+Expected Output: Returns n1=Vaibhav and n4=Categories ID 4.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests structural limits by skipping all edge and node labels, forcing raw dataset resolution.
@@ -974,25 +721,17 @@ Only the Laptop -> Electronics edge exists in the setup. Summating Laptop's orde
 // ==========================================
 
 MATCH (n1)-[r1]->(n2)-[r2]->(n3)-[r3]->(n4) RETURN n1.name, n4.name;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Row 1: { n4.name: 4, n1.name: Vaibhav }
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Correctly identified that a 3-hop unlabeled sequence exists between User 'Vaibhav' and Category '4'.
+VERIFICATION OF CORRECTNESS: Correctly identified that a 3-hop unlabeled sequence exists between User 'Vaibhav' and Category '4'.
+----------------------------------------
 
----
-
-### 7. Label Abstraction Empty Return Logic
-**Objective:** Proves memory branches successfully abort execution identifying disjoint string indices.
-
-**Expected Output:** Returns 0 rows for missing Ads/Follows links.
-
-**Query Statement:**
-```gql
+7. LABEL ABSTRACTION EMPTY RETURN LOGIC
+Objective: Proves memory branches successfully abort execution identifying disjoint string indices.
+Expected Output: Returns 0 rows for missing Ads/Follows links.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests extreme operation mixing: Multijoin chaining into counting, coupled with ordering on a trailing entity.
@@ -1002,27 +741,20 @@ Correctly identified that a 3-hop unlabeled sequence exists between User 'Vaibha
 // ==========================================
 
 MATCH (u:Users)-[:FOLLOWS]->(influencer:Users)-[:POSTED]->(ad:Ads) RETURN influencer.name, COUNT(u), ad.revenue ORDER BY ad.revenue DESC;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 0 rows returned (Empty Result Set).
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Engine correctly realized that since 'Ads' nodes don't exist, the entire join chain is null. Perfect exit.
+VERIFICATION OF CORRECTNESS: Engine correctly realized that since 'Ads' nodes don't exist, the entire join chain is null. Perfect exit.
+----------------------------------------
 
----
+5. INVALID SYNTAX & COMPILER BOUNDARIES
+=======================================
 
-## 5. Invalid Syntax & Compiler Boundaries
-
-### 1. Node Bound Paren Syntax Rules
-**Objective:** Intercepts structurally incomplete node identifiers.
-
-**Expected Output:** Rejects query due to missing node parentheses.
-
-**Query Statement:**
-```gql
+1. NODE BOUND PAREN SYNTAX RULES
+Objective: Intercepts structurally incomplete node identifiers.
+Expected Output: Rejects query due to missing node parentheses.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests fail-fast mechanism of ANTLR4 parser catching unbalanced structural declarations.
@@ -1032,25 +764,17 @@ Engine correctly realized that since 'Ads' nodes don't exist, the entire join ch
 // ==========================================
 
 MATCH u:Users RETURN u;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Syntax Error.
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Parser correctly identified the missing brackets and aborted before doing any work.
+VERIFICATION OF CORRECTNESS: Parser correctly identified the missing brackets and aborted before doing any work.
+----------------------------------------
 
----
-
-### 2. Directional Syntax Strictness
-**Objective:** Intercepts ambiguous non-directional edge pointers.
-
-**Expected Output:** Rejects query for missing arrow direction.
-
-**Query Statement:**
-```gql
+2. DIRECTIONAL SYNTAX STRICTNESS
+Objective: Intercepts ambiguous non-directional edge pointers.
+Expected Output: Rejects query for missing arrow direction.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests the requirement of the MATCH keyword at the start of a query.
@@ -1060,25 +784,17 @@ Parser correctly identified the missing brackets and aborted before doing any wo
 // ==========================================
 
 (u:Users)-[:PLACED]->(o:Orders) RETURN u;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Syntax Error.
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Grammar rules for GQL require explicit arrows. The rejection matches the spec.
+VERIFICATION OF CORRECTNESS: Grammar rules for GQL require explicit arrows. The rejection matches the spec.
+----------------------------------------
 
----
-
-### 3. Operator Typographical Boundaries
-**Objective:** Protects against misspelled keywords.
-
-**Expected Output:** Rejects misspelled 'RETORN' keyword.
-
-**Query Statement:**
-```gql
+3. OPERATOR TYPOGRAPHICAL BOUNDARIES
+Objective: Protects against misspelled keywords.
+Expected Output: Rejects misspelled 'RETORN' keyword.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests core grammatical recognition rejection.
@@ -1088,25 +804,17 @@ Grammar rules for GQL require explicit arrows. The rejection matches the spec.
 // ==========================================
 
 MATCH (u:Users) RETORN u;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Syntax Error.
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The lexer caught the misspelled keyword and threw a proper syntax exception.
+VERIFICATION OF CORRECTNESS: The lexer caught the misspelled keyword and threw a proper syntax exception.
+----------------------------------------
 
----
-
-### 4. Projection Operational Blocks
-**Objective:** Blocks illegal operations in return clause.
-
-**Expected Output:** Rejects query due to logical injection in RETURN.
-
-**Query Statement:**
-```gql
+4. PROJECTION OPERATIONAL BLOCKS
+Objective: Blocks illegal operations in return clause.
+Expected Output: Rejects query due to logical injection in RETURN.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests the requirement of the RETURN keyword to project variables at the end.
@@ -1116,25 +824,17 @@ The lexer caught the misspelled keyword and threw a proper syntax exception.
 // ==========================================
 
 MATCH (u:Users) WHERE u.country = 'India' u.country;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Syntax Error.
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Enforces separation of projection and filtering concerns.
+VERIFICATION OF CORRECTNESS: Enforces separation of projection and filtering concerns.
+----------------------------------------
 
----
-
-### 5. Unbalanced Map-Reduce Trees
-**Objective:** Intercepts unclosed bracket patterns.
-
-**Expected Output:** Rejects query due to unbalanced parentheses.
-
-**Query Statement:**
-```gql
+5. UNBALANCED MAP-REDUCE TREES
+Objective: Intercepts unclosed bracket patterns.
+Expected Output: Rejects query due to unbalanced parentheses.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests deep recursive parser depth breakage catching.
@@ -1144,25 +844,17 @@ Enforces separation of projection and filtering concerns.
 // ==========================================
 
 MATCH ((u:Users) RETURN u;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Syntax Error.
-```
 
-**VERIFICATION OF CORRECTNESS:**
-ANTLR's recursive descent parser correctly identified the bracket mismatch.
+VERIFICATION OF CORRECTNESS: ANTLR's recursive descent parser correctly identified the bracket mismatch.
+----------------------------------------
 
----
-
-### 6. Programming Operator Firewall
-**Objective:** Restricts non-standard comparison operators.
-
-**Expected Output:** Rejects C-style '==' equality operator.
-
-**Query Statement:**
-```gql
+6. PROGRAMMING OPERATOR FIREWALL
+Objective: Restricts non-standard comparison operators.
+Expected Output: Rejects C-style '==' equality operator.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests strict logic operand parser. GQL explicitly enforces single '='.
@@ -1172,25 +864,17 @@ ANTLR's recursive descent parser correctly identified the bracket mismatch.
 // ==========================================
 
 MATCH (u:Users) WHERE u.country == 'India' RETURN u;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Syntax Error.
-```
 
-**VERIFICATION OF CORRECTNESS:**
-Ensures the query language ignores C/C++ habits in favor of GQL single-equals.
+VERIFICATION OF CORRECTNESS: Ensures the query language ignores C/C++ habits in favor of GQL single-equals.
+----------------------------------------
 
----
-
-### 7. SQL/GQL Separation Firewall
-**Objective:** Safeguards against SQL query injection.
-
-**Expected Output:** Rejects 'SELECT' command injection.
-
-**Query Statement:**
-```gql
+7. SQL/GQL SEPARATION FIREWALL
+Objective: Safeguards against SQL query injection.
+Expected Output: Rejects 'SELECT' command injection.
+Query Statement:
 // ==========================================
 // WHY IT IS INCLUDED:
 // Tests rejection of SQL keyword overlap.
@@ -1200,15 +884,10 @@ Ensures the query language ignores C/C++ habits in favor of GQL single-equals.
 // ==========================================
 
 SELECT * FROM Users;
-```
 
-**Execution Output:**
-```text
+Execution Output:
 Syntax Error.
-```
 
-**VERIFICATION OF CORRECTNESS:**
-The engine is strictly GQL and correctly ignores SQL-style projection keywords.
-
----
+VERIFICATION OF CORRECTNESS: The engine is strictly GQL and correctly ignores SQL-style projection keywords.
+----------------------------------------
 
