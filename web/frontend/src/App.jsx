@@ -17,6 +17,8 @@ function App() {
   const graphContainerRef = useRef(null);
   const [graphDim, setGraphDim] = useState({ width: 600, height: 400 });
   const [globalGraphData, setGlobalGraphData] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'graph') {
@@ -244,7 +246,7 @@ function App() {
               </div>
             )}
             
-            {(output || errorDetails) && (
+            {(output || errorDetails || activeTab === 'graph') && (
               <div className="content-area animate-fade-in">
                 {errorDetails && (
                   <div className="error-box">
@@ -289,26 +291,132 @@ function App() {
                 )}
 
                 {activeTab === 'graph' && (
-                  <div className="graph-container" ref={graphContainerRef} style={{ width: '100%', height: '100%', minHeight: '400px', display: 'flex', position: 'relative', overflow: 'hidden', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    {globalGraphData ? (
-                      <ForceGraph2D
-                        width={graphDim.width}
-                        height={graphDim.height}
-                        graphData={globalGraphData}
-                        nodeLabel={(node) => node.properties?.name || node.properties?.category_name || node.id}
-                        nodeAutoColorBy={(node) => node.labels?.[0]}
-                        linkDirectionalParticles={2}
-                        linkDirectionalParticleSpeed={0.01}
-                        backgroundColor="#0d0f12"
-                        nodeRelSize={8}
-                        linkColor={() => 'rgba(255,255,255,0.2)'}
-                      />
-                    ) : (
-                      <div className="empty-state">
-                        <span className="spinner"></span>
-                        <p>Loading Dataset...</p>
+                  <div className="graph-wrapper">
+                    <div className="graph-container-header">
+                      <div className="graph-title">
+                        <Share2 size={16} className="text-accent" />
+                        <span>Interactive Dataset Map</span>
                       </div>
-                    )}
+                      <div className="graph-stats">
+                        {globalGraphData && (
+                          <>
+                            <span className="stat-badge">{globalGraphData.nodes?.length || 0} Nodes</span>
+                            <span className="stat-badge">{globalGraphData.links?.length || 0} Relationships</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="graph-content" ref={graphContainerRef}>
+                      {globalGraphData ? (
+                        <>
+                          <ForceGraph2D
+                            width={graphDim.width}
+                            height={graphDim.height}
+                            graphData={globalGraphData}
+                            nodeLabel={(node) => node.properties?.name || node.properties?.category_name || node.id}
+                            nodeColor={(node) => {
+                              const label = node.labels?.[0] || 'Unknown';
+                              const colors = {
+                                'User': '#8b5cf6',
+                                'Product': '#3b82f6',
+                                'Category': '#10b981',
+                                'Order': '#f59e0b',
+                                'Review': '#ef4444'
+                              };
+                              return colors[label] || '#94a3b8';
+                            }}
+                            nodeRelSize={6}
+                            linkDirectionalParticles={4}
+                            linkDirectionalParticleSpeed={0.005}
+                            linkWidth={1}
+                            linkColor={() => 'rgba(255,255,255,0.1)'}
+                            backgroundColor="transparent"
+                            onNodeClick={(node) => setSelectedNode(node)}
+                            onNodeHover={(node) => setHoveredNode(node)}
+                            nodeCanvasObject={(node, ctx, globalScale) => {
+                              const label = node.properties?.name || node.properties?.category_name || node.id;
+                              const fontSize = 12/globalScale;
+                              ctx.font = `${fontSize}px Inter`;
+                              const textWidth = ctx.measureText(label).width;
+                              const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
+
+                              // Node circle
+                              const r = 4;
+                              ctx.beginPath();
+                              ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
+                              ctx.fillStyle = node.color;
+                              ctx.fill();
+                              
+                              if (hoveredNode === node || selectedNode === node) {
+                                ctx.strokeStyle = '#fff';
+                                ctx.lineWidth = 2/globalScale;
+                                ctx.stroke();
+                              }
+
+                              // Label
+                              if (globalScale > 1.5) {
+                                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(label, node.x, node.y + r + fontSize);
+                              }
+                            }}
+                          />
+                          
+                          {/* Legend */}
+                          <div className="graph-legend">
+                            <h4>Legend</h4>
+                            <div className="legend-items">
+                              {[...new Set(globalGraphData.nodes.map(n => n.labels?.[0] || 'Unknown'))].map(label => (
+                                <div key={label} className="legend-item">
+                                  <span className="legend-color" style={{ backgroundColor: 
+                                    label === 'User' ? '#8b5cf6' : 
+                                    label === 'Product' ? '#3b82f6' : 
+                                    label === 'Category' ? '#10b981' : 
+                                    label === 'Order' ? '#f59e0b' : 
+                                    label === 'Review' ? '#ef4444' : '#94a3b8' 
+                                  }}></span>
+                                  <span>{label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Node Details Popup */}
+                          {selectedNode && (
+                            <div className="node-details-popup animate-fade-in">
+                              <div className="popup-header">
+                                <span>Node Details</span>
+                                <button className="close-btn" onClick={() => setSelectedNode(null)}>×</button>
+                              </div>
+                              <div className="popup-content">
+                                <div className="detail-row">
+                                  <span className="detail-label">ID</span>
+                                  <span className="detail-value">{selectedNode.id}</span>
+                                </div>
+                                <div className="detail-row">
+                                  <span className="detail-label">Labels</span>
+                                  <span className="detail-value">{selectedNode.labels?.join(', ')}</span>
+                                </div>
+                                <div className="divider"></div>
+                                {selectedNode.properties && Object.entries(selectedNode.properties).map(([key, val]) => (
+                                  <div key={key} className="detail-row">
+                                    <span className="detail-label">{key}</span>
+                                    <span className="detail-value">{String(val)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="graph-loading">
+                          <span className="spinner"></span>
+                          <p>Mapping dataset connections...</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
