@@ -318,11 +318,11 @@ function App() {
                             nodeColor={(node) => {
                               const label = node.labels?.[0] || 'Unknown';
                               const colors = {
-                                'User': '#8b5cf6',
-                                'Product': '#3b82f6',
-                                'Category': '#10b981',
-                                'Order': '#f59e0b',
-                                'Review': '#ef4444'
+                                'Users': '#8b5cf6',
+                                'Products': '#3b82f6',
+                                'Categories': '#10b981',
+                                'Orders': '#f59e0b',
+                                'Reviews': '#ef4444'
                               };
                               return colors[label] || '#94a3b8';
                             }}
@@ -335,17 +335,28 @@ function App() {
                             onNodeClick={(node) => setSelectedNode(node)}
                             onNodeHover={(node) => setHoveredNode(node)}
                             nodeCanvasObject={(node, ctx, globalScale) => {
-                              const label = node.properties?.name || node.properties?.category_name || node.id;
+                              const nodeLabel = node.properties?.name || node.properties?.category_name || node.id;
                               const fontSize = 12/globalScale;
                               ctx.font = `${fontSize}px Inter`;
-                              const textWidth = ctx.measureText(label).width;
+                              const textWidth = ctx.measureText(nodeLabel).width;
                               const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
+
+                              // Compute color from label
+                              const typeLabel = node.labels?.[0] || 'Unknown';
+                              const colorMap = {
+                                'Users': '#8b5cf6',
+                                'Products': '#3b82f6',
+                                'Categories': '#10b981',
+                                'Orders': '#f59e0b',
+                                'Reviews': '#ef4444'
+                              };
+                              const nodeColor = colorMap[typeLabel] || '#94a3b8';
 
                               // Node circle
                               const r = 4;
                               ctx.beginPath();
                               ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-                              ctx.fillStyle = node.color;
+                              ctx.fillStyle = nodeColor;
                               ctx.fill();
                               
                               if (hoveredNode === node || selectedNode === node) {
@@ -359,7 +370,7 @@ function App() {
                                 ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                ctx.fillText(label, node.x, node.y + r + fontSize);
+                                ctx.fillText(nodeLabel, node.x, node.y + r + fontSize);
                               }
                             }}
                           />
@@ -371,11 +382,11 @@ function App() {
                               {[...new Set(globalGraphData.nodes.map(n => n.labels?.[0] || 'Unknown'))].map(label => (
                                 <div key={label} className="legend-item">
                                   <span className="legend-color" style={{ backgroundColor: 
-                                    label === 'User' ? '#8b5cf6' : 
-                                    label === 'Product' ? '#3b82f6' : 
-                                    label === 'Category' ? '#10b981' : 
-                                    label === 'Order' ? '#f59e0b' : 
-                                    label === 'Review' ? '#ef4444' : '#94a3b8' 
+                                    label === 'Users' ? '#8b5cf6' : 
+                                     label === 'Products' ? '#3b82f6' : 
+                                     label === 'Categories' ? '#10b981' : 
+                                     label === 'Orders' ? '#f59e0b' : 
+                                     label === 'Reviews' ? '#ef4444' : '#94a3b8' 
                                   }}></span>
                                   <span>{label}</span>
                                 </div>
