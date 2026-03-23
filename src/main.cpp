@@ -78,10 +78,91 @@ void printTree(antlr4::tree::ParseTree* t, antlr4::Parser* recognizer, string pr
     }
 }
 
+void populateGraph(Graph& graph) {
+    auto cat1 = graph.createNode({"Categories"}, {{"category_id", Value(1)}, {"category_name", Value("Electronics")}});
+    auto cat2 = graph.createNode({"Categories"}, {{"category_id", Value(2)}, {"category_name", Value("Appliances")}});
+    auto cat3 = graph.createNode({"Categories"}, {{"category_id", Value(3)}, {"category_name", Value("Books")}});
+
+    auto pr1 = graph.createNode({"Products"}, {{"product_id", Value(1)}, {"category_id", Value(1)}, {"name", Value("Smartphone")}, {"price", Value(500)}});
+    auto pr2 = graph.createNode({"Products"}, {{"product_id", Value(2)}, {"category_id", Value(1)}, {"name", Value("Laptop")}, {"price", Value(1200)}});
+    auto pr3 = graph.createNode({"Products"}, {{"product_id", Value(3)}, {"category_id", Value(2)}, {"name", Value("Microwave")}, {"price", Value(150)}});
+    auto pr4 = graph.createNode({"Products"}, {{"product_id", Value(4)}, {"category_id", Value(3)}, {"name", Value("Novel")}, {"price", Value(20)}});
+
+    auto u1 = graph.createNode({"Users"}, {{"user_id", Value(101)}, {"name", Value("Vaibhav")}, {"country", Value("India")}});
+    auto u2 = graph.createNode({"Users"}, {{"user_id", Value(102)}, {"name", Value("John")}, {"country", Value("USA")}});
+    auto u3 = graph.createNode({"Users"}, {{"user_id", Value(103)}, {"name", Value("Max")}, {"country", Value("Germany")}});
+    auto u4 = graph.createNode({"Users"}, {{"user_id", Value(104)}, {"name", Value("Yuki")}, {"country", Value("Japan")}});
+
+    auto o1 = graph.createNode({"Orders"}, {{"order_id", Value(1001)}, {"user_id", Value(101)}, {"product_id", Value(2)}, {"amount", Value(1200)}, {"order_date", Value("2023-05-01")}, {"status", Value("DELIVERED")}});
+    auto o2 = graph.createNode({"Orders"}, {{"order_id", Value(1002)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-01-10")}, {"status", Value("DELIVERED")}});
+    auto o3 = graph.createNode({"Orders"}, {{"order_id", Value(1003)}, {"user_id", Value(101)}, {"product_id", Value(3)}, {"amount", Value(150)}, {"order_date", Value("2023-02-15")}, {"status", Value("DELIVERED")}});
+    auto o4 = graph.createNode({"Orders"}, {{"order_id", Value(1004)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-03-20")}, {"status", Value("DELIVERED")}});
+    auto o5 = graph.createNode({"Orders"}, {{"order_id", Value(1005)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-04-25")}, {"status", Value("DELIVERED")}});
+    auto o6 = graph.createNode({"Orders"}, {{"order_id", Value(1006)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-05-30")}, {"status", Value("DELIVERED")}});
+
+    if (u1 && o1) graph.createEdge(u1->id, o1->id, "PLACED", {});
+    if (o1 && pr2) graph.createEdge(o1->id, pr2->id, "CONTAINS", {});
+    if (pr2 && cat1) graph.createEdge(pr2->id, cat1->id, "BELONGS_TO", {});
+
+    if (u1 && o2) graph.createEdge(u1->id, o2->id, "PLACED", {});
+    if (o2 && pr1) graph.createEdge(o2->id, pr1->id, "CONTAINS", {});
+    if (pr1 && cat1) graph.createEdge(pr1->id, cat1->id, "BELONGS_TO", {});
+
+    if (u1 && o3) graph.createEdge(u1->id, o3->id, "PLACED", {});
+    if (o3 && pr3) graph.createEdge(o3->id, pr3->id, "CONTAINS", {});
+    if (pr3 && cat2) graph.createEdge(pr3->id, cat2->id, "BELONGS_TO", {});
+
+    if (u1 && o4) graph.createEdge(u1->id, o4->id, "PLACED", {});
+    if (o4 && pr1) graph.createEdge(o4->id, pr1->id, "CONTAINS", {});
+
+    if (u1 && o5) graph.createEdge(u1->id, o5->id, "PLACED", {});
+    if (o5 && pr1) graph.createEdge(o5->id, pr1->id, "CONTAINS", {});
+
+    if (u1 && o6) graph.createEdge(u1->id, o6->id, "PLACED", {});
+    if (o6 && pr1) graph.createEdge(o6->id, pr1->id, "CONTAINS", {});
+}
+
+void dumpGraphJSON(Graph& graph) {
+    cout << "{\"nodes\":[";
+    bool firstNode = true;
+    for (const auto& pair : graph.nodes) {
+        if (!firstNode) cout << ",";
+        firstNode = false;
+        auto n = pair.second;
+        cout << "{\"id\":\"n" << n->id << "\",\"labels\":[";
+        bool fl = true;
+        for (const auto& l : n->labels) { if(!fl) cout<<","; fl=false; cout << "\"" << jsonEscape(l) << "\""; }
+        cout << "],\"properties\":{";
+        bool fp = true;
+        for (const auto& prop : n->properties) {
+            if(!fp) cout<<","; fp=false;
+            cout << "\"" << jsonEscape(prop.first) << "\":\"" << jsonEscape(prop.second.toString()) << "\"";
+        }
+        cout << "}}";
+    }
+    cout << "],\"links\":[";
+    bool firstEdge = true;
+    for (const auto& pair : graph.edges) {
+        if (!firstEdge) cout << ",";
+        firstEdge = false;
+        auto e = pair.second;
+        cout << "{\"id\":\"e" << e->id << "\",\"source\":\"n" << e->sourceId << "\",\"target\":\"n" << e->targetId 
+             << "\",\"label\":\"" << jsonEscape(e->label) << "\"}";
+    }
+    cout << "]}" << endl;
+}
+
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " <input-file>" << endl;
+        cerr << "Usage: " << argv[0] << " <input-file> OR --dump" << endl;
         return 1;
+    }
+
+    if (string(argv[1]) == "--dump") {
+        Graph graph;
+        populateGraph(graph);
+        dumpGraphJSON(graph);
+        return 0;
     }
 
     ifstream stream(argv[1]);
@@ -141,48 +222,9 @@ int main(int argc, const char* argv[]) {
 
                 // ✅ EXECUTION ENGINE
                 cout << "\n==================== EXECUTION RESULTS ====================\n";
-                
                 // 1. Init Graph
                 Graph graph;
-                
-                // --- eCommerce Dataset ---
-                
-                // Categories
-                auto cat1 = graph.createNode({"Categories"}, {{"category_id", Value(1)}, {"category_name", Value("Electronics")}});
-                auto cat2 = graph.createNode({"Categories"}, {{"category_id", Value(2)}, {"category_name", Value("Appliances")}});
-                auto cat3 = graph.createNode({"Categories"}, {{"category_id", Value(3)}, {"category_name", Value("Books")}});
-
-                // Categories
-                auto c1 = graph.createNode({"Categories"}, {{"category_id", Value(1)}, {"category_name", Value("Electronics")}});
-                auto c2 = graph.createNode({"Categories"}, {{"category_id", Value(2)}, {"category_name", Value("Appliances")}});
-                auto c3 = graph.createNode({"Categories"}, {{"category_id", Value(3)}, {"category_name", Value("Books")}});
-
-                // Products
-                auto pr1 = graph.createNode({"Products"}, {{"product_id", Value(1)}, {"category_id", Value(1)}, {"name", Value("Smartphone")}, {"price", Value(500)}});
-                auto pr2 = graph.createNode({"Products"}, {{"product_id", Value(2)}, {"category_id", Value(1)}, {"name", Value("Laptop")}, {"price", Value(1200)}});
-                auto pr3 = graph.createNode({"Products"}, {{"product_id", Value(3)}, {"category_id", Value(2)}, {"name", Value("Microwave")}, {"price", Value(150)}});
-                auto pr4 = graph.createNode({"Products"}, {{"product_id", Value(4)}, {"category_id", Value(3)}, {"name", Value("Novel")}, {"price", Value(20)}});
-
-                // Users
-                auto u1 = graph.createNode({"Users"}, {{"user_id", Value(101)}, {"name", Value("Vaibhav")}, {"country", Value("India")}});
-                auto u2 = graph.createNode({"Users"}, {{"user_id", Value(102)}, {"name", Value("John")}, {"country", Value("USA")}});
-                auto u3 = graph.createNode({"Users"}, {{"user_id", Value(103)}, {"name", Value("Max")}, {"country", Value("Germany")}});
-                auto u4 = graph.createNode({"Users"}, {{"user_id", Value(104)}, {"name", Value("Yuki")}, {"country", Value("Japan")}});
-
-                // Orders
-                // Vaibhav (India): 6 orders, all DELIVERED, high value
-                auto o1 = graph.createNode({"Orders"}, {{"order_id", Value(1001)}, {"user_id", Value(101)}, {"product_id", Value(2)}, {"amount", Value(1200)}, {"order_date", Value("2023-05-01")}, {"status", Value("DELIVERED")}});
-                auto o2 = graph.createNode({"Orders"}, {{"order_id", Value(1002)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-01-10")}, {"status", Value("DELIVERED")}});
-                auto o3 = graph.createNode({"Orders"}, {{"order_id", Value(1003)}, {"user_id", Value(101)}, {"product_id", Value(3)}, {"amount", Value(150)}, {"order_date", Value("2023-02-15")}, {"status", Value("DELIVERED")}});
-                auto o4 = graph.createNode({"Orders"}, {{"order_id", Value(1004)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-03-20")}, {"status", Value("DELIVERED")}});
-                auto o5 = graph.createNode({"Orders"}, {{"order_id", Value(1005)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-04-25")}, {"status", Value("DELIVERED")}});
-                auto o6 = graph.createNode({"Orders"}, {{"order_id", Value(1006)}, {"user_id", Value(101)}, {"product_id", Value(1)}, {"amount", Value(500)}, {"order_date", Value("2023-05-30")}, {"status", Value("DELIVERED")}});
-
-                // Edges (Optional for this specific query as it joins on properties, but good for completeness)
-                if (u1 && o1) graph.createEdge(u1->id, o1->id, "PLACED", {});
-                if (o1 && pr2) graph.createEdge(o1->id, pr2->id, "CONTAINS", {});
-                if (pr2 && c1) graph.createEdge(pr2->id, c1->id, "BELONGS_TO", {});
-                // ... (rest would be similar)
+                populateGraph(graph);
 
 
                 // 2. Build Execution Tree

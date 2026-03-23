@@ -24,3 +24,6 @@ node server.js
 
 cd web/frontend
 npm run dev
+
+6.Whn you change data in main.cpp file then run this command
+./build.sh

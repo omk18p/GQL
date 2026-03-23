@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
-import { Play, Eraser, AlertCircle, CheckCircle, Database, Clock, Terminal, Braces } from 'lucide-react';
+import { Play, Eraser, AlertCircle, CheckCircle, Database, Clock, Terminal, Braces, Share2 } from 'lucide-react';
+import ForceGraph2D from 'react-force-graph-2d';
 import './App.css';
 
 function App() {
@@ -11,8 +12,35 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState('idle'); // idle, success, error
   const [executionTime, setExecutionTime] = useState(0);
-  const [activeTab, setActiveTab] = useState('raw'); // 'raw' or 'json'
+  const [activeTab, setActiveTab] = useState('graph'); // default to 'graph' array tab
   const [parsedData, setParsedData] = useState(null);
+  const graphContainerRef = useRef(null);
+  const [graphDim, setGraphDim] = useState({ width: 600, height: 400 });
+  const [globalGraphData, setGlobalGraphData] = useState(null);
+
+  useEffect(() => {
+    if (activeTab === 'graph') {
+      setGlobalGraphData(null); // clear to show loader, then re-fetch
+      axios.get('http://localhost:3001/api/dataset')
+        .then(res => setGlobalGraphData(res.data))
+        .catch(err => console.error("Error loading graph dataset", err));
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'graph' && graphContainerRef.current) {
+      const updateDim = () => {
+        setGraphDim({
+          width: graphContainerRef.current.clientWidth,
+          height: graphContainerRef.current.clientHeight
+        });
+      };
+      updateDim();
+      setTimeout(updateDim, 50);
+      window.addEventListener('resize', updateDim);
+      return () => window.removeEventListener('resize', updateDim);
+    }
+  }, [activeTab]);
 
   const handleRunQuery = async () => {
     setIsLoading(true);
@@ -112,6 +140,13 @@ function App() {
           </div>
         </div>
         <div className="header-right">
+          <button 
+            className={`btn ${activeTab === 'graph' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ marginRight: '8px' }}
+            onClick={() => setActiveTab('graph')}
+          >
+            <Share2 size={14} /> Dataset Visualizer
+          </button>
           {executionTime > 0 && (
             <div className="execution-time">
               <Clock size={14} className="text-muted" />
@@ -250,6 +285,30 @@ function App() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {activeTab === 'graph' && (
+                  <div className="graph-container" ref={graphContainerRef} style={{ width: '100%', height: '100%', minHeight: '400px', display: 'flex', position: 'relative', overflow: 'hidden', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                    {globalGraphData ? (
+                      <ForceGraph2D
+                        width={graphDim.width}
+                        height={graphDim.height}
+                        graphData={globalGraphData}
+                        nodeLabel={(node) => node.properties?.name || node.properties?.category_name || node.id}
+                        nodeAutoColorBy={(node) => node.labels?.[0]}
+                        linkDirectionalParticles={2}
+                        linkDirectionalParticleSpeed={0.01}
+                        backgroundColor="#0d0f12"
+                        nodeRelSize={8}
+                        linkColor={() => 'rgba(255,255,255,0.2)'}
+                      />
+                    ) : (
+                      <div className="empty-state">
+                        <span className="spinner"></span>
+                        <p>Loading Dataset...</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

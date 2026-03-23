@@ -14,6 +14,23 @@ app.use(bodyParser.json());
 // Path to the GQL binary
 const GQL_BINARY_PATH = path.resolve(__dirname, '../../gqlparser');
 
+app.get('/api/dataset', (req, res) => {
+    const command = `"${GQL_BINARY_PATH}" --dump`;
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error('Error executing graph dump:', stderr || error.message);
+            return res.status(500).json({ error: 'Failed to dump dataset' });
+        }
+        try {
+            res.json(JSON.parse(stdout));
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ error: 'Invalid JSON output from engine' });
+        }
+    });
+});
+
+
 app.post('/api/execute', (req, res) => {
     const { query } = req.body;
 
