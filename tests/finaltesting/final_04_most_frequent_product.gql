@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests frequency of product purchases using COUNT and ORDER BY.
+//
+// EXPECTED BEHAVIOR:
+// Smartphone should be on top as it is in many orders.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)
+RETURN p.name, COUNT(*) AS freq
+ORDER BY freq DESC;

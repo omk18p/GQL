@@ -1,0 +1,122 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests retrieval of non-existent properties (handling of missing keys).
+//
+// EXPECTED BEHAVIOR:
+// Returns names along with NULL or empty placeholders for 'age'.
+// ==========================================
+
+
+❌ Result: INCORRECT (SERIOUS BUG ⚠️)
+
+🔍 Query
+MATCH (u:Users)
+RETURN u.name, u.age;
+🧠 Expected Behavior
+
+From your dataset :
+
+👉 Users nodes have:
+
+user_id, name, country
+
+❌ No age property exists
+
+✔ Expected Output:
+Vaibhav → NULL
+John → NULL
+Max → NULL
+Yuki → NULL
+❌ Your Output
+u.age: 8  ❌
+
+👉 Same incorrect value for all users
+
+🚨 This is a CRITICAL BUG
+
+Your engine is:
+
+Returning a garbage/default value instead of NULL
+🧠 Likely Root Cause
+
+From your execution/value system :
+
+👉 When property is missing:
+
+Instead of returning NULL
+It is returning:
+Default / uninitialized value (8)
+🔍 Possible reasons
+1. Uninitialized memory
+Value v;
+return v;   // without setting type → garbage
+2. Default constructor issue
+Value() {
+   intVal = 8;   // ❌ wrong default
+}
+3. Map access bug
+node.properties["age"]
+
+👉 This might:
+
+Insert default value instead of checking existence ❌
+🛠 How to Fix (VERY IMPORTANT)
+✔ Correct approach
+if (node.properties.find("age") != node.properties.end()) {
+    return node.properties["age"];
+} else {
+    return Value::Null();   // ✅ MUST RETURN NULL
+}
+✔ Value class should support NULL
+class Value {
+    bool isNull;
+
+    static Value Null() {
+        Value v;
+        v.isNull = true;
+        return v;
+    }
+};
+✔ Printing NULL
+if (value.isNull) {
+    cout << "NULL";
+}
+🧪 Why this test is VERY important
+
+This validates:
+
+Property access correctness
+Missing key handling
+Memory safety
+🔥 If not fixed, it can break:
+
+❌ WHERE conditions
+❌ Aggregations
+❌ Comparisons
+❌ Query correctness
+
+🧠 Viva-Level Answer (VERY IMPORTANT)
+
+If asked:
+
+👉 “What happens when a property does not exist?”
+
+Say:
+
+“The engine should return NULL for missing properties. Currently, it returns a default value due to improper handling, which needs to be fixed.”
+
+🚀 Follow-up Test (after fix)
+MATCH (u:Users)
+WHERE u.age IS NULL
+RETURN u.name;
+
+👉 Expected:
+
+All users
+✅ Final Verdict
+Component	Status
+Property access	❌ BROKEN
+NULL handling	❌ MISSING
+Data correctness	❌ WRONG
+MATCH (u:Users)
+RETURN u.name, u.age;

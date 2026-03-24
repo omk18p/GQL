@@ -1,0 +1,39 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests reverse traversal absence using pattern negation.
+//
+// EXPECTED BEHAVIOR:
+// Returns products that do not have any incoming CONTAINS edges.
+// ==========================================
+
+❌ Result: INCORRECT (same root issue as before)
+
+🔍 Query
+MATCH (p:Products)
+WHERE NOT EXISTS { (:Orders)-[:CONTAINS]->(p) }
+RETURN p.name;
+🧠 Expected Output (based on your data)
+
+From your graph :
+
+Products:
+Smartphone → used ✅
+Laptop → used ✅
+Microwave → used ✅
+Novel → ❌ never used
+✔ Expected:
+Novel
+❌ Your Output
+empty
+🧠 Root Cause (same as previous bug)
+
+👉 Your engine does NOT support EXISTS { pattern }
+
+So:
+
+NOT EXISTS { (:Orders)-[:CONTAINS]->(p) }
+
+is not evaluated correctly → returns nothing
+MATCH (p:Products)
+WHERE NOT EXISTS { (:Orders)-[:CONTAINS]->(p) }
+RETURN p.name;

@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests behavior of DISTINCT when mixed with aggregation (COUNT).
+//
+// EXPECTED BEHAVIOR:
+// Returns distinct user names along with their total order count.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN DISTINCT u.name, COUNT(o);

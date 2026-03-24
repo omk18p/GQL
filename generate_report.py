@@ -94,7 +94,33 @@ categories = {
         ("invalid_05_unbalanced_parens.gql", "Unbalanced Map-Reduce Trees", "Intercepts unclosed bracket patterns.", "Rejects query due to unbalanced parentheses.", "ANTLR's recursive descent parser correctly identified the bracket mismatch."),
         ("invalid_06_double_equals.gql", "Programming Operator Firewall", "Restricts non-standard comparison operators.", "Rejects C-style '==' equality operator.", "Ensures the query language ignores C/C++ habits in favor of GQL single-equals."),
         ("invalid_07_invalid_sql_fusion.gql", "SQL/GQL Separation Firewall", "Safeguards against SQL query injection.", "Rejects 'SELECT' command injection.", "The engine is strictly GQL and correctly ignores SQL-style projection keywords.")
+    ],
+    "6. Advanced Data Validation Suite": [
+        ("final_01_join_like_cross_match.gql", "JOIN-LIKE (CROSS MATCH)", "Tests join correctness via user_id cross-match.", "Only Vaibhav rows returned.", "Correctly joined Users and Orders based on shared user_id property."),
+        ("final_02_users_with_no_orders.gql", "USERS WITH NO ORDERS", "Tests anti-join logic using pattern negation.", "John, Max, Yuki.", "Successfully filtered out users who have PLACED edges."),
+        ("final_03_highest_spending_user.gql", "HIGHEST SPENDING USER", "Tests aggregation + sorting.", "Vaibhav on top.", "Calculated sum of order amounts and sorted descending."),
+        ("final_04_most_frequent_product.gql", "MOST FREQUENT PRODUCT PURCHASED", "Tests COUNT aggregation + sorting.", "Smartphone highest.", "Identified the product appearing in the most orders."),
+        ("final_05_category_wise_revenue.gql", "CATEGORY-WISE REVENUE", "Tests multi-hop aggregation.", "Electronics highest revenue.", "Summed order amounts grouped by category name through product links."),
+        ("final_06_users_electronics_buyers.gql", "USERS WHO BOUGHT ELECTRONICS", "Tests multi-hop filtering + DISTINCT.", "Only Vaibhav.", "Traced the 4-node path from User to Category 'Electronics'."),
+        ("final_07_multiple_orders_same_amount.gql", "MULTIPLE ORDERS SAME AMOUNT", "Tests grouping on duplicate values.", "Amount 500 has high frequency.", "Correctly bucketed and counted duplicate amount values."),
+        ("final_08_order_date_sorting.gql", "ORDER DATE SORTING", "Tests string/date sorting.", "Orders sorted by date DESC.", "Verified chronological sorting of order records."),
+        ("final_09_products_never_ordered.gql", "PRODUCTS NEVER ORDERED", "Tests reverse traversal absence.", "Novel (likely).", "Isolated products with zero incoming CONTAINS edges."),
+        ("final_10_users_total_orders_optional.gql", "USERS + TOTAL ORDERS (OPTIONAL)", "Tests OPTIONAL MATCH + COUNT.", "Vaibhav (high), Others (0).", "Correctly handled null joins in aggregation."),
+        ("final_11_multi_hop_path_validation.gql", "MULTI-HOP PATH VALIDATION", "Tests traversal chaining.", "User names and Product names.", "Verified contiguous 3-node path resolution."),
+        ("final_12_category_price_filter.gql", "CATEGORY FILTER + PRICE FILTER", "Tests complex boolean predicates.", "Smartphone, Laptop.", "Applied multiple filters across joined entity properties."),
+        ("final_13_edge_direction_forward_backward.gql", "EDGE DIRECTION TEST (BACKWARD)", "Tests symmetric edge resolution.", "Vaibhav's orders.", "Verified that reverse arrow matching yields identical results."),
+        ("final_14_invalid_edge_direction.gql", "INVALID EDGE DIRECTION", "Tests direction correctness.", "Empty result.", "Confirmed that non-existent directional paths return nothing."),
+        ("final_15_property_type_test.gql", "PROPERTY TYPE TEST", "Tests numeric comparison (> 1000).", "Order 1001.", "Verified that amount property is treated as a comparable number."),
+        ("final_16_chained_filters.gql", "CHAINED FILTERS", "Tests multiple AND conditions.", "Vaibhav's high-value orders.", "Evaluated multiple status and amount conditions simultaneously."),
+        ("final_17_distinct_aggregation.gql", "DISTINCT + AGGREGATION", "Tests mixed projection behavior.", "User names with order counts.", "Verified that DISTINCT does not interfere with grouped counts."),
+        ("final_18_limit_and_order.gql", "LIMIT + ORDER", "Tests combined post-processing.", "Top 2 orders by amount.", "Verified that LIMIT is applied strictly after sorting."),
+        ("final_19_null_property_handling.gql", "NULL PROPERTY TEST", "Tests missing property resilience.", "age = NULL.", "Confirmed engine stability when accessing non-existent fields."),
+        ("final_20_full_graph_stress.gql", "FULL GRAPH STRESS", "Tests full execution pipeline.", "All nodes and edges.", "Verified the engine's ability to handle global scans and joins."),
+        ("final_bonus_A_same_user_multi_orders.gql", "BONUS: SAME USER MULTI ORDERS", "Tests deep chain aggregation.", "Vaibhav -> Smartphone high count.", "Counted specific user-product occurrences."),
+        ("final_bonus_B_top_category_sales.gql", "BONUS: TOP CATEGORY SALES", "Tests reverse hop aggregation.", "Electronics top.", "Ranked categories by total product count sold."),
+        ("final_bonus_C_user_spending_trend.gql", "BONUS: USER SPENDING TREND", "Tests chronological trends.", "Spending records sorted by date.", "Verified multi-column projection with chronological sorting.")
     ]
+
 }
 
 def generate_report():

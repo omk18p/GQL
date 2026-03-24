@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Stress tests the full graph traversal and execution pipeline (n)-[r]->(m).
+//
+// EXPECTED BEHAVIOR:
+// Returns all nodes and edges in the system as an adjacency dump.
+// ==========================================
+
+MATCH (n)-[r]->(m)
+RETURN n, r, m;

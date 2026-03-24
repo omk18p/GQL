@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests chained filters (AND) applied at the end of a join traversal.
+//
+// EXPECTED BEHAVIOR:
+// Returns the user and order for orders > 400 that are DELIVERED.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+WHERE o.amount > 400 AND o.status = 'DELIVERED'
+RETURN u.name, o.order_id;

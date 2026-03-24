@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop path traversal chaining Users -> Orders -> Products.
+//
+// EXPECTED BEHAVIOR:
+// Returns the names of users and the products they have ordered.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+RETURN u.name, p.name;

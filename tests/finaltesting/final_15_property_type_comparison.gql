@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests numeric property type comparison (> 1000).
+//
+// EXPECTED BEHAVIOR:
+// Only Order 1001 (amount 1200) should be returned.
+// ==========================================
+
+MATCH (o:Orders)
+WHERE o.amount > 1000
+RETURN o.order_id;

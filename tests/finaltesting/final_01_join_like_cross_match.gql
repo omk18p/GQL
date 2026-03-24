@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests join correctness via cross-match on user_id between two labels.
+//
+// EXPECTED BEHAVIOR:
+// Only returns rows where user_id matches (Vaibhav's orders).
+// ==========================================
+
+MATCH (u:Users), (o:Orders)
+WHERE u.user_id = o.user_id
+RETURN u.name, o.order_id, o.amount;

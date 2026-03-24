@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests that incorrect edge direction (pointing wrong way) returns empty.
+//
+// EXPECTED BEHAVIOR:
+// No results should be returned since Orders do not PLACE Users.
+// ==========================================
+//“The engine returns no results because edge direction is strictly enforced. Traversal only succeeds if the direction matches the defined relationship.”
+MATCH (o:Orders)-[:PLACED]->(u:Users)
+RETURN u.name;

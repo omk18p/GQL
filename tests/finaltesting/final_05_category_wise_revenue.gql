@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop aggregation spanning Orders, Products, and Categories.
+//
+// EXPECTED BEHAVIOR:
+// Returns revenue per category sorted by amount.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN c.category_name, SUM(o.amount) AS revenue
+ORDER BY revenue DESC;

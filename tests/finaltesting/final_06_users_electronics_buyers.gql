@@ -1,0 +1,30 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop traversal with filtering and DISTINCT.
+//
+// EXPECTED BEHAVIOR:
+// Only Vaibhav should be returned as he is the one who bought Electronics.
+// ==========================================
+
+❌ Result: PARTIALLY CORRECT (Logic OK, DISTINCT BROKEN)
+
+🔍 Query
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+WHERE c.category_name = 'Electronics'
+RETURN DISTINCT u.name;
+🧠 Expected Output
+Vaibhav
+❌ Your Output
+Vaibhav
+Vaibhav
+Vaibhav
+Vaibhav
+Vaibhav
+
+👉 Duplicates present → DISTINCT not working
+
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+WHERE c.category_name = 'Electronics'
+RETURN DISTINCT u.name;
+

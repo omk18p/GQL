@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests aggregation (SUM) combined with descending sorting.
+//
+// EXPECTED BEHAVIOR:
+// Returns total spent per user, with Vaibhav on top.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, SUM(o.amount) AS total_spent
+ORDER BY total_spent DESC;

@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests complex multi-hop aggregation across inverse relationship paths.
+//
+// EXPECTED BEHAVIOR:
+// Returns categories ranked by the number of products sold within them.
+// ==========================================
+
+MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders)
+RETURN c.category_name, COUNT(*) 
+ORDER BY COUNT(*) DESC;

@@ -1,0 +1,12 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests post-processing limit after a sorted result set.
+//
+// EXPECTED BEHAVIOR:
+// Returns the top 2 highest amount orders (Order 1001 and one of the 500s).
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.order_id, o.amount
+ORDER BY o.amount DESC
+LIMIT 2;

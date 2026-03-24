@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests anti-join logic and pattern negation (Users with no orders).
+//
+// EXPECTED BEHAVIOR:
+// Returns names of users who have not placed any orders (John, Max, Yuki).
+// ==========================================
+//check not correct
+MATCH (u:Users)
+WHERE NOT EXISTS { (u)-[:PLACED]->(:Orders) }
+RETURN u.name;

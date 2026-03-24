@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests high-level aggregation: same user purchasing the same product multiple times.
+//
+// EXPECTED BEHAVIOR:
+// Vaibhav's purchase of Smartphone should show a high frequency (multiplied by orders).
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+RETURN u.name, p.name, COUNT(*) 
+ORDER BY COUNT(*) DESC;

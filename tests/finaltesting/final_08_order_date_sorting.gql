@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests string/date sorting for order records.
+//
+// EXPECTED BEHAVIOR:
+// Orders should be listed in reverse chronological order.
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.order_id, o.order_date
+ORDER BY o.order_date DESC;

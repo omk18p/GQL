@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests symmetry of edge direction in MATCH (`<--` vs `-->`).
+//
+// EXPECTED BEHAVIOR:
+// Returns user names and order IDs, behaving the same as forward match.
+// ==========================================
+
+MATCH (o:Orders)<-[:PLACED]-(u:Users)
+RETURN u.name, o.order_id;

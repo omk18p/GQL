@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests combined category and price filtering on joined nodes.
+//
+// EXPECTED BEHAVIOR:
+// Smartphone and Laptop should be returned (Electronics > 400).
+// ==========================================
+
+MATCH (p:Products)-[:BELONGS_TO]->(c:Categories)
+WHERE c.category_name = 'Electronics' AND p.price > 400
+RETURN p.name;

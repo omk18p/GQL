@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests grouping correctness on duplicate values (Same amount).
+//
+// EXPECTED BEHAVIOR:
+// Amount 500 should appear with a high count (4).
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.amount, COUNT(*) 
+ORDER BY COUNT(*) DESC;

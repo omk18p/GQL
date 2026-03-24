@@ -1,0 +1,12 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests OPTIONAL MATCH and COUNT behavior for nodes with zero relationships.
+//
+// EXPECTED BEHAVIOR:
+// Vaibhav should have a high count, others should have 0.
+// ==========================================
+❌ Result: INCORRECT (OPTIONAL MATCH not working properly)
+MATCH (u:Users)
+OPTIONAL MATCH (u)-[:PLACED]->(o:Orders)
+RETURN u.name, COUNT(o) AS total_orders
+ORDER BY total_orders DESC;

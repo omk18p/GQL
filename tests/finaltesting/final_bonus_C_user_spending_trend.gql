@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests chronological sorting of spending data for specific users.
+//
+// EXPECTED BEHAVIOR:
+// Returns spending records sorted by date to visualize trend.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, o.order_date, o.amount
+ORDER BY o.order_date;
