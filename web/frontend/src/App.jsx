@@ -283,7 +283,9 @@ function App() {
               {history.length > 0 && (
                 <button className="btn-text" onClick={clearHistory}>Clear All</button>
               )}
-              <button className="close-btn" onClick={() => setIsHistoryOpen(false)}><X size={18} /></button>
+              <button className="close-btn" onClick={() => setIsHistoryOpen(false)}>
+                <span>×</span>
+              </button>
             </div>
           </div>
           <div className="history-list">
@@ -306,9 +308,9 @@ function App() {
                   <button 
                     className="delete-item" 
                     onClick={(e) => deleteHistoryItem(item.id, e)}
-                    title="Delete"
+                    title="Remove from history"
                   >
-                    <Trash2 size={12} />
+                    <Trash2 size={13} strokeWidth={2.5} />
                   </button>
                 </div>
               ))
