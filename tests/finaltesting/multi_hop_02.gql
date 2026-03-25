@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop path pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses multiple edges and nodes in a chain.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN u.name, p.name, c.category_name;

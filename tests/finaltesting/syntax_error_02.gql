@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine's error handling for malformed queries.
+//
+// EXPECTED BEHAVIOR:
+// Should result in a descriptive syntax error.
+// ==========================================
+
+MATCH (u:Users RETORN u;

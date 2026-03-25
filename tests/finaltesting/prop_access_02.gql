@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests property access on nodes.
+//
+// EXPECTED BEHAVIOR:
+// Returns specific properties from matched nodes.
+// ==========================================
+
+MATCH (o:Orders) RETURN o.order_id, o.amount;

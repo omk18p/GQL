@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests complex logical conditions in WHERE clause.
+//
+// EXPECTED BEHAVIOR:
+// Combines multiple predicates using AND/OR.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+WHERE o.amount > 200 AND o.status = 'DELIVERED'
+RETURN u.name, o.amount;

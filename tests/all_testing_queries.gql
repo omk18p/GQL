@@ -1,133 +1,1829 @@
+// --- Source: finaltesting/advanced_01_three_hop_traversal.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests deep multi-hop traversal covering the entire schema.
+//
+// EXPECTED BEHAVIOR:
+// Spans Users -> Orders -> Products -> Categories. Returns the User's name and the Category name they bought from.
+// ==========================================
+
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) RETURN u.name, c.category_name;
+
+
+// --- Source: finaltesting/advanced_02_agg_across_multi_joins.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests maintaining complex implicit groupings across wide path queries.
+//
+// EXPECTED BEHAVIOR:
+// Groups by Category name, counting total distinct products purchased within that category by any user.
+// ==========================================
 
 MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders)<-[:PLACED]-(u:Users) RETURN c.category_name, COUNT(p) ORDER BY COUNT(p) DESC;
 
+
+// --- Source: finaltesting/advanced_03_deep_filter_chain.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests filtering at the absolute end of a complex traversal chain.
+//
+// EXPECTED BEHAVIOR:
+// Finds Users who ultimately bought an 'Electronics' category item, traversing 3 hops simply to evaluate the category filter.
+// ==========================================
+
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' RETURN u.name, p.name;
+
+
+// --- Source: finaltesting/advanced_03_deep_transport_chain.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests long chain edge traversal using purely structural mappings (repeated labels).
+//
+// EXPECTED BEHAVIOR:
+// Finds itineraries spanning exactly 3 flight segments across city nodes.
+// ==========================================
 
 MATCH (u:Users)-[:FLIGHT]->(c1:Cities)-[:FLIGHT]->(c2:Cities)-[:FLIGHT]->(c3:Cities) RETURN u.name, c3.name;
 
+
+// --- Source: finaltesting/advanced_04_multi_dir_join_predicates.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests relationships and multiple complex AND predicates spread across different nodes.
+//
+// EXPECTED BEHAVIOR:
+// Finds Indian users who bought items priced above 200. Evaluates conditions on both ends of the join chain.
+// ==========================================
+
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) WHERE u.country = 'India' AND p.price > 200 RETURN u.name, p.name, o.amount;
+
+
+// --- Source: finaltesting/advanced_05_ecommerce_financial_pipeline.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests a full sequence spanning domain entities down to financial tracking (Revenue by Category).
+//
+// EXPECTED BEHAVIOR:
+// Calculates the total revenue (SUM of order amount) generated per product category.
+// ==========================================
 
 MATCH (cat:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders) RETURN cat.category_name, SUM(o.amount) ORDER BY SUM(o.amount) DESC;
 
+
+// --- Source: finaltesting/advanced_06_heavy_cartesian_stress.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests structural limits by skipping all edge and node labels, forcing raw dataset resolution.
+//
+// EXPECTED BEHAVIOR:
+// Matches ANY sequence of 3 hops (n1->n2->n3->n4). Will execute full cartesian looping, heavily testing physical memory execution.
+// ==========================================
+
 MATCH (n1)-[r1]->(n2)-[r2]->(n3)-[r3]->(n4) RETURN n1.name, n4.name;
+
+
+// --- Source: finaltesting/advanced_07_fraud_detection_chain.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests identifying suspicious chains (e.g. money laundering rings) by analyzing endpoints of deep traversals.
+//
+// EXPECTED BEHAVIOR:
+// Maps money chains. Only returns triplets where money source was rich, and destination was explicitly flagged.
+// ==========================================
 
 MATCH (a:Accounts)-[:TRANSFERRED_TO]->(b:Accounts)-[:TRANSFERRED_TO]->(c:Accounts) WHERE a.balance > 10000 AND c.is_flagged = 'true' RETURN a.id, c.id, b.id;
 
+
+// --- Source: finaltesting/advanced_07_multiple_aggregations.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests parsing and executing multiple distinct aggregation calculations on the same logical grouping.
+//
+// EXPECTED BEHAVIOR:
+// Groups by user_id and identically calculates both their total spend (SUM) and total transactions (COUNT).
+// ==========================================
+
 MATCH (o:Orders) RETURN o.user_id, SUM(o.amount), COUNT(o) ORDER BY SUM(o.amount) DESC;
+
+
+// --- Source: finaltesting/advanced_08_mixed_influencer_analytics.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests extreme operation mixing: Multijoin chaining into counting, coupled with ordering on a trailing entity.
+//
+// EXPECTED BEHAVIOR:
+// Finds ad revenue maps against influence metrics (Follower count of the ad's poster).
+// ==========================================
 
 MATCH (u:Users)-[:FOLLOWS]->(influencer:Users)-[:POSTED]->(ad:Ads) RETURN influencer.name, COUNT(u), ad.revenue ORDER BY ad.revenue DESC;
 
+
+// --- Source: finaltesting/agg_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests standard aggregation functions.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations like COUNT, SUM, AVG, MIN, MAX.
+// ==========================================
+
+MATCH (o:Orders) RETURN COUNT(o);
+
+
+// --- Source: finaltesting/agg_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests standard aggregation functions.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations like COUNT, SUM, AVG, MIN, MAX.
+// ==========================================
+
+MATCH (o:Orders) RETURN SUM(o.amount);
+
+
+// --- Source: finaltesting/agg_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests standard aggregation functions.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations like COUNT, SUM, AVG, MIN, MAX.
+// ==========================================
+
+MATCH (o:Orders) RETURN AVG(o.amount);
+
+
+// --- Source: finaltesting/agg_04.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests standard aggregation functions.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations like COUNT, SUM, AVG, MIN, MAX.
+// ==========================================
+
+MATCH (o:Orders) RETURN MIN(o.amount);
+
+
+// --- Source: finaltesting/agg_05.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests standard aggregation functions.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations like COUNT, SUM, AVG, MIN, MAX.
+// ==========================================
+
+MATCH (o:Orders) RETURN MAX(o.amount);
+
+
+// --- Source: finaltesting/basic_01_full_scan.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the engine's ability to scan and retrieve all nodes in the graph without any filtering.
+//
+// EXPECTED BEHAVIOR:
+// Returns every node (Users, Orders, Products, Categories) with all their properties.
+// ==========================================
+
 MATCH (n) RETURN n;
+
+
+// --- Source: finaltesting/basic_02_label_scan.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests filtering by a specific Label from main.cpp.
+//
+// EXPECTED BEHAVIOR:
+// Outputs only the 'name' and 'country' properties of all 'Users' nodes.
+// ==========================================
 
 MATCH (u:Users) RETURN u.name, u.country;
 
+
+// --- Source: finaltesting/basic_03_numeric_filter.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the WHERE clause using a numeric comparison on Orders.
+//
+// EXPECTED BEHAVIOR:
+// Returns Orders where the order amount is strictly greater than 500.
+// ==========================================
+
 MATCH (o:Orders) WHERE o.amount > 500 RETURN o.order_id, o.amount;
 
+
+// --- Source: finaltesting/basic_04_edge_extraction.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the engine's capability of isolating existing edges.
+//
+// EXPECTED BEHAVIOR:
+// Returns all relationships labeled 'PLACED' (between Users and Orders).
+// ==========================================
+
 MATCH ()-[r:PLACED]->() RETURN r;
+
+
+// --- Source: finaltesting/basic_05_string_filter.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests exact string matching inside the WHERE clause using Users.
+//
+// EXPECTED BEHAVIOR:
+// Returns only the country of the user exactly named 'Vaibhav' (which should be India).
+// ==========================================
 
 MATCH (u:Users) WHERE u.name = 'Vaibhav' RETURN u.country;
 
+
+// --- Source: finaltesting/basic_06_insert_node.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests DML creation of a new real node structure.
+//
+// EXPECTED BEHAVIOR:
+// A new Product node 'Headphones' is inserted into the graph.
+// ==========================================
+
 INSERT (p:Products {product_id: 5, category_id: 1, name: 'Headphones', price: 200});
+
+
+// --- Source: finaltesting/basic_07_set_property.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests updating an existing node property.
+//
+// EXPECTED BEHAVIOR:
+// Finds the product named 'Smartphone' and updates its price from 500 to 450.
+// ==========================================
 
 MATCH (p:Products) WHERE p.name = 'Smartphone' SET p.price = 450;
 
+
+// --- Source: finaltesting/basic_08_delete_node.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests deleting a node matching a predicate.
+//
+// EXPECTED BEHAVIOR:
+// Deletes the product named 'Novel'. Re-querying should yield no results for it.
+// ==========================================
+
 MATCH (p:Products) WHERE p.name = 'Novel' DELETE p;
+
+
+// --- Source: finaltesting/basic_match_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic node matching.
+//
+// EXPECTED BEHAVIOR:
+// Returns nodes based on labels.
+// ==========================================
+
+MATCH (n) RETURN n;
+
+
+// --- Source: finaltesting/basic_match_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic node matching.
+//
+// EXPECTED BEHAVIOR:
+// Returns nodes based on labels.
+// ==========================================
+
+MATCH (u:Users) RETURN u;
+
+
+// --- Source: finaltesting/basic_match_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic node matching.
+//
+// EXPECTED BEHAVIOR:
+// Returns nodes based on labels.
+// ==========================================
+
+MATCH (o:Orders) RETURN o;
+
+
+// --- Source: finaltesting/basic_match_04.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic node matching.
+//
+// EXPECTED BEHAVIOR:
+// Returns nodes based on labels.
+// ==========================================
+
+MATCH (p:Products) RETURN p;
+
+
+// --- Source: finaltesting/basic_match_05.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic node matching.
+//
+// EXPECTED BEHAVIOR:
+// Returns nodes based on labels.
+// ==========================================
+
+MATCH (c:Categories) RETURN c;
+
+
+// --- Source: finaltesting/complex_agg_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests advanced aggregation scenarios.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations across multi-hop joins with complex grouping.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, SUM(o.amount) AS total ORDER BY total DESC;
+
+
+// --- Source: finaltesting/complex_agg_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests advanced aggregation scenarios.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations across multi-hop joins with complex grouping.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)
+RETURN p.name, COUNT(*) ORDER BY COUNT(*) DESC;
+
+
+// --- Source: finaltesting/complex_agg_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests advanced aggregation scenarios.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations across multi-hop joins with complex grouping.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN c.category_name, SUM(o.amount) ORDER BY SUM(o.amount) DESC;
+
+
+// --- Source: finaltesting/delete_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests data modification using DELETE.
+//
+// EXPECTED BEHAVIOR:
+// Removes nodes from the graph.
+// ==========================================
+
+MATCH (p:Products) WHERE p.name = 'Novel' DELETE p;
+
+
+// --- Source: finaltesting/distinct_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests DISTINCT keyword in RETURN clause.
+//
+// EXPECTED BEHAVIOR:
+// Removes duplicate values from final result set.
+// ==========================================
+
+MATCH (u:Users) RETURN DISTINCT u.country;
+
+
+// --- Source: finaltesting/distinct_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests DISTINCT keyword in RETURN clause.
+//
+// EXPECTED BEHAVIOR:
+// Removes duplicate values from final result set.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN DISTINCT u.name;
+
+
+// --- Source: finaltesting/edge_01_nonexistent_label.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests structural isolation where data does NOT exist in main.cpp.
+//
+// EXPECTED BEHAVIOR:
+// Produces an empty execution result because 'NonExistentLabel' is not hardcoded. Must safely return empty.
+// ==========================================
 
 MATCH (u:NonExistentLabel) RETURN u;
 
+
+// --- Source: finaltesting/edge_02_empty_path_join.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests handling logical breaks in valid data (Users exist, but lack this edge).
+//
+// EXPECTED BEHAVIOR:
+// Filters normally on Users but finds zero connecting lines (NON_EXISTENT_EDGE). Returns strict empty set.
+// ==========================================
+
 MATCH (u:Users)-[:NON_EXISTENT_EDGE]->(o:Orders) RETURN u, o;
+
+
+// --- Source: finaltesting/edge_03_vacuous_truth_filter.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests predicate filters that result in absolute zero valid comparisons on real data.
+//
+// EXPECTED BEHAVIOR:
+// Returns zero rows. Evaluates condition safely without breaking since no Users belong to 'Mars'.
+// ==========================================
 
 MATCH (u:Users) WHERE u.country = 'Mars' RETURN u;
 
+
+// --- Source: finaltesting/edge_04_missing_property.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests projecting a field mapping that isn't hardcoded in internal property maps.
+//
+// EXPECTED BEHAVIOR:
+// Returns mapped rows, but the projected nonexistent field evaluates to null/empty.
+// ==========================================
+
 MATCH (u:Users) RETURN u.name, u.non_existent_property;
+
+
+// --- Source: finaltesting/edge_05_aggregate_nulls.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests counting functions reacting to purely null/non-existent input contexts.
+//
+// EXPECTED BEHAVIOR:
+// Returns 0 or null depending on implementation spec, avoiding pointer crashes.
+// ==========================================
 
 MATCH (u:Users) RETURN COUNT(u.non_existent);
 
+
+// --- Source: finaltesting/edge_06_sort_by_null.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the ranking logic when sorting uniformly across missing attributes on real data.
+//
+// EXPECTED BEHAVIOR:
+// Resolves neutrally or drops missing to bottom safely.
+// ==========================================
+
 MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN o.order_id ORDER BY o.non_existent DESC;
+
+
+// --- Source: finaltesting/edge_07_zero_limit.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests pipeline circuit breaking parameters.
+//
+// EXPECTED BEHAVIOR:
+// Instantly terminates with zero processing cycles, empty output.
+// ==========================================
 
 MATCH (n) RETURN n LIMIT 0;
 
+
+// --- Source: finaltesting/edge_08_null_comparison.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests logic boundary bounds regarding raw nulls.
+//
+// EXPECTED BEHAVIOR:
+// Fails the WHERE clause gracefully for missing labels, empty return.
+// ==========================================
+
 MATCH (u:Users) WHERE u.country = null RETURN u.name;
+
+
+// --- Source: finaltesting/edge_09_cyclic_path.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests traversing in a loop without infinite hang loops. Uses alias equality reference back to the start node.
+//
+// EXPECTED BEHAVIOR:
+// Finds situations where `KNOWS` creates a literal circle back to user 1. Extremely tough edge case.
+// ==========================================
 
 MATCH (u1:Users)-[:KNOWS]->(u2:Users)-[:KNOWS]->(u1:Users) RETURN u1;
 
-MATCH (u:Users), (o:Orders) WHERE u.user_id = o.user_id RETURN u.name, o.order_id, o.amount;
 
-MATCH (u:Users) WHERE NOT EXISTS { (u)-[:PLACED]->(:Orders) } RETURN u.name;
+// --- Source: finaltesting/edge_case_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests various graph and query edge cases.
+//
+// EXPECTED BEHAVIOR:
+// Handles empty results, missing labels, and invalid patterns gracefully.
+// ==========================================
 
-MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, SUM(o.amount) AS total_spent ORDER BY total_spent DESC;
+MATCH (n) RETURN n LIMIT 0;
 
-MATCH (o:Orders)-[:CONTAINS]->(p:Products) RETURN p.name, COUNT(*) AS freq ORDER BY freq DESC;
 
-MATCH (o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) RETURN c.category_name, SUM(o.amount) AS revenue ORDER BY revenue DESC;
+// --- Source: finaltesting/edge_case_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests various graph and query edge cases.
+//
+// EXPECTED BEHAVIOR:
+// Handles empty results, missing labels, and invalid patterns gracefully.
+// ==========================================
 
-MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' RETURN DISTINCT u.name;
+MATCH (u:Users) WHERE u.country = 'Mars' RETURN u;
 
-MATCH (o:Orders) RETURN o.amount, COUNT(*) ORDER BY COUNT(*) DESC;
 
-MATCH (o:Orders) RETURN o.order_id, o.order_date ORDER BY o.order_date DESC;
+// --- Source: finaltesting/edge_case_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests various graph and query edge cases.
+//
+// EXPECTED BEHAVIOR:
+// Handles empty results, missing labels, and invalid patterns gracefully.
+// ==========================================
 
-MATCH (p:Products) WHERE NOT EXISTS { (:Orders)-[:CONTAINS]->(p) } RETURN p.name;
+MATCH (u:NonExistent) RETURN u;
 
-MATCH (u:Users) OPTIONAL MATCH (u)-[:PLACED]->(o:Orders) RETURN u.name, COUNT(o) AS total_orders ORDER BY total_orders DESC;
 
-MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, p.name;
+// --- Source: finaltesting/edge_case_04.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests various graph and query edge cases.
+//
+// EXPECTED BEHAVIOR:
+// Handles empty results, missing labels, and invalid patterns gracefully.
+// ==========================================
 
-MATCH (p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' AND p.price > 400 RETURN p.name;
+MATCH (u:Users)-[:INVALID]->(o:Orders) RETURN u;
 
-MATCH (o:Orders)<-[:PLACED]-(u:Users) RETURN u.name, o.order_id;
 
-MATCH (o:Orders)-[:PLACED]->(u:Users) RETURN u.name;
+// --- Source: finaltesting/exists_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests EXISTS subquery predicate.
+//
+// EXPECTED BEHAVIOR:
+// Checks for existence of related patterns in WHERE clause.
+// ==========================================
 
-MATCH (o:Orders) WHERE o.amount > 1000 RETURN o.order_id;
+MATCH (u:Users)
+WHERE EXISTS { (u)-[:PLACED]->(:Orders) }
+RETURN u.name;
 
-MATCH (u:Users)-[:PLACED]->(o:Orders) WHERE o.amount > 400 AND o.status = 'DELIVERED' RETURN u.name, o.order_id;
 
-MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN DISTINCT u.name, COUNT(o);
+// --- Source: finaltesting/exists_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests EXISTS subquery predicate.
+//
+// EXPECTED BEHAVIOR:
+// Checks for existence of related patterns in WHERE clause.
+// ==========================================
 
-MATCH (o:Orders) RETURN o.order_id, o.amount ORDER BY o.amount DESC LIMIT 2;
+MATCH (u:Users)
+WHERE NOT EXISTS { (u)-[:PLACED]->(:Orders) }
+RETURN u.name;
 
-MATCH (u:Users) RETURN u.name, u.age;
 
-MATCH (n)-[r]->(m) RETURN n, r, m;
+// --- Source: finaltesting/filter_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
 
-MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, p.name, COUNT(*) ORDER BY COUNT(*) DESC;
+MATCH (u:Users) WHERE u.country = 'India' RETURN u.name;
 
-MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders) RETURN c.category_name, COUNT(*) ORDER BY COUNT(*) DESC;
 
-MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, o.order_date, o.amount ORDER BY o.order_date;
+// --- Source: finaltesting/filter_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
+
+MATCH (p:Products) WHERE p.price > 100 RETURN p.name;
+
+
+// --- Source: finaltesting/filter_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
+
+MATCH (o:Orders) WHERE o.amount >= 500 RETURN o.order_id;
+
+
+// --- Source: finaltesting/filter_04.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
+
+MATCH (p:Products) WHERE p.price < 100 RETURN p.name;
+
+
+// --- Source: finaltesting/filter_05.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
+
+MATCH (u:Users) WHERE u.name = 'Omkar' RETURN u;
+
+
+// --- Source: finaltesting/filter_06.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country <> 'India' RETURN u;
+
+
+// --- Source: finaltesting/final_01_join_like_cross_match.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests join correctness via cross-match on user_id between two labels.
+//
+// EXPECTED BEHAVIOR:
+// Only returns rows where user_id matches (Vaibhav's orders).
+// ==========================================
+
+MATCH (u:Users), (o:Orders)
+WHERE u.user_id = o.user_id
+RETURN u.name, o.order_id, o.amount;
+
+
+// --- Source: finaltesting/final_02_users_with_no_orders.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests anti-join logic and pattern negation (Users with no orders).
+//
+// EXPECTED BEHAVIOR:
+// Returns names of users who have not placed any orders (John, Max, Yuki).
+// ==========================================
+//check not correct
+MATCH (u:Users)
+WHERE NOT EXISTS { (u)-[:PLACED]->(:Orders) }
+RETURN u.name;
+
+
+// --- Source: finaltesting/final_03_highest_spending_user.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests aggregation (SUM) combined with descending sorting.
+//
+// EXPECTED BEHAVIOR:
+// Returns total spent per user, with Vaibhav on top.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, SUM(o.amount) AS total_spent
+ORDER BY total_spent DESC;
+
+
+// --- Source: finaltesting/final_04_most_frequent_product.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests frequency of product purchases using COUNT and ORDER BY.
+//
+// EXPECTED BEHAVIOR:
+// Smartphone should be on top as it is in many orders.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)
+RETURN p.name, COUNT(*) AS freq
+ORDER BY freq DESC;
+
+
+// --- Source: finaltesting/final_05_category_wise_revenue.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop aggregation spanning Orders, Products, and Categories.
+//
+// EXPECTED BEHAVIOR:
+// Returns revenue per category sorted by amount.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN c.category_name, SUM(o.amount) AS revenue
+ORDER BY revenue DESC;
+
+
+// --- Source: finaltesting/final_06_users_electronics_buyers.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop traversal with filtering and DISTINCT.
+//
+// EXPECTED BEHAVIOR:
+// Only Vaibhav should be returned as he is the one who bought Electronics.
+// ==========================================
+
+❌ Result: PARTIALLY CORRECT (Logic OK, DISTINCT BROKEN)
+
+🔍 Query
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+WHERE c.category_name = 'Electronics'
+RETURN DISTINCT u.name;
+🧠 Expected Output
+Vaibhav
+❌ Your Output
+Vaibhav
+Vaibhav
+Vaibhav
+Vaibhav
+Vaibhav
+
+👉 Duplicates present → DISTINCT not working
+
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+WHERE c.category_name = 'Electronics'
+RETURN DISTINCT u.name;
+
+
+
+// --- Source: finaltesting/final_07_multiple_orders_same_amount.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests grouping correctness on duplicate values (Same amount).
+//
+// EXPECTED BEHAVIOR:
+// Amount 500 should appear with a high count (4).
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.amount, COUNT(*) 
+ORDER BY COUNT(*) DESC;
+
+
+// --- Source: finaltesting/final_08_order_date_sorting.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests string/date sorting for order records.
+//
+// EXPECTED BEHAVIOR:
+// Orders should be listed in reverse chronological order.
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.order_id, o.order_date
+ORDER BY o.order_date DESC;
+
+
+// --- Source: finaltesting/final_09_products_never_ordered.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests reverse traversal absence using pattern negation.
+//
+// EXPECTED BEHAVIOR:
+// Returns products that do not have any incoming CONTAINS edges.
+// ==========================================
+
+❌ Result: INCORRECT (same root issue as before)
+
+🔍 Query
+MATCH (p:Products)
+WHERE NOT EXISTS { (:Orders)-[:CONTAINS]->(p) }
+RETURN p.name;
+🧠 Expected Output (based on your data)
+
+From your graph :
+
+Products:
+Smartphone → used ✅
+Laptop → used ✅
+Microwave → used ✅
+Novel → ❌ never used
+✔ Expected:
+Novel
+❌ Your Output
+empty
+🧠 Root Cause (same as previous bug)
+
+👉 Your engine does NOT support EXISTS { pattern }
+
+So:
+
+NOT EXISTS { (:Orders)-[:CONTAINS]->(p) }
+
+is not evaluated correctly → returns nothing
+MATCH (p:Products)
+WHERE NOT EXISTS { (:Orders)-[:CONTAINS]->(p) }
+RETURN p.name;
+
+
+// --- Source: finaltesting/final_10_users_total_orders_optional.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests OPTIONAL MATCH and COUNT behavior for nodes with zero relationships.
+//
+// EXPECTED BEHAVIOR:
+// Vaibhav should have a high count, others should have 0.
+// ==========================================
+❌ Result: INCORRECT (OPTIONAL MATCH not working properly)
+MATCH (u:Users)
+OPTIONAL MATCH (u)-[:PLACED]->(o:Orders)
+RETURN u.name, COUNT(o) AS total_orders
+ORDER BY total_orders DESC;
+
+
+// --- Source: finaltesting/final_11_multi_hop_path_validation.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop path traversal chaining Users -> Orders -> Products.
+//
+// EXPECTED BEHAVIOR:
+// Returns the names of users and the products they have ordered.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+RETURN u.name, p.name;
+
+
+// --- Source: finaltesting/final_12_category_price_filter.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests combined category and price filtering on joined nodes.
+//
+// EXPECTED BEHAVIOR:
+// Smartphone and Laptop should be returned (Electronics > 400).
+// ==========================================
+
+MATCH (p:Products)-[:BELONGS_TO]->(c:Categories)
+WHERE c.category_name = 'Electronics' AND p.price > 400
+RETURN p.name;
+
+
+// --- Source: finaltesting/final_13_edge_direction_forward_backward.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests symmetry of edge direction in MATCH (`<--` vs `-->`).
+//
+// EXPECTED BEHAVIOR:
+// Returns user names and order IDs, behaving the same as forward match.
+// ==========================================
+
+MATCH (o:Orders)<-[:PLACED]-(u:Users)
+RETURN u.name, o.order_id;
+
+
+// --- Source: finaltesting/final_14_invalid_edge_direction.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests that incorrect edge direction (pointing wrong way) returns empty.
+//
+// EXPECTED BEHAVIOR:
+// No results should be returned since Orders do not PLACE Users.
+// ==========================================
+//“The engine returns no results because edge direction is strictly enforced. Traversal only succeeds if the direction matches the defined relationship.”
+MATCH (o:Orders)-[:PLACED]->(u:Users)
+RETURN u.name;
+
+
+// --- Source: finaltesting/final_15_property_type_comparison.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests numeric property type comparison (> 1000).
+//
+// EXPECTED BEHAVIOR:
+// Only Order 1001 (amount 1200) should be returned.
+// ==========================================
+
+MATCH (o:Orders)
+WHERE o.amount > 1000
+RETURN o.order_id;
+
+
+// --- Source: finaltesting/final_16_chained_filters.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests chained filters (AND) applied at the end of a join traversal.
+//
+// EXPECTED BEHAVIOR:
+// Returns the user and order for orders > 400 that are DELIVERED.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+WHERE o.amount > 400 AND o.status = 'DELIVERED'
+RETURN u.name, o.order_id;
+
+
+// --- Source: finaltesting/final_17_distinct_aggregation_mix.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests behavior of DISTINCT when mixed with aggregation (COUNT).
+//
+// EXPECTED BEHAVIOR:
+// Returns distinct user names along with their total order count.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN DISTINCT u.name, COUNT(o);
+
+
+// --- Source: finaltesting/final_18_limit_and_order.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests post-processing limit after a sorted result set.
+//
+// EXPECTED BEHAVIOR:
+// Returns the top 2 highest amount orders (Order 1001 and one of the 500s).
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.order_id, o.amount
+ORDER BY o.amount DESC
+LIMIT 2;
+
+
+// --- Source: finaltesting/final_19_null_property_handling.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests retrieval of non-existent properties (handling of missing keys).
+//
+// EXPECTED BEHAVIOR:
+// Returns names along with NULL or empty placeholders for 'age'.
+// ==========================================
+
+
+❌ Result: INCORRECT (SERIOUS BUG ⚠️)
+
+🔍 Query
+MATCH (u:Users)
+RETURN u.name, u.age;
+🧠 Expected Behavior
+
+From your dataset :
+
+👉 Users nodes have:
+
+user_id, name, country
+
+❌ No age property exists
+
+✔ Expected Output:
+Vaibhav → NULL
+John → NULL
+Max → NULL
+Yuki → NULL
+❌ Your Output
+u.age: 8  ❌
+
+👉 Same incorrect value for all users
+
+🚨 This is a CRITICAL BUG
+
+Your engine is:
+
+Returning a garbage/default value instead of NULL
+🧠 Likely Root Cause
+
+From your execution/value system :
+
+👉 When property is missing:
+
+Instead of returning NULL
+It is returning:
+Default / uninitialized value (8)
+🔍 Possible reasons
+1. Uninitialized memory
+Value v;
+return v;   // without setting type → garbage
+2. Default constructor issue
+Value() {
+   intVal = 8;   // ❌ wrong default
+}
+3. Map access bug
+node.properties["age"]
+
+👉 This might:
+
+Insert default value instead of checking existence ❌
+🛠 How to Fix (VERY IMPORTANT)
+✔ Correct approach
+if (node.properties.find("age") != node.properties.end()) {
+    return node.properties["age"];
+} else {
+    return Value::Null();   // ✅ MUST RETURN NULL
+}
+✔ Value class should support NULL
+class Value {
+    bool isNull;
+
+    static Value Null() {
+        Value v;
+        v.isNull = true;
+        return v;
+    }
+};
+✔ Printing NULL
+if (value.isNull) {
+    cout << "NULL";
+}
+🧪 Why this test is VERY important
+
+This validates:
+
+Property access correctness
+Missing key handling
+Memory safety
+🔥 If not fixed, it can break:
+
+❌ WHERE conditions
+❌ Aggregations
+❌ Comparisons
+❌ Query correctness
+
+🧠 Viva-Level Answer (VERY IMPORTANT)
+
+If asked:
+
+👉 “What happens when a property does not exist?”
+
+Say:
+
+“The engine should return NULL for missing properties. Currently, it returns a default value due to improper handling, which needs to be fixed.”
+
+🚀 Follow-up Test (after fix)
+MATCH (u:Users)
+WHERE u.age IS NULL
+RETURN u.name;
+
+👉 Expected:
+
+All users
+✅ Final Verdict
+Component	Status
+Property access	❌ BROKEN
+NULL handling	❌ MISSING
+Data correctness	❌ WRONG
+MATCH (u:Users)
+RETURN u.name, u.age;
+
+
+// --- Source: finaltesting/final_20_full_graph_stress.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Stress tests the full graph traversal and execution pipeline (n)-[r]->(m).
+//
+// EXPECTED BEHAVIOR:
+// Returns all nodes and edges in the system as an adjacency dump.
+// ==========================================
+
+MATCH (n)-[r]->(m)
+RETURN n, r, m;
+
+
+// --- Source: finaltesting/final_bonus_A_same_user_multi_orders.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests high-level aggregation: same user purchasing the same product multiple times.
+//
+// EXPECTED BEHAVIOR:
+// Vaibhav's purchase of Smartphone should show a high frequency (multiplied by orders).
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+RETURN u.name, p.name, COUNT(*) 
+ORDER BY COUNT(*) DESC;
+
+
+// --- Source: finaltesting/final_bonus_B_top_category_sales.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests complex multi-hop aggregation across inverse relationship paths.
+//
+// EXPECTED BEHAVIOR:
+// Returns categories ranked by the number of products sold within them.
+// ==========================================
+
+MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders)
+RETURN c.category_name, COUNT(*) 
+ORDER BY COUNT(*) DESC;
+
+
+// --- Source: finaltesting/final_bonus_C_user_spending_trend.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests chronological sorting of spending data for specific users.
+//
+// EXPECTED BEHAVIOR:
+// Returns spending records sorted by date to visualize trend.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, o.order_date, o.amount
+ORDER BY o.order_date;
+
+
+// --- Source: finaltesting/grouping_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests implicit grouping with aggregations.
+//
+// EXPECTED BEHAVIOR:
+// Groups results based on return columns and calculates aggregate values.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, COUNT(o);
+
+
+// --- Source: finaltesting/grouping_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests implicit grouping with aggregations.
+//
+// EXPECTED BEHAVIOR:
+// Groups results based on return columns and calculates aggregate values.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, SUM(o.amount);
+
+
+// --- Source: finaltesting/grouping_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests implicit grouping with aggregations.
+//
+// EXPECTED BEHAVIOR:
+// Groups results based on return columns and calculates aggregate values.
+// ==========================================
+
+MATCH (p:Products)<-[:CONTAINS]-(o:Orders)
+RETURN p.name, COUNT(o);
+
+
+// --- Source: finaltesting/insert_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests data modification using INSERT.
+//
+// EXPECTED BEHAVIOR:
+// Adds new nodes and relationships to the graph.
+// ==========================================
+
+INSERT (p:Products {product_id: 99, category_id: 1, name: 'Tablet', price: 300});
+
+
+// --- Source: finaltesting/intermediate_01_single_hop_join.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests logical edge-joins across explicitly mapped nodes (Users to Orders).
+//
+// EXPECTED BEHAVIOR:
+// Returns the names of users mapped directly to their order amounts.
+// ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, o.amount;
 
+
+// --- Source: finaltesting/intermediate_02_filtered_join.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests joining entities but restricting the output via a property filter on the child node.
+//
+// EXPECTED BEHAVIOR:
+// Returns user names and order dates, but only for orders exceeding 500 in amount.
+// ==========================================
+
 MATCH (u:Users)-[:PLACED]->(o:Orders) WHERE o.amount > 500 RETURN u.name, o.order_date;
+
+
+// --- Source: finaltesting/intermediate_03_group_count.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests implicit grouping mapped with an aggregation function (COUNT).
+//
+// EXPECTED BEHAVIOR:
+// Collects identical country strings and returns a total count of users residing in each.
+// ==========================================
 
 MATCH (u:Users) RETURN u.country, COUNT(u);
 
+
+// --- Source: finaltesting/intermediate_04_group_sum.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests numerical aggregations mapped over groups (Total amount per User ID).
+//
+// EXPECTED BEHAVIOR:
+// Returns the list of user IDs mapped against the total sum of their order amounts.
+// ==========================================
+
 MATCH (o:Orders) RETURN o.user_id, SUM(o.amount);
+
+
+// --- Source: finaltesting/intermediate_05_basic_ordering.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests post-scan sorting algorithms pipeline execution.
+//
+// EXPECTED BEHAVIOR:
+// Outputs product names sorted strictly descending by their price.
+// ==========================================
 
 MATCH (p:Products) RETURN p.name ORDER BY p.price DESC;
 
+
+// --- Source: finaltesting/intermediate_06_complex_ordering.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multiple order-by clauses with conflict breakers.
+//
+// EXPECTED BEHAVIOR:
+// Orders are returned by user_id ascending, and for the same user, by amount descending.
+// ==========================================
+
 MATCH (o:Orders) RETURN o.order_id, o.user_id, o.amount ORDER BY o.user_id ASC, o.amount DESC;
+
+
+// --- Source: finaltesting/intermediate_07_join_group_order.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests a full intermediate compilation chain (Join -> Aggregate -> Sort).
+//
+// EXPECTED BEHAVIOR:
+// Finds the number of orders each user placed, sorts them descending, identifying top buyers.
+// ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, COUNT(o) ORDER BY COUNT(o) DESC;
 
+
+// --- Source: finaltesting/intermediate_08_avg_agg_string_filter.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests numerical averaging across items passing a string filter.
+//
+// EXPECTED BEHAVIOR:
+// Calculates the average order amount strictly for 'DELIVERED' status orders grouped by user_id.
+// ==========================================
+
 MATCH (o:Orders) WHERE o.status = 'DELIVERED' RETURN o.user_id, AVG(o.amount) ORDER BY AVG(o.amount);
+
+
+// --- Source: finaltesting/intermediate_09_multi_join_triplet.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-join resolution spanning three distinct definitions (User -> Order -> Product).
+//
+// EXPECTED BEHAVIOR:
+// Finds the triplet showing what User placed an Order containing what Product name.
+// ==========================================
 
 MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, o.order_id, p.name;
 
+
+// --- Source: finaltesting/invalid_01_missing_parens.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests fail-fast mechanism of ANTLR4 parser catching unbalanced structural declarations.
+//
+// EXPECTED BEHAVIOR:
+// Produces an immediate syntax parser error. Node pattern definition missing parentheses.
+// ==========================================
+
 MATCH u:Users RETURN u;
+
+
+// --- Source: finaltesting/invalid_02_missing_direction.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the requirement of the MATCH keyword at the start of a query.
+//
+// EXPECTED BEHAVIOR:
+// Throws a parse error because the MATCH keyword is entirely missing before the pattern.
+// ==========================================
 
 (u:Users)-[:PLACED]->(o:Orders) RETURN u;
 
+
+// --- Source: finaltesting/invalid_03_keyword_typo.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests core grammatical recognition rejection.
+//
+// EXPECTED BEHAVIOR:
+// ANTLR4 fails mapping lexeme RETORN, throwing instant Line/Char exceptions.
+// ==========================================
+
 MATCH (u:Users) RETORN u;
+
+
+// --- Source: finaltesting/invalid_04_predicate_in_return.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests the requirement of the RETURN keyword to project variables at the end.
+//
+// EXPECTED BEHAVIOR:
+// Throws a syntax error because the RETURN keyword is missing before evaluating the projection fields.
+// ==========================================
 
 MATCH (u:Users) WHERE u.country = 'India' u.country;
 
+
+// --- Source: finaltesting/invalid_05_unbalanced_parens.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests deep recursive parser depth breakage catching.
+//
+// EXPECTED BEHAVIOR:
+// Fails structure validation explicitly.
+// ==========================================
+
 MATCH ((u:Users) RETURN u;
+
+
+// --- Source: finaltesting/invalid_06_double_equals.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests strict logic operand parser. GQL explicitly enforces single '='.
+//
+// EXPECTED BEHAVIOR:
+// Throws a scanner/token error matching '==' instead of '='.
+// ==========================================
 
 MATCH (u:Users) WHERE u.country == 'India' RETURN u;
 
+
+// --- Source: finaltesting/invalid_07_invalid_sql_fusion.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests rejection of SQL keyword overlap.
+//
+// EXPECTED BEHAVIOR:
+// Fails instantly recognizing SELECT block keyword instead of MATCH.
+// ==========================================
+
 SELECT * FROM Users;
 
+
+// --- Source: finaltesting/join_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests JOIN operations using WHERE equality.
+//
+// EXPECTED BEHAVIOR:
+// Combines nodes from different scans based on property values.
+// ==========================================
+
+MATCH (u:Users), (o:Orders)
+WHERE u.user_id = o.user_id
+RETURN u.name, o.order_id;
+
+
+// --- Source: finaltesting/limit_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests LIMIT clause for restricting result count.
+//
+// EXPECTED BEHAVIOR:
+// Returns only the first N rows.
+// ==========================================
+
+MATCH (u:Users) RETURN u.name LIMIT 3;
+
+
+// --- Source: finaltesting/limit_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests LIMIT clause for restricting result count.
+//
+// EXPECTED BEHAVIOR:
+// Returns only the first N rows.
+// ==========================================
+
+MATCH (p:Products) RETURN p.name LIMIT 2;
+
+
+// --- Source: finaltesting/multi_cond_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests complex logical conditions in WHERE clause.
+//
+// EXPECTED BEHAVIOR:
+// Combines multiple predicates using AND/OR.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+WHERE o.amount > 200 AND o.status = 'DELIVERED'
+RETURN u.name, o.amount;
+
+
+// --- Source: finaltesting/multi_cond_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests complex logical conditions in WHERE clause.
+//
+// EXPECTED BEHAVIOR:
+// Combines multiple predicates using AND/OR.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+WHERE o.amount > 100 OR o.status = 'DELIVERED'
+RETURN u.name, o.order_id;
+
+
+// --- Source: finaltesting/multi_edge_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests variable edge and multiple edge matching.
+//
+// EXPECTED BEHAVIOR:
+// Matches edges without labels or maps multiple relationships.
+// ==========================================
+
+MATCH (n)-[r]->(m) RETURN n, r, m;
+
+
+// --- Source: finaltesting/multi_edge_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests variable edge and multiple edge matching.
+//
+// EXPECTED BEHAVIOR:
+// Matches edges without labels or maps multiple relationships.
+// ==========================================
+
 MATCH ()-[r:PLACED]->() RETURN r;
+
+
+// --- Source: finaltesting/multi_hop_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop path pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses multiple edges and nodes in a chain.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+RETURN u.name, p.name;
+
+
+// --- Source: finaltesting/multi_hop_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests multi-hop path pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses multiple edges and nodes in a chain.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN u.name, p.name, c.category_name;
+
+
+// --- Source: finaltesting/null_handling_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine behavior with null values.
+//
+// EXPECTED BEHAVIOR:
+// Validates how non-existent properties or null comparisons are handled.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country = null RETURN u;
+
+
+// --- Source: finaltesting/null_handling_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine behavior with null values.
+//
+// EXPECTED BEHAVIOR:
+// Validates how non-existent properties or null comparisons are handled.
+// ==========================================
+
+MATCH (u:Users) RETURN u.non_existent;
+
+
+// --- Source: finaltesting/null_handling_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine behavior with null values.
+//
+// EXPECTED BEHAVIOR:
+// Validates how non-existent properties or null comparisons are handled.
+// ==========================================
+
+MATCH (u:Users) RETURN COUNT(u.non_existent);
+
+
+// --- Source: finaltesting/optional_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests OPTIONAL MATCH for non-mandatory paths.
+//
+// EXPECTED BEHAVIOR:
+// Returns nulls for unmatched optional paths instead of filtering them out.
+// ==========================================
+
+MATCH (u:Users)
+OPTIONAL MATCH (u)-[:PLACED]->(o:Orders)
+RETURN u.name, COUNT(o);
+
+
+// --- Source: finaltesting/order_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests ORDER BY clause for sorting results.
+//
+// EXPECTED BEHAVIOR:
+// Sorts results in ascending or descending order.
+// ==========================================
+
+MATCH (p:Products)
+RETURN p.name ORDER BY p.price;
+
+
+// --- Source: finaltesting/order_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests ORDER BY clause for sorting results.
+//
+// EXPECTED BEHAVIOR:
+// Sorts results in ascending or descending order.
+// ==========================================
+
+MATCH (p:Products)
+RETURN p.name ORDER BY p.price DESC;
+
+
+// --- Source: finaltesting/order_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests ORDER BY clause for sorting results.
+//
+// EXPECTED BEHAVIOR:
+// Sorts results in ascending or descending order.
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.order_id ORDER BY o.order_date DESC;
+
+
+// --- Source: finaltesting/prop_access_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests property access on nodes.
+//
+// EXPECTED BEHAVIOR:
+// Returns specific properties from matched nodes.
+// ==========================================
+
+MATCH (u:Users) RETURN u.name, u.country;
+
+
+// --- Source: finaltesting/prop_access_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests property access on nodes.
+//
+// EXPECTED BEHAVIOR:
+// Returns specific properties from matched nodes.
+// ==========================================
+
+MATCH (o:Orders) RETURN o.order_id, o.amount;
+
+
+// --- Source: finaltesting/prop_access_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests property access on nodes.
+//
+// EXPECTED BEHAVIOR:
+// Returns specific properties from matched nodes.
+// ==========================================
+
+MATCH (p:Products) RETURN p.name, p.price;
+
+
+// --- Source: finaltesting/prop_access_04.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests property access on nodes.
+//
+// EXPECTED BEHAVIOR:
+// Returns specific properties from matched nodes.
+// ==========================================
+
+MATCH (c:Categories) RETURN c.category_name;
+
+
+// --- Source: finaltesting/range_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests range and membership predicates.
+//
+// EXPECTED BEHAVIOR:
+// Checks values using IN lists or BETWEEN ranges.
+// ==========================================
+
+MATCH (p:Products) WHERE p.price IN [30, 80, 200] RETURN p.name;
+
+
+// --- Source: finaltesting/range_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests range and membership predicates.
+//
+// EXPECTED BEHAVIOR:
+// Checks values using IN lists or BETWEEN ranges.
+// ==========================================
+
+MATCH (o:Orders) WHERE o.amount BETWEEN 100 AND 600 RETURN o.order_id;
+
+
+// --- Source: finaltesting/sample.gql ---
+MATCH ()-[r:PLACED]->() RETURN r;
+
+
+// --- Source: finaltesting/stress_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine performance and structural limits.
+//
+// EXPECTED BEHAVIOR:
+// Executes complex, high-fanout queries to test scalability.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+RETURN u.name, p.name, COUNT(*) ORDER BY COUNT(*) DESC;
+
+
+// --- Source: finaltesting/string_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests specialized string predicates.
+//
+// EXPECTED BEHAVIOR:
+// Matches strings using STARTS WITH, ENDS WITH, or CONTAINS.
+// ==========================================
+
+MATCH (u:Users) WHERE u.name STARTS WITH 'O' RETURN u.name;
+
+
+// --- Source: finaltesting/string_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests specialized string predicates.
+//
+// EXPECTED BEHAVIOR:
+// Matches strings using STARTS WITH, ENDS WITH, or CONTAINS.
+// ==========================================
+
+MATCH (u:Users) WHERE u.name ENDS WITH 'a' RETURN u.name;
+
+
+// --- Source: finaltesting/string_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests specialized string predicates.
+//
+// EXPECTED BEHAVIOR:
+// Matches strings using STARTS WITH, ENDS WITH, or CONTAINS.
+// ==========================================
+
+MATCH (u:Users) WHERE u.name CONTAINS 'a' RETURN u.name;
+
+
+// --- Source: finaltesting/syntax_error_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine's error handling for malformed queries.
+//
+// EXPECTED BEHAVIOR:
+// Should result in a descriptive syntax error.
+// ==========================================
+
+MATCH u:Users RETURN u;
+
+
+// --- Source: finaltesting/syntax_error_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine's error handling for malformed queries.
+//
+// EXPECTED BEHAVIOR:
+// Should result in a descriptive syntax error.
+// ==========================================
+
+MATCH (u:Users RETORN u;
+
+
+// --- Source: finaltesting/syntax_error_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine's error handling for malformed queries.
+//
+// EXPECTED BEHAVIOR:
+// Should result in a descriptive syntax error.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country == 'India' RETURN u;
+
+
+// --- Source: finaltesting/syntax_error_04.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine's error handling for malformed queries.
+//
+// EXPECTED BEHAVIOR:
+// Should result in a descriptive syntax error.
+// ==========================================
+
+SELECT * FROM Users;
+
+
+// --- Source: finaltesting/syntax_error_05.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine's error handling for malformed queries.
+//
+// EXPECTED BEHAVIOR:
+// Should result in a descriptive syntax error.
+// ==========================================
+
+MATCH ((u:Users) RETURN u;
+
+
+// --- Source: finaltesting/traversal_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests single-hop pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses edges between nodes.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, o.order_id;
+
+
+// --- Source: finaltesting/traversal_02.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests single-hop pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses edges between nodes.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)
+RETURN o.order_id, p.name;
+
+
+// --- Source: finaltesting/traversal_03.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests single-hop pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses edges between nodes.
+// ==========================================
+
+MATCH (p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN p.name, c.category_name;
+
+
+// --- Source: finaltesting/update_01.gql ---
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests data modification using SET.
+//
+// EXPECTED BEHAVIOR:
+// Updates property values on existing nodes.
+// ==========================================
+
+MATCH (p:Products) WHERE p.name = 'Smartphone' SET p.price = 450;
+
+

@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests OPTIONAL MATCH for non-mandatory paths.
+//
+// EXPECTED BEHAVIOR:
+// Returns nulls for unmatched optional paths instead of filtering them out.
+// ==========================================
+
+MATCH (u:Users)
+OPTIONAL MATCH (u)-[:PLACED]->(o:Orders)
+RETURN u.name, COUNT(o);

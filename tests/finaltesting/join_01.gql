@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests JOIN operations using WHERE equality.
+//
+// EXPECTED BEHAVIOR:
+// Combines nodes from different scans based on property values.
+// ==========================================
+
+MATCH (u:Users), (o:Orders)
+WHERE u.user_id = o.user_id
+RETURN u.name, o.order_id;

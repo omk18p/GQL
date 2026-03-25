@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests LIMIT clause for restricting result count.
+//
+// EXPECTED BEHAVIOR:
+// Returns only the first N rows.
+// ==========================================
+
+MATCH (p:Products) RETURN p.name LIMIT 2;

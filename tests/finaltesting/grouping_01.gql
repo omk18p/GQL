@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests implicit grouping with aggregations.
+//
+// EXPECTED BEHAVIOR:
+// Groups results based on return columns and calculates aggregate values.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, COUNT(o);

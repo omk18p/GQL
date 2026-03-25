@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests specialized string predicates.
+//
+// EXPECTED BEHAVIOR:
+// Matches strings using STARTS WITH, ENDS WITH, or CONTAINS.
+// ==========================================
+
+MATCH (u:Users) WHERE u.name CONTAINS 'a' RETURN u.name;

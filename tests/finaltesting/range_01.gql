@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests range and membership predicates.
+//
+// EXPECTED BEHAVIOR:
+// Checks values using IN lists or BETWEEN ranges.
+// ==========================================
+
+MATCH (p:Products) WHERE p.price IN [30, 80, 200] RETURN p.name;

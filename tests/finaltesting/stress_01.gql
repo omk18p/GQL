@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine performance and structural limits.
+//
+// EXPECTED BEHAVIOR:
+// Executes complex, high-fanout queries to test scalability.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+RETURN u.name, p.name, COUNT(*) ORDER BY COUNT(*) DESC;

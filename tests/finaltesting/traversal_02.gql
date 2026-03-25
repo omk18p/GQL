@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests single-hop pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses edges between nodes.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)
+RETURN o.order_id, p.name;

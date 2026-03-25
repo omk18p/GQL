@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
+
+MATCH (p:Products) WHERE p.price < 100 RETURN p.name;

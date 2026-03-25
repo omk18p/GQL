@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests implicit grouping with aggregations.
+//
+// EXPECTED BEHAVIOR:
+// Groups results based on return columns and calculates aggregate values.
+// ==========================================
+
+MATCH (p:Products)<-[:CONTAINS]-(o:Orders)
+RETURN p.name, COUNT(o);

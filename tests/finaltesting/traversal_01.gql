@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests single-hop pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses edges between nodes.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, o.order_id;

@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests ORDER BY clause for sorting results.
+//
+// EXPECTED BEHAVIOR:
+// Sorts results in ascending or descending order.
+// ==========================================
+
+MATCH (o:Orders)
+RETURN o.order_id ORDER BY o.order_date DESC;

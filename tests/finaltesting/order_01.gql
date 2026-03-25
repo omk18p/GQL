@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests ORDER BY clause for sorting results.
+//
+// EXPECTED BEHAVIOR:
+// Sorts results in ascending or descending order.
+// ==========================================
+
+MATCH (p:Products)
+RETURN p.name ORDER BY p.price;

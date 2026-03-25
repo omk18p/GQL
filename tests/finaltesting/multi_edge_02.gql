@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests variable edge and multiple edge matching.
+//
+// EXPECTED BEHAVIOR:
+// Matches edges without labels or maps multiple relationships.
+// ==========================================
+
+MATCH ()-[r:PLACED]->() RETURN r;

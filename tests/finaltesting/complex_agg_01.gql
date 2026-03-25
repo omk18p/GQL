@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests advanced aggregation scenarios.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations across multi-hop joins with complex grouping.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, SUM(o.amount) AS total ORDER BY total DESC;

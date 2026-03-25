@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests engine behavior with null values.
+//
+// EXPECTED BEHAVIOR:
+// Validates how non-existent properties or null comparisons are handled.
+// ==========================================
+
+MATCH (u:Users) WHERE u.country = null RETURN u;

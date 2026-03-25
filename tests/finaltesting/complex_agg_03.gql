@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests advanced aggregation scenarios.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations across multi-hop joins with complex grouping.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN c.category_name, SUM(o.amount) ORDER BY SUM(o.amount) DESC;

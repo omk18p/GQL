@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests standard aggregation functions.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations like COUNT, SUM, AVG, MIN, MAX.
+// ==========================================
+
+MATCH (o:Orders) RETURN MIN(o.amount);

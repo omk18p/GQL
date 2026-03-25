@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests various graph and query edge cases.
+//
+// EXPECTED BEHAVIOR:
+// Handles empty results, missing labels, and invalid patterns gracefully.
+// ==========================================
+
+MATCH (n) RETURN n LIMIT 0;

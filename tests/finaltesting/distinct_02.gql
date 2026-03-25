@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests DISTINCT keyword in RETURN clause.
+//
+// EXPECTED BEHAVIOR:
+// Removes duplicate values from final result set.
+// ==========================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN DISTINCT u.name;

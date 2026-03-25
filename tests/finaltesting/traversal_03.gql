@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests single-hop pattern matching.
+//
+// EXPECTED BEHAVIOR:
+// Traverses edges between nodes.
+// ==========================================
+
+MATCH (p:Products)-[:BELONGS_TO]->(c:Categories)
+RETURN p.name, c.category_name;

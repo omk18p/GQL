@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic node matching.
+//
+// EXPECTED BEHAVIOR:
+// Returns nodes based on labels.
+// ==========================================
+
+MATCH (u:Users) RETURN u;

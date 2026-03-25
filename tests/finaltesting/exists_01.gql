@@ -1,0 +1,11 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests EXISTS subquery predicate.
+//
+// EXPECTED BEHAVIOR:
+// Checks for existence of related patterns in WHERE clause.
+// ==========================================
+
+MATCH (u:Users)
+WHERE EXISTS { (u)-[:PLACED]->(:Orders) }
+RETURN u.name;

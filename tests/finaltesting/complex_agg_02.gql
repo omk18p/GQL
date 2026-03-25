@@ -1,0 +1,10 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests advanced aggregation scenarios.
+//
+// EXPECTED BEHAVIOR:
+// Performs calculations across multi-hop joins with complex grouping.
+// ==========================================
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)
+RETURN p.name, COUNT(*) ORDER BY COUNT(*) DESC;

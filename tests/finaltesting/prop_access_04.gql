@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests property access on nodes.
+//
+// EXPECTED BEHAVIOR:
+// Returns specific properties from matched nodes.
+// ==========================================
+
+MATCH (c:Categories) RETURN c.category_name;

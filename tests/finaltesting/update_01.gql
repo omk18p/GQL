@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests data modification using SET.
+//
+// EXPECTED BEHAVIOR:
+// Updates property values on existing nodes.
+// ==========================================
+
+MATCH (p:Products) WHERE p.name = 'Smartphone' SET p.price = 450;

@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests data modification using INSERT.
+//
+// EXPECTED BEHAVIOR:
+// Adds new nodes and relationships to the graph.
+// ==========================================
+
+INSERT (p:Products {product_id: 99, category_id: 1, name: 'Tablet', price: 300});

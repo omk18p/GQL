@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests range and membership predicates.
+//
+// EXPECTED BEHAVIOR:
+// Checks values using IN lists or BETWEEN ranges.
+// ==========================================
+
+MATCH (o:Orders) WHERE o.amount BETWEEN 100 AND 600 RETURN o.order_id;

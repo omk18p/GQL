@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests data modification using DELETE.
+//
+// EXPECTED BEHAVIOR:
+// Removes nodes from the graph.
+// ==========================================
+
+MATCH (p:Products) WHERE p.name = 'Novel' DELETE p;

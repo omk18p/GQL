@@ -1,0 +1,9 @@
+// ==========================================
+// WHY IT IS INCLUDED:
+// Tests basic WHERE clause filtering.
+//
+// EXPECTED BEHAVIOR:
+// Filters nodes based on property values.
+// ==========================================
+
+MATCH (o:Orders) WHERE o.amount >= 500 RETURN o.order_id;
