@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
-import { Play, Eraser, AlertCircle, CheckCircle, Database, Clock, Terminal, Braces, Share2, History, X, Search, Trash2 } from 'lucide-react';
+import { Play, Eraser, AlertCircle, CheckCircle, Database, Clock, Terminal, Braces, Share2, History, X, Trash2 } from 'lucide-react';
 import ForceGraph2D from 'react-force-graph-2d';
 import './App.css';
 
@@ -43,18 +43,35 @@ function App() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === 'graph' && graphContainerRef.current) {
-      const updateDim = () => {
-        setGraphDim({
-          width: graphContainerRef.current.clientWidth,
-          height: graphContainerRef.current.clientHeight
-        });
-      };
-      updateDim();
-      setTimeout(updateDim, 50);
+    if (activeTab !== 'graph') return;
+
+    const el = graphContainerRef.current;
+    if (!el) return;
+
+    const updateDim = () => {
+      // ForceGraph2D relies on the explicit width/height props.
+      setGraphDim({
+        width: el.clientWidth,
+        height: el.clientHeight
+      });
+    };
+
+    updateDim();
+
+    // Observe container size changes caused by tab switches/layout changes.
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => updateDim());
+      ro.observe(el);
+    } else {
+      // Fallback for older browsers.
       window.addEventListener('resize', updateDim);
-      return () => window.removeEventListener('resize', updateDim);
     }
+
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', updateDim);
+    };
   }, [activeTab]);
 
   const handleRunQuery = async () => {
@@ -149,7 +166,7 @@ function App() {
           const props = {};
           
           // Split by comma, but be careful of commas inside strings
-          const pairs = propsString.split(/,\s*(?![^\[]*\])/);
+          const pairs = propsString.split(/,\s*(?![^[]*])/);
           
           pairs.forEach(pair => {
             const [key, ...valueParts] = pair.split(':');
@@ -378,7 +395,7 @@ function App() {
                   <Database size={32} />
                 </div>
                 <h3>Awaiting Instructions</h3>
-                <p>Type your GQL query in the editor and hit Execute to see the engine's response.</p>
+                <p>Type your GQL query in the editor and hit Execute to see the engine&apos;s response.</p>
               </div>
             )}
             
@@ -474,9 +491,6 @@ function App() {
                               const nodeLabel = node.properties?.name || node.properties?.category_name || node.id;
                               const fontSize = 12/globalScale;
                               ctx.font = `${fontSize}px Inter`;
-                              const textWidth = ctx.measureText(nodeLabel).width;
-                              const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
-
                               // Compute color from label
                               const typeLabel = node.labels?.[0] || 'Unknown';
                               const colorMap = {
