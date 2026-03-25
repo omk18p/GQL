@@ -115,7 +115,13 @@ Value evaluate(const Row& row, const string& expr, Graph& graph) {
         // 2. Try looking up in the graph via node/edge ID in the row
         if (row.values.count(var)) {
             Value varVal = row.values.at(var);
-            if (holds_alternative<int>(varVal.data)) {
+            if (holds_alternative<Node*>(varVal.data)) {
+                Node* node = get<Node*>(varVal.data);
+                if (node->properties.count(prop)) return node->properties.at(prop);
+            } else if (holds_alternative<Edge*>(varVal.data)) {
+                Edge* edge = get<Edge*>(varVal.data);
+                if (edge->properties.count(prop)) return edge->properties.at(prop);
+            } else if (holds_alternative<int>(varVal.data)) {
                 int id = get<int>(varVal.data);
                 if (graph.nodes.count(id)) {
                     auto node = graph.nodes.at(id);
@@ -171,7 +177,7 @@ bool MemoryFullScan::next(Row& row) {
     auto node = nodes[currentIndex];
     currentIndex++;
     
-    row.values[variable] = Value(node->id); 
+    row.values[variable] = Value(node.get()); 
     row.values[variable + ".id"] = Value(node->id); 
     
     for (auto& prop : node->properties) {
@@ -213,7 +219,7 @@ bool MemoryLabelScan::next(Row& row) {
     // AND the node reference itself (simulated by ID + all props)
     
     // 1. Variable itself and .id
-    row.values[variable] = Value(node->id); 
+    row.values[variable] = Value(node.get()); 
     row.values[variable + ".id"] = Value(node->id); 
     
     // 2. Properties
@@ -256,7 +262,7 @@ bool MemoryEdgeScan::next(Row& row) {
     currentIndex++;
     
     // Populate row with edge properties
-    row.values[variable] = Value(edge->id);
+    row.values[variable] = Value(edge.get());
     row.values[variable + ".id"] = Value(edge->id);
     row.values[variable + "._source"] = Value(edge->sourceId);
     row.values[variable + "._target"] = Value(edge->targetId);
@@ -505,12 +511,10 @@ void MemoryAggregate::open() {
                     }
                 } else if (func == "SUM") {
                     if (state.accumulators.find(alias) == state.accumulators.end()) {
-                        state.accumulators[alias] = Value(0);
+                        state.accumulators[alias] = Value(0.0);
                     }
-                    if (holds_alternative<int>(val.data)) {
-                        int currentSum = std::get<int>(state.accumulators[alias].data);
-                        state.accumulators[alias] = Value(currentSum + std::get<int>(val.data));
-                    }
+                    double currentSum = state.accumulators[alias].toDouble();
+                    state.accumulators[alias] = Value(currentSum + val.toDouble());
                 } else if (func == "MAX") {
                     if (state.accumulators.find(alias) == state.accumulators.end()) {
                         state.accumulators[alias] = val;
@@ -529,14 +533,12 @@ void MemoryAggregate::open() {
                     }
                 } else if (func == "AVG") {
                     if (state.accumulators.find(alias) == state.accumulators.end()) {
-                        state.accumulators[alias] = Value(0);
+                        state.accumulators[alias] = Value(0.0);
                         state.counts[alias] = 0;
                     }
-                    if (holds_alternative<int>(val.data)) {
-                        int currentSum = std::get<int>(state.accumulators[alias].data);
-                        state.accumulators[alias] = Value(currentSum + std::get<int>(val.data));
-                        state.counts[alias]++;
-                    }
+                    double currentSum = state.accumulators[alias].toDouble();
+                    state.accumulators[alias] = Value(currentSum + val.toDouble());
+                    state.counts[alias]++;
                 }
             }
         }
@@ -555,9 +557,9 @@ void MemoryAggregate::open() {
             // Handle AVG final division
             if (m.find("AVG(") == 0) {
                 if (pair.second.counts[alias] > 0) {
-                    int sum = std::get<int>(pair.second.accumulators[alias].data);
+                    double sum = pair.second.accumulators[alias].toDouble();
                     int count = pair.second.counts[alias];
-                    finalRow.values[alias] = Value(sum / count); // Integer division for now
+                    finalRow.values[alias] = Value(sum / count); 
                 } else {
                     finalRow.values[alias] = Value(); // NULL
                 }

@@ -1,0 +1,1 @@
+MATCH ()-[r:PLACED]->() RETURN r LIMIT 1;

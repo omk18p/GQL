@@ -25,6 +25,8 @@ struct Edge {
     int id;
     int sourceId;
     int targetId;
+    string sourceLabel; // Track source label for output
+    string targetLabel; // Track target label for output
     string label;
     unordered_map<string, Value> properties;
 };
@@ -72,6 +74,20 @@ public:
         edge->targetId = targetId;
         edge->label = label;
         edge->properties = props;
+        
+        // Track labels for output formatting
+        if (nodes.count(sourceId) && !nodes[sourceId]->labels.empty()) {
+            edge->sourceLabel = nodes[sourceId]->labels[0];
+        } else {
+            edge->sourceLabel = "Node";
+        }
+        
+        if (nodes.count(targetId) && !nodes[targetId]->labels.empty()) {
+            edge->targetLabel = nodes[targetId]->labels[0];
+        } else {
+            edge->targetLabel = "Node";
+        }
+
         addEdge(edge);
         return edge;
     }

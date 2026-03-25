@@ -3,6 +3,7 @@ g++ -O0 -std=c++17 \
   -I/usr/local/include/antlr4-runtime \
   -Isrc -Igenerated \
   src/main.cpp \
+  src/Value.cpp \
   src/ASTNodes.cpp \
   src/ASTBuilder.cpp \
   src/ASTPrinter.cpp \
