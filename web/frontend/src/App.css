@@ -479,6 +479,7 @@ body {
   border: 1px solid var(--border-color);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  width: 100%;
 }
 
 .terminal-top-bar {
@@ -512,8 +513,10 @@ body {
   line-height: 1.6;
   color: #a7f3d0;
   overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  /* Keep long engine output on a single line so horizontal scrolling works. */
+  white-space: pre;
+  word-wrap: normal;
+  word-break: normal;
 }
 
 /* Error Box */
