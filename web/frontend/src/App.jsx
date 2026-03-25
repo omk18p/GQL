@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
-import { Play, Eraser, AlertCircle, CheckCircle, Database, Clock, Terminal, Braces, Share2 } from 'lucide-react';
+import { Play, Eraser, AlertCircle, CheckCircle, Database, Clock, Terminal, Braces, Share2, History, X, Search, Trash2 } from 'lucide-react';
 import ForceGraph2D from 'react-force-graph-2d';
 import './App.css';
 
@@ -15,10 +15,23 @@ function App() {
   const [activeTab, setActiveTab] = useState('graph'); // default to 'graph' array tab
   const [parsedData, setParsedData] = useState(null);
   const graphContainerRef = useRef(null);
+  const editorRef = useRef(null);
+  const monacoRef = useRef(null);
   const [graphDim, setGraphDim] = useState({ width: 600, height: 400 });
   const [globalGraphData, setGlobalGraphData] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
+  
+  // History State
+  const [history, setHistory] = useState(() => {
+    const saved = localStorage.getItem('gql_query_history');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('gql_query_history', JSON.stringify(history));
+  }, [history]);
 
   useEffect(() => {
     if (activeTab === 'graph') {
@@ -52,6 +65,25 @@ function App() {
     setParsedData(null);
     setActiveTab('raw');
     
+    // Clear previous markers
+    if (monacoRef.current && editorRef.current) {
+      monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'gql', []);
+    }
+    
+    // Add to history
+    if (query.trim()) {
+      const newEntry = {
+        id: Date.now(),
+        query: query.trim(),
+        timestamp: new Date().toISOString()
+      };
+      // Keep unique and limited to 50
+      setHistory(prev => {
+        const filtered = prev.filter(h => h.query !== query.trim());
+        return [newEntry, ...filtered].slice(0, 50);
+      });
+    }
+
     const startTime = performance.now();
 
     try {
@@ -72,6 +104,24 @@ function App() {
         setStatus('error');
         setOutput(stdout || '');
         setErrorDetails(stderr || `Process exited with code ${exitCode}`);
+        
+        // Error highlighting
+        if (stderr && monacoRef.current && editorRef.current) {
+          const errorLoc = parseErrorLocation(stderr);
+          if (errorLoc) {
+            const model = editorRef.current.getModel();
+            monacoRef.current.editor.setModelMarkers(model, 'gql', [
+              {
+                startLineNumber: errorLoc.line,
+                startColumn: errorLoc.column + 1,
+                endLineNumber: errorLoc.line,
+                endColumn: model.getLineMaxColumn(errorLoc.line),
+                message: stderr.split('\n')[0],
+                severity: monacoRef.current.MarkerSeverity.Error,
+              }
+            ]);
+          }
+        }
       }
     } catch (err) {
       const endTime = performance.now();
@@ -120,6 +170,19 @@ function App() {
     }
   };
 
+  const parseErrorLocation = (stderr) => {
+    if (!stderr) return null;
+    // Look for "line X:Y" pattern
+    const match = stderr.match(/line (\d+):(\d+)/);
+    if (match) {
+      return {
+        line: parseInt(match[1], 10),
+        column: parseInt(match[2], 10)
+      };
+    }
+    return null;
+  };
+
   const handleClear = () => {
     setQuery('');
     setOutput('');
@@ -127,6 +190,30 @@ function App() {
     setStatus('idle');
     setExecutionTime(0);
     setParsedData(null);
+    if (monacoRef.current && editorRef.current) {
+      monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'gql', []);
+    }
+  };
+
+  const handleHistoryItemClick = (hQuery) => {
+    setQuery(hQuery);
+    setIsHistoryOpen(false);
+  };
+
+  const deleteHistoryItem = (id, e) => {
+    e.stopPropagation();
+    setHistory(prev => prev.filter(item => item.id !== id));
+  };
+
+  const clearHistory = () => {
+    if (window.confirm('Are you sure you want to clear all query history?')) {
+      setHistory([]);
+    }
+  };
+
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
   };
 
   return (
@@ -142,6 +229,13 @@ function App() {
           </div>
         </div>
         <div className="header-right">
+          <button 
+            className={`btn btn-secondary ${isHistoryOpen ? 'active' : ''}`}
+            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+            title="Query History"
+          >
+            <History size={16} /> History
+          </button>
           <button 
             className={`btn ${activeTab === 'graph' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ marginRight: '8px' }}
@@ -164,6 +258,47 @@ function App() {
       </header>
 
       <main className="main-content">
+        {/* HISTORY SIDEBAR */}
+        <div className={`history-sidebar glass-panel ${isHistoryOpen ? 'open' : ''}`}>
+          <div className="sidebar-header">
+            <h3><History size={16} /> Query History</h3>
+            <div className="sidebar-actions">
+              {history.length > 0 && (
+                <button className="btn-text" onClick={clearHistory}>Clear All</button>
+              )}
+              <button className="close-btn" onClick={() => setIsHistoryOpen(false)}><X size={18} /></button>
+            </div>
+          </div>
+          <div className="history-list">
+            {history.length === 0 ? (
+              <div className="empty-history">
+                <Clock size={24} />
+                <p>No history found</p>
+              </div>
+            ) : (
+              history.map(item => (
+                <div 
+                  key={item.id} 
+                  className="history-item"
+                  onClick={() => handleHistoryItemClick(item.query)}
+                >
+                  <div className="history-item-content">
+                    <pre>{item.query.substring(0, 100)}{item.query.length > 100 ? '...' : ''}</pre>
+                    <span className="history-time">{new Date(item.timestamp).toLocaleString()}</span>
+                  </div>
+                  <button 
+                    className="delete-item" 
+                    onClick={(e) => deleteHistoryItem(item.id, e)}
+                    title="Delete"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* LEFT PANE - EDITOR */}
         <div className="editor-pane glass-panel">
           <div className="pane-header">
@@ -199,6 +334,7 @@ function App() {
               theme="vs-dark"
               value={query}
               onChange={(val) => setQuery(val || '')}
+              onMount={handleEditorDidMount}
               options={{
                 minimap: { enabled: false },
                 fontSize: 15,
