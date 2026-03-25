@@ -1,0 +1,133 @@
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) RETURN u.name, c.category_name;
+
+MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders)<-[:PLACED]-(u:Users) RETURN c.category_name, COUNT(p) ORDER BY COUNT(p) DESC;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' RETURN u.name, p.name;
+
+MATCH (u:Users)-[:FLIGHT]->(c1:Cities)-[:FLIGHT]->(c2:Cities)-[:FLIGHT]->(c3:Cities) RETURN u.name, c3.name;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) WHERE u.country = 'India' AND p.price > 200 RETURN u.name, p.name, o.amount;
+
+MATCH (cat:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders) RETURN cat.category_name, SUM(o.amount) ORDER BY SUM(o.amount) DESC;
+
+MATCH (n1)-[r1]->(n2)-[r2]->(n3)-[r3]->(n4) RETURN n1.name, n4.name;
+
+MATCH (a:Accounts)-[:TRANSFERRED_TO]->(b:Accounts)-[:TRANSFERRED_TO]->(c:Accounts) WHERE a.balance > 10000 AND c.is_flagged = 'true' RETURN a.id, c.id, b.id;
+
+MATCH (o:Orders) RETURN o.user_id, SUM(o.amount), COUNT(o) ORDER BY SUM(o.amount) DESC;
+
+MATCH (u:Users)-[:FOLLOWS]->(influencer:Users)-[:POSTED]->(ad:Ads) RETURN influencer.name, COUNT(u), ad.revenue ORDER BY ad.revenue DESC;
+
+MATCH (n) RETURN n;
+
+MATCH (u:Users) RETURN u.name, u.country;
+
+MATCH (o:Orders) WHERE o.amount > 500 RETURN o.order_id, o.amount;
+
+MATCH ()-[r:PLACED]->() RETURN r;
+
+MATCH (u:Users) WHERE u.name = 'Vaibhav' RETURN u.country;
+
+INSERT (p:Products {product_id: 5, category_id: 1, name: 'Headphones', price: 200});
+
+MATCH (p:Products) WHERE p.name = 'Smartphone' SET p.price = 450;
+
+MATCH (p:Products) WHERE p.name = 'Novel' DELETE p;
+
+MATCH (u:NonExistentLabel) RETURN u;
+
+MATCH (u:Users)-[:NON_EXISTENT_EDGE]->(o:Orders) RETURN u, o;
+
+MATCH (u:Users) WHERE u.country = 'Mars' RETURN u;
+
+MATCH (u:Users) RETURN u.name, u.non_existent_property;
+
+MATCH (u:Users) RETURN COUNT(u.non_existent);
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN o.order_id ORDER BY o.non_existent DESC;
+
+MATCH (n) RETURN n LIMIT 0;
+
+MATCH (u:Users) WHERE u.country = null RETURN u.name;
+
+MATCH (u1:Users)-[:KNOWS]->(u2:Users)-[:KNOWS]->(u1:Users) RETURN u1;
+
+MATCH (u:Users), (o:Orders) WHERE u.user_id = o.user_id RETURN u.name, o.order_id, o.amount;
+
+MATCH (u:Users) WHERE NOT EXISTS { (u)-[:PLACED]->(:Orders) } RETURN u.name;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, SUM(o.amount) AS total_spent ORDER BY total_spent DESC;
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products) RETURN p.name, COUNT(*) AS freq ORDER BY freq DESC;
+
+MATCH (o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) RETURN c.category_name, SUM(o.amount) AS revenue ORDER BY revenue DESC;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' RETURN DISTINCT u.name;
+
+MATCH (o:Orders) RETURN o.amount, COUNT(*) ORDER BY COUNT(*) DESC;
+
+MATCH (o:Orders) RETURN o.order_id, o.order_date ORDER BY o.order_date DESC;
+
+MATCH (p:Products) WHERE NOT EXISTS { (:Orders)-[:CONTAINS]->(p) } RETURN p.name;
+
+MATCH (u:Users) OPTIONAL MATCH (u)-[:PLACED]->(o:Orders) RETURN u.name, COUNT(o) AS total_orders ORDER BY total_orders DESC;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, p.name;
+
+MATCH (p:Products)-[:BELONGS_TO]->(c:Categories) WHERE c.category_name = 'Electronics' AND p.price > 400 RETURN p.name;
+
+MATCH (o:Orders)<-[:PLACED]-(u:Users) RETURN u.name, o.order_id;
+
+MATCH (o:Orders)-[:PLACED]->(u:Users) RETURN u.name;
+
+MATCH (o:Orders) WHERE o.amount > 1000 RETURN o.order_id;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) WHERE o.amount > 400 AND o.status = 'DELIVERED' RETURN u.name, o.order_id;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN DISTINCT u.name, COUNT(o);
+
+MATCH (o:Orders) RETURN o.order_id, o.amount ORDER BY o.amount DESC LIMIT 2;
+
+MATCH (u:Users) RETURN u.name, u.age;
+
+MATCH (n)-[r]->(m) RETURN n, r, m;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, p.name, COUNT(*) ORDER BY COUNT(*) DESC;
+
+MATCH (c:Categories)<-[:BELONGS_TO]-(p:Products)<-[:CONTAINS]-(o:Orders) RETURN c.category_name, COUNT(*) ORDER BY COUNT(*) DESC;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, o.order_date, o.amount ORDER BY o.order_date;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, o.amount;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) WHERE o.amount > 500 RETURN u.name, o.order_date;
+
+MATCH (u:Users) RETURN u.country, COUNT(u);
+
+MATCH (o:Orders) RETURN o.user_id, SUM(o.amount);
+
+MATCH (p:Products) RETURN p.name ORDER BY p.price DESC;
+
+MATCH (o:Orders) RETURN o.order_id, o.user_id, o.amount ORDER BY o.user_id ASC, o.amount DESC;
+
+MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN u.name, COUNT(o) ORDER BY COUNT(o) DESC;
+
+MATCH (o:Orders) WHERE o.status = 'DELIVERED' RETURN o.user_id, AVG(o.amount) ORDER BY AVG(o.amount);
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products) RETURN u.name, o.order_id, p.name;
+
+MATCH u:Users RETURN u;
+
+(u:Users)-[:PLACED]->(o:Orders) RETURN u;
+
+MATCH (u:Users) RETORN u;
+
+MATCH (u:Users) WHERE u.country = 'India' u.country;
+
+MATCH ((u:Users) RETURN u;
+
+MATCH (u:Users) WHERE u.country == 'India' RETURN u;
+
+SELECT * FROM Users;
+
+MATCH ()-[r:PLACED]->() RETURN r;
