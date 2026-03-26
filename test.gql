@@ -1,0 +1,2 @@
+INSERT (p:Products {product_id: 100, name: 'DebugItem', price: 999});
+MATCH (p:Products {name: 'DebugItem'}) RETURN p.name, p.price;

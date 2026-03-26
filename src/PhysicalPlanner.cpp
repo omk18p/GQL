@@ -12,9 +12,13 @@ unique_ptr<PhysicalPlanNode> PhysicalPlanner::build(LogicalPlanNode* logicalPlan
 void PhysicalPlanner::visitNodeScan(NodeScanNode* node) {
     unique_ptr<PhysicalPlanNode> scanNode;
     if (node->label.empty()) {
-        scanNode = make_unique<PhysicalFullScan>(node->variable);
+        auto fullScan = make_unique<PhysicalFullScan>(node->variable);
+        fullScan->properties = node->properties;
+        scanNode = move(fullScan);
     } else {
-        scanNode = make_unique<PhysicalLabelScan>(node->label, node->variable);
+        auto labelScan = make_unique<PhysicalLabelScan>(node->label, node->variable);
+        labelScan->properties = node->properties;
+        scanNode = move(labelScan);
     }
     
     if (!node->children.empty()) {
@@ -245,6 +249,7 @@ void PhysicalPlanner::visitInsertOp(InsertOpNode* node) {
                 pNode.labels.push_back(nodeScan->label);
             }
             for (auto& prop : nodeScan->properties) {
+                cout << "[Debug] PhysicalPlanner: adding node property " << prop.first << " = " << prop.second << endl;
                 pNode.properties.push_back({prop.first, prop.second});
             }
             insertOp->insertNodes.push_back(pNode);

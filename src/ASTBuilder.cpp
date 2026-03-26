@@ -507,8 +507,9 @@ antlrcpp::Any ASTBuilder::visitElementPattern(GQLParser::ElementPatternContext* 
                     wasAdded = true;
                 }
                 
+                currentNodePattern = nodePatternPtr;
                 visit(pred->elementPropertySpecification());
-                // Property map parsing will populate nodePattern->properties
+                currentNodePattern = nullptr;
                 
                 // If we added it, we need to get it back (it's already in patterns)
                 if (wasAdded && currentMatchNode && !currentMatchNode->patterns.empty()) {
@@ -1175,15 +1176,21 @@ antlrcpp::Any ASTBuilder::visitInsertNodePattern(GQLParser::InsertNodePatternCon
             }
         }
         
-        // Extract labels from labelAndPropertySetSpecification
+        // Extract labels and properties from labelAndPropertySetSpecification
         if (filler->labelAndPropertySetSpecification()) {
             auto labelSpec = filler->labelAndPropertySetSpecification();
             if (labelSpec->labelSetSpecification()) {
-                // For now, extract as text - proper parsing would handle label sets
                 std::string labelText = labelSpec->labelSetSpecification()->getText();
                 if (!labelText.empty()) {
                     nodePattern->labels.push_back(labelText);
                 }
+            }
+            
+            // Handle properties in INSERT
+            if (labelSpec->elementPropertySpecification()) {
+                currentNodePattern = nodePattern.get();
+                visit(labelSpec->elementPropertySpecification());
+                currentNodePattern = nullptr;
             }
         }
         
@@ -2452,19 +2459,20 @@ antlrcpp::Any ASTBuilder::visitPropertyKeyValuePair(GQLParser::PropertyKeyValueP
     }
     
     // Find the current node pattern to attach properties to
-    // This should be called from within visitElementPattern
-    NodePatternNode* currentNode = nullptr;
-    if (currentMatchNode && !currentMatchNode->patterns.empty()) {
-        auto& lastPattern = currentMatchNode->patterns.back();
-        if (lastPattern->type == ASTNode::NODE_PATTERN) {
-            currentNode = static_cast<NodePatternNode*>(lastPattern.get());
-        }
-    } else {
-        // Also check root->children for standalone node patterns
-        for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
-            if ((*it)->type == ASTNode::NODE_PATTERN) {
-                currentNode = static_cast<NodePatternNode*>(it->get());
-                break;
+    NodePatternNode* currentNode = currentNodePattern;
+    if (!currentNode) {
+        if (currentMatchNode && !currentMatchNode->patterns.empty()) {
+            auto& lastPattern = currentMatchNode->patterns.back();
+            if (lastPattern->type == ASTNode::NODE_PATTERN) {
+                currentNode = static_cast<NodePatternNode*>(lastPattern.get());
+            }
+        } else {
+            // Also check root->children for standalone node patterns
+            for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+                if ((*it)->type == ASTNode::NODE_PATTERN) {
+                    currentNode = static_cast<NodePatternNode*>(it->get());
+                    break;
+                }
             }
         }
     }
@@ -2482,11 +2490,15 @@ antlrcpp::Any ASTBuilder::visitPropertyKeyValuePair(GQLParser::PropertyKeyValueP
                 if (valueExpr->type == ASTNode::EXPRESSION) {
                     auto* expr = static_cast<ExpressionNode*>(valueExpr.get());
                     currentNode->properties[key] = expr->value;
+                    std::cout << "[Debug] ASTBuilder: attached property " << key << " = " << expr->value << " to node" << std::endl;
                 } else {
                     // Fallback: use the expression's text representation
                     std::string exprText = ctx->valueExpression()->getText();
                     currentNode->properties[key] = exprText;
+                    std::cout << "[Debug] ASTBuilder: attached property " << key << " = " << exprText << " (fallback) to node" << std::endl;
                 }
+            } else {
+                std::cout << "[Debug] ASTBuilder: FAILED to find currentNode or key for property" << std::endl;
             }
         }
     }

@@ -25,11 +25,12 @@ class MemoryFullScan : public PhysicalOperator {
 private:
     unique_ptr<PhysicalOperator> child;
     string variable;
+    map<string, string> properties;
     vector<shared_ptr<Node>> nodes;
     size_t currentIndex = 0;
 
 public:
-    MemoryFullScan(Graph& g, unique_ptr<PhysicalOperator> c, string v);
+    MemoryFullScan(Graph& g, unique_ptr<PhysicalOperator> c, string v, map<string, string> props);
 
     void open() override;
     bool next(Row& row) override;
@@ -42,11 +43,12 @@ private:
     unique_ptr<PhysicalOperator> child;
     string label;
     string variable;
+    map<string, string> properties;
     vector<shared_ptr<Node>> nodes;
     size_t currentIndex = 0;
 
 public:
-    MemoryLabelScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v);
+    MemoryLabelScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v, map<string, string> props);
 
     void open() override;
     bool next(Row& row) override;

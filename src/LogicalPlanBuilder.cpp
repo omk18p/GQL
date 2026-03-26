@@ -219,6 +219,10 @@ void LogicalPlanBuilder::visitMatchStatement(MatchStatementNode* n) {
         
         if (!plan) {
             plan = move(newScan);
+            if (previousPlan) {
+                // Link the previous plan (e.g. SET/DELETE) to the FIRST node of this MATCH
+                plan->children.push_back(move(previousPlan));
+            }
             previousNode = plan.get();
         } else {
             auto join = make_unique<JoinNode>();

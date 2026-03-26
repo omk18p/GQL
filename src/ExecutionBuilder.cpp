@@ -14,14 +14,14 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
         case PhysicalOperatorType::MEM_SCAN_FULL: {
             auto scanNode = dynamic_cast<PhysicalFullScan*>(plan);
             if (scanNode) {
-                return make_unique<MemoryFullScan>(graph, move(childOp), scanNode->variable);
+                return make_unique<MemoryFullScan>(graph, move(childOp), scanNode->variable, scanNode->properties);
             }
             break;
         }
         case PhysicalOperatorType::MEM_SCAN_LABEL: {
             auto scanNode = dynamic_cast<PhysicalLabelScan*>(plan);
             if (scanNode) {
-                return make_unique<MemoryLabelScan>(graph, move(childOp), scanNode->label, scanNode->variable);
+                return make_unique<MemoryLabelScan>(graph, move(childOp), scanNode->label, scanNode->variable, scanNode->properties);
             }
             break;
         }

@@ -157,8 +157,8 @@ Value evaluate(const Row& row, const string& expr, Graph& graph) {
 
 // --- MemoryFullScan ---
 
-MemoryFullScan::MemoryFullScan(Graph& g, unique_ptr<PhysicalOperator> c, string v) 
-    : PhysicalOperator(g), child(move(c)), variable(v) {}
+MemoryFullScan::MemoryFullScan(Graph& g, unique_ptr<PhysicalOperator> c, string v, map<string, string> props) 
+    : PhysicalOperator(g), child(move(c)), variable(v), properties(props) {}
 
 void MemoryFullScan::open() {
     if (child) {
@@ -167,7 +167,26 @@ void MemoryFullScan::open() {
         while(child->next(dummy)) {}
         child->close();
     }
-    nodes = graph.getAllNodes();
+    auto allNodes = graph.getAllNodes();
+    for (auto& node : allNodes) {
+        bool match = true;
+        for (auto const& [key, val] : properties) {
+            // Strip quotes from string literals for comparison
+            string targetVal = val;
+            if (targetVal.size() >= 2 && 
+               ((targetVal.front() == '\'' && targetVal.back() == '\'') || 
+                (targetVal.front() == '\"' && targetVal.back() == '\"'))) {
+                targetVal = targetVal.substr(1, targetVal.size() - 2);
+            }
+            
+            if (node->properties.count(key)) {
+                string nodeVal = node->properties.at(key).toString();
+                cout << "[Debug] Comparing " << key << ": node='" << nodeVal << "' vs filter='" << targetVal << "'" << endl;
+                if (nodeVal != targetVal) { match = false; break; }
+            } else { match = false; break; }
+        }
+        if (match) nodes.push_back(node);
+    }
     currentIndex = 0;
 }
 
@@ -194,8 +213,8 @@ void MemoryFullScan::close() {
 
 // --- MemoryLabelScan ---
 
-MemoryLabelScan::MemoryLabelScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v) 
-    : PhysicalOperator(g), child(move(c)), label(l), variable(v) {}
+MemoryLabelScan::MemoryLabelScan(Graph& g, unique_ptr<PhysicalOperator> c, string l, string v, map<string, string> props) 
+    : PhysicalOperator(g), child(move(c)), label(l), variable(v), properties(props) {}
 
 void MemoryLabelScan::open() {
     if (child) {
@@ -204,7 +223,28 @@ void MemoryLabelScan::open() {
         while(child->next(dummy)) {}
         child->close();
     }
-    nodes = graph.getNodesByLabel(label);
+    auto candidates = graph.getNodesByLabel(label);
+    for (auto& node : candidates) {
+        bool match = true;
+        for (auto const& [key, val] : properties) {
+            // Strip quotes from string literals for comparison
+            string targetVal = val;
+            if (targetVal.size() >= 2 && 
+               ((targetVal.front() == '\'' && targetVal.back() == '\'') || 
+                (targetVal.front() == '\"' && targetVal.back() == '\"'))) {
+                targetVal = targetVal.substr(1, targetVal.size() - 2);
+            }
+
+            if (node->properties.count(key)) {
+                string nodeVal = node->properties.at(key).toString();
+                if (nodeVal != targetVal) { 
+        //            cout << "[Debug] Mismatch for " << key << ": '" << nodeVal << "' != '" << targetVal << "'" << endl;
+                    match = false; break; 
+                }
+            } else { match = false; break; }
+        }
+        if (match) nodes.push_back(node);
+    }
     currentIndex = 0;
 }
 
@@ -657,10 +697,24 @@ bool MemoryDelete::next(Row& row) {
     for (const string& var : variables) {
         if (row.values.find(var) != row.values.end()) {
             Value val = row.values[var];
-            if (holds_alternative<int>(val.data)) {
-                int id = get<int>(val.data);
-                
-                if (graph.nodes.count(id)) {
+            int id = -1;
+            bool isNode = false;
+            bool isEdge = false;
+
+            if (holds_alternative<Node*>(val.data)) {
+                id = get<Node*>(val.data)->id;
+                isNode = true;
+            } else if (holds_alternative<Edge*>(val.data)) {
+                id = get<Edge*>(val.data)->id;
+                isEdge = true;
+            } else if (holds_alternative<int>(val.data)) {
+                id = get<int>(val.data);
+                if (graph.nodes.count(id)) isNode = true;
+                else if (graph.edges.count(id)) isEdge = true;
+            }
+
+            if (id != -1) {
+                if (isNode && graph.nodes.count(id)) {
                     if (detach) {
                         vector<int> edgesToDelete;
                         for (const auto& pair : graph.edges) {
@@ -673,7 +727,7 @@ bool MemoryDelete::next(Row& row) {
                         }
                     }
                     if (graph.deleteNode(id)) deletedCount++;
-                } else if (graph.edges.count(id)) {
+                } else if (isEdge && graph.edges.count(id)) {
                     if (graph.deleteEdge(id)) deletedCount++;
                 }
             }
@@ -700,72 +754,88 @@ void MemoryInsert::open() {
 }
 
 bool MemoryInsert::next(Row& row) {
-    if (done) return false;
-    
-    bool hasNext = false;
-    if (child) {
-        hasNext = child->next(row);
-    } else {
-        // Simple INSERT with no child (e.g. INSERT (n))
-        // We only do this once
-        hasNext = !done;
-    }
-    
-    if (!hasNext) {
-        done = true;
-        return false;
-    }
-    
-    unordered_map<string, int> createdVarIds;
-    
-    // Insert Nodes
-    for (const auto& n : insertNodes) {
-        unordered_map<string, Value> props;
-        for (auto& p : n.properties) {
-            props[p.key] = evaluate(row, p.expressionString, graph);
-        }
-        auto node = graph.createNode(n.labels, props);
-        createdVarIds[n.variable] = node->id;
-        row.values[n.variable] = Value((int)node->id); // Feed newly created node into context
-        insertedNodesCount++;
-    }
-    
-    // Insert Edges
-    for (const auto& e : insertEdges) {
-        unordered_map<string, Value> props;
-        for (auto& p : e.properties) {
-            props[p.key] = evaluate(row, p.expressionString, graph);
-        }
+    while (true) {
+        if (done) return false;
         
-        int sourceId = -1;
-        int targetId = -1;
-        
-        if (row.values.count(e.sourceVar) && holds_alternative<int>(row.values.at(e.sourceVar).data)) {
-            sourceId = get<int>(row.values.at(e.sourceVar).data);
-        } else if (createdVarIds.count(e.sourceVar)) {
-            sourceId = createdVarIds[e.sourceVar];
-        }
-        
-        if (row.values.count(e.targetVar) && holds_alternative<int>(row.values.at(e.targetVar).data)) {
-            targetId = get<int>(row.values.at(e.targetVar).data);
-        } else if (createdVarIds.count(e.targetVar)) {
-            targetId = createdVarIds[e.targetVar];
-        }
-        
-        if (sourceId != -1 && targetId != -1) {
-            auto edge = graph.createEdge(sourceId, targetId, e.labels.empty() ? "" : e.labels[0], props);
-            if (edge) {
-                createdVarIds[e.variable] = edge->id;
-                row.values[e.variable] = Value((int)edge->id);
-                insertedEdgesCount++;
-            }
+        bool hasNext = false;
+        if (child) {
+            hasNext = child->next(row);
         } else {
-            cout << "[Warning] Could not resolve endpoints for inserting edge '" << e.variable << "'. Source=" << e.sourceVar << " (id:" << sourceId << "), Target=" << e.targetVar << " (id:" << targetId << ")\n";
+            hasNext = !done;
         }
+        
+        if (!hasNext) {
+            done = true;
+            return false;
+        }
+        
+        int nodesCreatedThisRow = 0;
+        int edgesCreatedThisRow = 0;
+        unordered_map<string, int> createdVarIds;
+        
+        // Insert Nodes
+        for (const auto& n : insertNodes) {
+            unordered_map<string, Value> props;
+            for (auto& p : n.properties) {
+                props[p.key] = evaluate(row, p.expressionString, graph);
+            }
+            auto node = graph.createNode(n.labels, props);
+            if (!node) {
+                cerr << "[Execution Error] Failed to create node (validation failed)." << endl;
+                continue;
+            }
+            nodesCreatedThisRow++;
+            insertedNodesCount++;
+            createdVarIds[n.variable] = node->id;
+            row.values[n.variable] = Value((int)node->id); // Feed newly created node into context
+        }
+        
+        // Insert Edges
+        for (const auto& e : insertEdges) {
+            unordered_map<string, Value> props;
+            for (auto& p : e.properties) {
+                props[p.key] = evaluate(row, p.expressionString, graph);
+            }
+            
+            int sourceId = -1;
+            int targetId = -1;
+            
+            if (row.values.count(e.sourceVar) && holds_alternative<int>(row.values.at(e.sourceVar).data)) {
+                sourceId = get<int>(row.values.at(e.sourceVar).data);
+            } else if (createdVarIds.count(e.sourceVar)) {
+                sourceId = createdVarIds[e.sourceVar];
+            }
+            
+            if (row.values.count(e.targetVar) && holds_alternative<int>(row.values.at(e.targetVar).data)) {
+                targetId = get<int>(row.values.at(e.targetVar).data);
+            } else if (createdVarIds.count(e.targetVar)) {
+                targetId = createdVarIds[e.targetVar];
+            }
+            
+            if (sourceId != -1 && targetId != -1) {
+                auto edge = graph.createEdge(sourceId, targetId, e.labels.empty() ? "" : e.labels[0], props);
+                if (edge) {
+                    createdVarIds[e.variable] = edge->id;
+                    row.values[e.variable] = Value((int)edge->id);
+                    edgesCreatedThisRow++;
+                    insertedEdgesCount++;
+                }
+            } else {
+                cerr << "[Warning] Could not resolve endpoints for inserting edge '" << e.variable << "'. Source=" << e.sourceVar << " (id:" << sourceId << "), Target=" << e.targetVar << " (id:" << targetId << ")\n";
+            }
+        }
+        
+        if (!child) done = true; // Simple INSERT finishes after one row attempt
+
+        if (nodesCreatedThisRow > 0 || edgesCreatedThisRow > 0) {
+            return true;
+        }
+
+        // If we reach here, no nodes or edges were created for this row.
+        // If there's no child, we're completely done.
+        if (!child) return false;
+        // Otherwise, continue to the next row from child.
     }
-    
-    if (!child) done = true; // Simple INSERT finishes after one row
-    return true;
 }
 
 void MemoryInsert::close() {
@@ -794,27 +864,39 @@ bool MemoryUpdate::next(Row& row) {
     for (const auto& item : items) {
         if (row.values.find(item.variable) != row.values.end()) {
             Value val = row.values[item.variable];
-            if (holds_alternative<int>(val.data)) {
+            shared_ptr<Node> targetNode = nullptr;
+            shared_ptr<Edge> targetEdge = nullptr;
+
+            if (holds_alternative<Node*>(val.data)) {
+                Node* ptr = get<Node*>(val.data);
+                if (graph.nodes.count(ptr->id)) targetNode = graph.nodes[ptr->id];
+            } else if (holds_alternative<Edge*>(val.data)) {
+                Edge* ptr = get<Edge*>(val.data);
+                if (graph.edges.count(ptr->id)) targetEdge = graph.edges[ptr->id];
+            } else if (holds_alternative<int>(val.data)) {
                 int id = get<int>(val.data);
-                
-                if (graph.nodes.find(id) != graph.nodes.end()) {
-                    auto node = graph.nodes[id];
-                    if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
-                        node->properties[item.key] = evaluate(row, item.expressionString, graph);
-                        updatedCount++;
-                    } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
-                        node->properties.erase(item.key);
-                        updatedCount++;
-                    }
-                } else if (graph.edges.find(id) != graph.edges.end()) {
-                    auto edge = graph.edges[id];
-                    if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
-                        edge->properties[item.key] = evaluate(row, item.expressionString, graph);
-                        updatedCount++;
-                    } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
-                        edge->properties.erase(item.key);
-                        updatedCount++;
-                    }
+                if (graph.nodes.count(id)) targetNode = graph.nodes[id];
+                else if (graph.edges.count(id)) targetEdge = graph.edges[id];
+            }
+
+            if (targetNode) {
+                // cout << "[Debug] MemoryUpdate: Updating node " << targetNode->id << " key=" << item.key << endl;
+                if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
+                    Value newValue = evaluate(row, item.expressionString, graph);
+                    targetNode->properties[item.key] = newValue;
+                    updatedCount++;
+                } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
+                    targetNode->properties.erase(item.key);
+                    updatedCount++;
+                }
+            } else if (targetEdge) {
+                if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
+                    Value newValue = evaluate(row, item.expressionString, graph);
+                    targetEdge->properties[item.key] = newValue;
+                    updatedCount++;
+                } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
+                    targetEdge->properties.erase(item.key);
+                    updatedCount++;
                 }
             }
         }

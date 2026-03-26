@@ -242,7 +242,21 @@ void dumpGraphJSON(Graph& graph) {
     cout << "]}" << endl;
 }
 
-int main(int argc, const char* argv[]) {
+// Helper to check if a logical plan contains any mutation operations
+bool containsMutation(LogicalPlanNode* node) {
+    if (!node) return false;
+    if (node->type == LogicalPlanNode::INSERT_OP || 
+        node->type == LogicalPlanNode::DELETE_OP || 
+        node->type == LogicalPlanNode::UPDATE_OP) {
+        return true;
+    }
+    for (auto& child : node->children) {
+        if (containsMutation(child.get())) return true;
+    }
+    return false;
+}
+
+int main(int argc, char* argv[]) {
     if (argc < 2) {
         cerr << "Usage: " << argv[0] << " <input-file> OR --dump" << endl;
         return 1;
@@ -250,7 +264,14 @@ int main(int argc, const char* argv[]) {
 
     if (string(argv[1]) == "--dump") {
         Graph graph;
-        populateGraph(graph);
+        const string DB_FILE = "graph_data.json";
+        ifstream f(DB_FILE);
+        if (f.good()) {
+            graph.load(DB_FILE);
+            graph.cleanupInvalidNodes();
+        } else {
+            populateGraph(graph);
+        }
         dumpGraphJSON(graph);
         return 0;
     }
@@ -299,7 +320,10 @@ int main(int argc, const char* argv[]) {
         LogicalPlanBuilder planBuilder;
         auto logicalPlan = planBuilder.build(ast.get());
         
+        bool isMutation = false;
         if (logicalPlan) {
+            isMutation = containsMutation(logicalPlan.get());
+
             LogicalPlanPrinter planPrinter;
             planPrinter.print(logicalPlan.get());
 
@@ -314,7 +338,17 @@ int main(int argc, const char* argv[]) {
                 cout << "\n==================== EXECUTION RESULTS ====================\n";
                 // 1. Init Graph
                 Graph graph;
-                populateGraph(graph);
+                const string DB_FILE = "graph_data.json";
+                ifstream f(DB_FILE);
+                if (f.good()) {
+                    cout << "[Storage] Loading graph from " << DB_FILE << "..." << endl;
+                    graph.load(DB_FILE);
+                    graph.cleanupInvalidNodes();
+                    cout << "[Storage] Loaded " << graph.nodes.size() << " nodes and " << graph.edges.size() << " edges." << endl;
+                } else {
+                    cout << "[Storage] No persistence file found. Initializing fresh graph..." << endl;
+                    populateGraph(graph);
+                }
 
 
                 // 2. Build Execution Tree
@@ -341,6 +375,15 @@ int main(int argc, const char* argv[]) {
                     }
                     
                     rootOp->close();
+
+                    if (isMutation) {
+                        cerr << "[Storage] Mutation detected. Saving changes to " << DB_FILE << "..." << endl;
+                        // Simple lock-file approach
+                        ofstream lock("graph.lock");
+                        graph.save(DB_FILE);
+                        lock.close();
+                        remove("graph.lock");
+                    }
                 } else {
                     cout << "Failed to build execution tree." << endl;
                 }

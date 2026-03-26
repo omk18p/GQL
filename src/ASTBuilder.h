@@ -5,6 +5,7 @@
 class ASTBuilder : public GQLBaseVisitor {
     std::unique_ptr<QueryNode> root;
     MatchStatementNode* currentMatchNode = nullptr;  // Track current MATCH statement being built
+    NodePatternNode* currentNodePattern = nullptr;  // Track current node pattern being built (for properties)
     ReturnStatementNode* currentReturnNode = nullptr;  // Track current RETURN statement being built
     std::string currentQuantifier;  // Track quantifier for current edge pattern
     

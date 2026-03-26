@@ -55,12 +55,20 @@ public:
 class PhysicalFullScan : public PhysicalPlanNode {
 public:
     string variable;
+    map<string, string> properties;
 
     PhysicalFullScan(string v) 
         : PhysicalPlanNode(PhysicalOperatorType::MEM_SCAN_FULL), variable(v) {}
 
     string toString() const override {
-        return "MemFullScan(variable: " + variable + ")";
+        string res = "MemFullScan(variable: " + variable;
+        if (!properties.empty()) {
+            res += ", properties: {";
+            for (auto const& [key, val] : properties) res += key + ": " + val + ", ";
+            res.pop_back(); res.pop_back(); res += "}";
+        }
+        res += ")";
+        return res;
     }
 };
 
@@ -68,12 +76,20 @@ class PhysicalLabelScan : public PhysicalPlanNode {
 public:
     string label;
     string variable;
+    map<string, string> properties;
 
     PhysicalLabelScan(string l, string v) 
         : PhysicalPlanNode(PhysicalOperatorType::MEM_SCAN_LABEL), label(l), variable(v) {}
 
     string toString() const override {
-        return "MemLabelScan(label: " + label + ", variable: " + variable + ")";
+        string res = "MemLabelScan(label: " + label + ", variable: " + variable;
+        if (!properties.empty()) {
+            res += ", properties: {";
+            for (auto const& [key, val] : properties) res += key + ": " + val + ", ";
+            res.pop_back(); res.pop_back(); res += "}";
+        }
+        res += ")";
+        return res;
     }
 };
 
