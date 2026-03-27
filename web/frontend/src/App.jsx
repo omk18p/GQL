@@ -21,7 +21,12 @@ function App() {
   const [globalGraphData, setGlobalGraphData] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
-  
+
+  // Search State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [highlightedNodeIds, setHighlightedNodeIds] = useState([]);
+  const fgRef = useRef();
+
   // History State
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem('gql_query_history');
@@ -81,12 +86,12 @@ function App() {
     setErrorDetails('');
     setParsedData(null);
     setActiveTab('raw');
-    
+
     // Clear previous markers
     if (monacoRef.current && editorRef.current) {
       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'gql', []);
     }
-    
+
     // Add to history
     if (query.trim()) {
       const newEntry = {
@@ -107,21 +112,21 @@ function App() {
       const response = await axios.post('http://localhost:3001/api/execute', { query });
       const endTime = performance.now();
       setExecutionTime(endTime - startTime);
-      
+
       const { stdout, stderr, exitCode } = response.data;
-      
+
       if (exitCode === 0) {
         setStatus('success');
         setOutput(stdout || 'Query executed successfully with no output.');
         if (stderr) setOutput(prev => prev + '\n[Warnings]:\n' + stderr);
-        
+
         // Try to parse the output if it looks like the Row X: { ... } format
         parseCustomOutput(stdout);
       } else {
         setStatus('error');
         setOutput(stdout || '');
         setErrorDetails(stderr || `Process exited with code ${exitCode}`);
-        
+
         // Error highlighting
         if (stderr && monacoRef.current && editorRef.current) {
           const errorLoc = parseErrorLocation(stderr);
@@ -153,31 +158,31 @@ function App() {
   // Helper to try parsing the C++ engine's specific output format
   const parseCustomOutput = (stdout) => {
     if (!stdout) return;
-    
+
     try {
       const lines = stdout.split('\n');
       const data = [];
-      
+
       for (const line of lines) {
         // Look for "Row 1: { user_id: 101, name: Vaibhav }" format
         const match = line.match(/Row \d+:\s*\{(.*)\}/);
         if (match && match[1]) {
           const propsString = match[1].trim();
           const props = {};
-          
+
           // Split by comma, but be careful of commas inside strings
           const pairs = propsString.split(/,\s*(?![^[]*])/);
-          
+
           pairs.forEach(pair => {
             const [key, ...valueParts] = pair.split(':');
             if (key) {
-               props[key.trim()] = valueParts.join(':').trim();
+              props[key.trim()] = valueParts.join(':').trim();
             }
           });
           data.push(props);
         }
       }
-      
+
       if (data.length > 0) {
         setParsedData(data);
         setActiveTab('json'); // Auto-switch to parsed view if we found data
@@ -219,7 +224,7 @@ function App() {
 
     setIsLoading(true);
     setStatus('idle');
-    
+
     try {
       const response = await axios.post('http://localhost:3001/api/reset');
       if (response.data.success) {
@@ -269,6 +274,37 @@ function App() {
     monacoRef.current = monaco;
   };
 
+  const handleSearch = () => {
+    if (!searchTerm.trim() || !globalGraphData) {
+      setHighlightedNodeIds([]);
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    const matchedNodes = globalGraphData.nodes.filter(node =>
+      Object.values(node.properties || {}).some(val =>
+        val?.toString().toLowerCase().includes(term)
+      )
+    );
+
+    const ids = matchedNodes.map(n => n.id);
+    setHighlightedNodeIds(ids);
+
+    if (matchedNodes.length > 0) {
+      const first = matchedNodes[0];
+      // Zoom to first match
+      if (fgRef.current) {
+        fgRef.current.centerAt(first.x, first.y, 1000);
+        fgRef.current.zoom(3, 1000);
+      }
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setHighlightedNodeIds([]);
+  };
+
   return (
     <div className="app-container">
       <header className="header">
@@ -282,7 +318,7 @@ function App() {
           </div>
         </div>
         <div className="header-right">
-          <button 
+          <button
             className="btn btn-danger"
             style={{ marginRight: '8px' }}
             onClick={handleReset}
@@ -291,14 +327,14 @@ function App() {
           >
             <Database size={14} /> Reset DB
           </button>
-          <button 
+          <button
             className={`btn btn-secondary ${isHistoryOpen ? 'active' : ''}`}
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
             title="Query History"
           >
             <History size={16} /> History
           </button>
-          <button 
+          <button
             className={`btn ${activeTab === 'graph' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ marginRight: '8px' }}
             onClick={() => setActiveTab('graph')}
@@ -341,8 +377,8 @@ function App() {
               </div>
             ) : (
               history.map(item => (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   className="history-item"
                   onClick={() => handleHistoryItemClick(item.query)}
                 >
@@ -350,8 +386,8 @@ function App() {
                     <pre>{item.query.substring(0, 100)}{item.query.length > 100 ? '...' : ''}</pre>
                     <span className="history-time">{new Date(item.timestamp).toLocaleString()}</span>
                   </div>
-                  <button 
-                    className="delete-item" 
+                  <button
+                    className="delete-item"
                     onClick={(e) => deleteHistoryItem(item.id, e)}
                     title="Remove from history"
                   >
@@ -370,16 +406,16 @@ function App() {
               <Terminal size={14} /> Query
             </div>
             <div className="actions">
-              <button 
-                className="btn btn-secondary" 
+              <button
+                className="btn btn-secondary"
                 onClick={handleClear}
                 disabled={isLoading}
                 title="Clear Editor"
               >
                 <Eraser size={14} /> Clear
               </button>
-              <button 
-                className="btn btn-primary pulse-hover" 
+              <button
+                className="btn btn-primary pulse-hover"
                 onClick={handleRunQuery}
                 disabled={isLoading || !query.trim()}
               >
@@ -419,13 +455,13 @@ function App() {
         <div className="results-pane glass-panel">
           <div className="pane-header">
             <div className="tabs">
-              <button 
+              <button
                 className={`tab ${activeTab === 'raw' ? 'active-tab' : ''}`}
                 onClick={() => setActiveTab('raw')}
               >
                 <Terminal size={14} /> Raw Output
               </button>
-              <button 
+              <button
                 className={`tab ${activeTab === 'json' ? 'active-tab' : ''}`}
                 onClick={() => setActiveTab('json')}
                 disabled={!parsedData}
@@ -434,7 +470,7 @@ function App() {
               </button>
             </div>
           </div>
-          
+
           <div className="results-wrapper">
             {status === 'idle' && !output && (
               <div className="empty-state">
@@ -445,7 +481,7 @@ function App() {
                 <p>Type your GQL query in the editor and hit Execute to see the engine&apos;s response.</p>
               </div>
             )}
-            
+
             {(output || errorDetails || activeTab === 'graph') && (
               <div className="content-area animate-fade-in">
                 {errorDetails && (
@@ -497,6 +533,33 @@ function App() {
                         <Share2 size={16} className="text-accent" />
                         <span>Interactive Dataset Map</span>
                       </div>
+
+                      <div className="graph-search-container">
+                        <div className="search-input-wrapper">
+                          <input
+                            type="text"
+                            placeholder="Search (e.g., Omkar, India, Laptop)"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            className="search-input"
+                          />
+                          {searchTerm && (
+                            <button className="clear-search-btn" onClick={handleClearSearch}>
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+                        <button className="btn btn-primary search-btn" onClick={handleSearch}>
+                          Search
+                        </button>
+                        {highlightedNodeIds.length > 0 && (
+                          <span className="search-results-count animate-fade-in">
+                            {highlightedNodeIds.length} {highlightedNodeIds.length === 1 ? 'match' : 'matches'}
+                          </span>
+                        )}
+                      </div>
+
                       <div className="graph-stats">
                         {globalGraphData && (
                           <>
@@ -506,38 +569,50 @@ function App() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="graph-content" ref={graphContainerRef}>
                       {globalGraphData ? (
                         <>
                           <ForceGraph2D
+                            ref={fgRef}
                             width={graphDim.width}
                             height={graphDim.height}
                             graphData={globalGraphData}
                             nodeLabel={(node) => node.properties?.name || node.properties?.category_name || node.id}
-                            nodeColor={(node) => {
-                              const label = node.labels?.[0] || 'Unknown';
-                              const colors = {
-                                'Users': '#8b5cf6',
-                                'Products': '#3b82f6',
-                                'Categories': '#10b981',
-                                'Orders': '#f59e0b',
-                                'Reviews': '#ef4444'
-                              };
-                              return colors[label] || '#94a3b8';
-                            }}
                             nodeRelSize={6}
                             linkDirectionalParticles={4}
                             linkDirectionalParticleSpeed={0.005}
-                            linkWidth={1}
-                            linkColor={() => 'rgba(255,255,255,0.1)'}
+                            linkWidth={(link) => {
+                              if (highlightedNodeIds.length === 0) return 1;
+                              const sourceId = link.source.id || link.source;
+                              const targetId = link.target.id || link.target;
+                              const isConnected = highlightedNodeIds.includes(sourceId) || highlightedNodeIds.includes(targetId);
+                              return isConnected ? 3 : 1;
+                            }}
+                            linkColor={(link) => {
+                              if (highlightedNodeIds.length === 0) return 'rgba(255,255,255,0.1)';
+                              const sourceId = link.source.id || link.source;
+                              const targetId = link.target.id || link.target;
+                              const isConnected = highlightedNodeIds.includes(sourceId) || highlightedNodeIds.includes(targetId);
+                              return isConnected ? '#facc15' : 'rgba(255,255,255,0.03)';
+                            }}
                             backgroundColor="transparent"
                             onNodeClick={(node) => setSelectedNode(node)}
                             onNodeHover={(node) => setHoveredNode(node)}
                             nodeCanvasObject={(node, ctx, globalScale) => {
+                              const isHighlighted = highlightedNodeIds.includes(node.id);
+                              const isNeighbor = highlightedNodeIds.length > 0 && globalGraphData.links.some(l => {
+                                const sId = l.source.id || l.source;
+                                const tId = l.target.id || l.target;
+                                return (highlightedNodeIds.includes(sId) && tId === node.id) ||
+                                       (highlightedNodeIds.includes(tId) && sId === node.id);
+                              });
+
+                              const opacity = highlightedNodeIds.length > 0 ? (isHighlighted || isNeighbor ? 1 : 0.15) : 1;
                               const nodeLabel = node.properties?.name || node.properties?.category_name || node.id;
-                              const fontSize = 12/globalScale;
+                              const fontSize = 12 / globalScale;
                               ctx.font = `${fontSize}px Inter`;
+
                               // Compute color from label
                               const typeLabel = node.labels?.[0] || 'Unknown';
                               const colorMap = {
@@ -547,43 +622,66 @@ function App() {
                                 'Orders': '#f59e0b',
                                 'Reviews': '#ef4444'
                               };
-                              const nodeColor = colorMap[typeLabel] || '#94a3b8';
+
+                              let nodeColor = colorMap[typeLabel] || '#94a3b8';
+                              if (isHighlighted) nodeColor = '#facc15'; // Bright yellow for search match
+
+                              // Handle opacity
+                              const rgbMatched = nodeColor.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+                              const r_val = parseInt(rgbMatched[1], 16);
+                              const g_val = parseInt(rgbMatched[2], 16);
+                              const b_val = parseInt(rgbMatched[3], 16);
+                              const finalFill = `rgba(${r_val}, ${g_val}, ${b_val}, ${opacity})`;
 
                               // Node circle
-                              const r = 4;
+                              const baseR = 4;
+                              const r = isHighlighted ? baseR * 1.8 : baseR;
+
+                              // Glow/Border for highlighted
+                              if (isHighlighted) {
+                                ctx.beginPath();
+                                ctx.arc(node.x, node.y, r + 2 / globalScale, 0, 2 * Math.PI, false);
+                                ctx.fillStyle = 'rgba(250, 204, 21, 0.3)';
+                                ctx.fill();
+                              }
+
                               ctx.beginPath();
                               ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-                              ctx.fillStyle = nodeColor;
+                              ctx.fillStyle = finalFill;
                               ctx.fill();
-                              
-                              if (hoveredNode === node || selectedNode === node) {
-                                ctx.strokeStyle = '#fff';
-                                ctx.lineWidth = 2/globalScale;
+
+                              if (hoveredNode === node || selectedNode === node || isHighlighted) {
+                                ctx.strokeStyle = isHighlighted ? '#fff' : '#fff';
+                                ctx.lineWidth = (isHighlighted ? 3 : 2) / globalScale;
                                 ctx.stroke();
                               }
 
                               // Label
-                              if (globalScale > 1.5) {
-                                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                              if (globalScale > 1.5 || isHighlighted) {
+                                ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.8})`;
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                ctx.fillText(nodeLabel, node.x, node.y + r + fontSize);
+                                if (isHighlighted) {
+                                  ctx.font = `bold ${fontSize * 1.2}px Inter`;
+                                }
+                                ctx.fillText(nodeLabel, node.x, node.y + r + fontSize + 2 / globalScale);
                               }
                             }}
                           />
-                          
+
                           {/* Legend */}
                           <div className="graph-legend">
                             <h4>Legend</h4>
                             <div className="legend-items">
                               {[...new Set(globalGraphData.nodes.map(n => n.labels?.[0] || 'Unknown'))].map(label => (
                                 <div key={label} className="legend-item">
-                                  <span className="legend-color" style={{ backgroundColor: 
-                                    label === 'Users' ? '#8b5cf6' : 
-                                     label === 'Products' ? '#3b82f6' : 
-                                     label === 'Categories' ? '#10b981' : 
-                                     label === 'Orders' ? '#f59e0b' : 
-                                     label === 'Reviews' ? '#ef4444' : '#94a3b8' 
+                                  <span className="legend-color" style={{
+                                    backgroundColor:
+                                      label === 'Users' ? '#8b5cf6' :
+                                        label === 'Products' ? '#3b82f6' :
+                                          label === 'Categories' ? '#10b981' :
+                                            label === 'Orders' ? '#f59e0b' :
+                                              label === 'Reviews' ? '#ef4444' : '#94a3b8'
                                   }}></span>
                                   <span>{label}</span>
                                 </div>
@@ -632,7 +730,7 @@ function App() {
           </div>
         </div>
       </main>
-      
+
       {/* Background decoration */}
       <div className="glow glow-1"></div>
       <div className="glow glow-2"></div>
