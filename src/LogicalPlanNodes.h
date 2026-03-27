@@ -153,6 +153,14 @@ public:
     void accept(LogicalPlanVisitor* visitor) override;
 };
 
+// ========== DISTINCT OPERATION ==========
+
+class DistinctNode : public LogicalPlanNode {
+public:
+    DistinctNode() : LogicalPlanNode(DISTINCT) {}
+    void accept(LogicalPlanVisitor* visitor) override;
+};
+
 // ========== SET OPERATIONS ==========
 
 class UnionNode : public LogicalPlanNode {

@@ -110,6 +110,12 @@ unique_ptr<PhysicalOperator> ExecutionBuilder::build(PhysicalPlanNode* plan) {
             }
             break;
         }
+        case PhysicalOperatorType::MEM_DISTINCT: {
+             if (childOp) {
+                 return make_unique<MemoryDistinct>(graph, move(childOp));
+             }
+             break;
+        }
         default:
             cerr << "Unsupported physical operator type in execution builder: " << (int)plan->type << endl;
             return nullptr;

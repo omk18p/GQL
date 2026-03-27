@@ -206,6 +206,18 @@ void PhysicalPlanner::visitOffset(OffsetNode* node) {
     currentPhysicalNode = move(offset);
 }
 
+void PhysicalPlanner::visitDistinct(DistinctNode* node) {
+    unique_ptr<PhysicalPlanNode> childPlan = nullptr;
+    if (!node->children.empty()) {
+        node->children[0]->accept(this);
+        childPlan = move(currentPhysicalNode);
+    }
+    
+    auto distinct = make_unique<PhysicalDistinct>();
+    if (childPlan) distinct->children.push_back(move(childPlan));
+    currentPhysicalNode = move(distinct);
+}
+
 void PhysicalPlanner::visitUnion(UnionNode* node) {
     unique_ptr<PhysicalPlanNode> leftPlan = nullptr;
     unique_ptr<PhysicalPlanNode> rightPlan = nullptr;

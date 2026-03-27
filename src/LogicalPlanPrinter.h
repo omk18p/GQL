@@ -22,6 +22,7 @@ public:
     void visitSort(SortNode* n) override;
     void visitLimit(LimitNode* n) override;
     void visitOffset(OffsetNode* n) override;
+    void visitDistinct(DistinctNode* n) override;
     void visitUnion(UnionNode* n) override;
     void visitDeleteOp(DeleteOpNode* n) override;
     void visitInsertOp(InsertOpNode* n) override;

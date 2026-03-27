@@ -416,6 +416,15 @@ void LogicalPlanBuilder::visitMatchStatement(MatchStatementNode* n) {
             }
             plan = move(project);
         }
+
+        // Add DISTINCT if requested
+        if (ret->distinct) {
+            auto distinctOp = make_unique<DistinctNode>();
+            if (plan) {
+                distinctOp->children.push_back(move(plan));
+            }
+            plan = move(distinctOp);
+        }
     }
     
     // Set as current plan
@@ -502,6 +511,12 @@ void LogicalPlanBuilder::visitReturnStatement(ReturnStatementNode* n) {
         }
         if (previousPlan) project->children.push_back(move(previousPlan));
         plan = move(project);
+    }
+    
+    if (n->distinct) {
+        auto distinctOp = make_unique<DistinctNode>();
+        if (plan) distinctOp->children.push_back(move(plan));
+        plan = move(distinctOp);
     }
     
     currentPlan = move(plan);

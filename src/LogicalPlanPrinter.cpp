@@ -190,6 +190,17 @@ void LogicalPlanPrinter::visitOffset(OffsetNode* n) {
     indent--;
 }
 
+void LogicalPlanPrinter::visitDistinct(DistinctNode* n) {
+    printIndent();
+    std::cout << "Distinct\n";
+    
+    indent++;
+    for (auto& child : n->children) {
+        child->accept(this);
+    }
+    indent--;
+}
+
 void LogicalPlanPrinter::visitUnion(UnionNode* n) {
     printIndent();
     std::cout << "Union(" << (n->distinct ? "DISTINCT" : "ALL") << ")\n";

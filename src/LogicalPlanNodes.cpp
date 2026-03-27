@@ -39,6 +39,10 @@ void OffsetNode::accept(LogicalPlanVisitor* visitor) {
     visitor->visitOffset(this);
 }
 
+void DistinctNode::accept(LogicalPlanVisitor* visitor) {
+    visitor->visitDistinct(this);
+}
+
 void UnionNode::accept(LogicalPlanVisitor* visitor) {
     visitor->visitUnion(this);
 }

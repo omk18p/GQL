@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <unordered_set>
 #include "Value.h"
 #include "Graph.h"
 #include "PhysicalPlan.h"
@@ -94,6 +95,20 @@ private:
 
 public:
     MemoryProject(Graph& g, unique_ptr<PhysicalOperator> c, vector<string> f);
+
+    void open() override;
+    bool next(Row& row) override;
+    void close() override;
+};
+
+// Memory Distinct
+class MemoryDistinct : public PhysicalOperator {
+private:
+    unique_ptr<PhysicalOperator> child;
+    unordered_set<string> seenRows;
+
+public:
+    MemoryDistinct(Graph& g, unique_ptr<PhysicalOperator> c);
 
     void open() override;
     bool next(Row& row) override;

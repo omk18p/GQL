@@ -27,6 +27,7 @@ enum class PhysicalOperatorType {
     MEM_DELETE,
     MEM_INSERT,
     MEM_UPDATE,
+    MEM_DISTINCT,
     MEM_VALUES
 };
 
@@ -298,6 +299,12 @@ public:
         }
         return s; 
     }
+};
+
+class PhysicalDistinct : public PhysicalPlanNode {
+public:
+    PhysicalDistinct() : PhysicalPlanNode(PhysicalOperatorType::MEM_DISTINCT) {}
+    string toString() const override { return "MemDistinct"; }
 };
 
 class PhysicalUnion : public PhysicalPlanNode {

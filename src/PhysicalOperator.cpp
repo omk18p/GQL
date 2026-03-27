@@ -394,6 +394,44 @@ void MemoryProject::close() {
     child->close();
 }
 
+// --- MemoryDistinct ---
+
+MemoryDistinct::MemoryDistinct(Graph& g, unique_ptr<PhysicalOperator> c)
+    : PhysicalOperator(g), child(move(c)) {}
+
+void MemoryDistinct::open() {
+    child->open();
+    seenRows.clear();
+}
+
+bool MemoryDistinct::next(Row& row) {
+    while (child->next(row)) {
+        // Serialize row values to check for duplicates
+        // We sort keys to ensure consistent serialization
+        vector<string> keys;
+        for (auto const& [key, _] : row.values) {
+            keys.push_back(key);
+        }
+        sort(keys.begin(), keys.end());
+
+        string rowKey = "";
+        for (const string& key : keys) {
+            rowKey += key + ":" + row.values.at(key).toString() + "|";
+        }
+
+        if (seenRows.find(rowKey) == seenRows.end()) {
+            seenRows.insert(rowKey);
+            return true;
+        }
+    }
+    return false;
+}
+
+void MemoryDistinct::close() {
+    seenRows.clear();
+    child->close();
+}
+
 // --- MemoryLimit ---
 
 MemoryLimit::MemoryLimit(Graph& g, unique_ptr<PhysicalOperator> c, int l) : PhysicalOperator(g), child(std::move(c)), limit(l) {}

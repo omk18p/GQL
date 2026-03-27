@@ -16,6 +16,7 @@ public:
     virtual void visitSort(SortNode* n) = 0;
     virtual void visitLimit(LimitNode* n) = 0;
     virtual void visitOffset(OffsetNode* n) = 0;
+    virtual void visitDistinct(DistinctNode* n) = 0;
     virtual void visitUnion(UnionNode* n) = 0;
     virtual void visitDeleteOp(DeleteOpNode* n) = 0;
     virtual void visitInsertOp(InsertOpNode* n) = 0;
