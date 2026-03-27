@@ -50,6 +50,7 @@ public:
     string label;           // Label to scan (e.g., "Person")
     string variable;        // Variable name (e.g., "p")
     map<string, string> properties; // Property filters
+    bool isNewNode = true;
     
     NodeScanNode() : LogicalPlanNode(NODE_SCAN) {}
     void accept(LogicalPlanVisitor* visitor) override;

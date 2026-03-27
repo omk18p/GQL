@@ -2,11 +2,12 @@
 #include "ASTVisitor.h"
 #include "ASTNodes.h"
 #include "LogicalPlanNodes.h"
-#include <memory>
+#include <set>
 
 class LogicalPlanBuilder : public ASTVisitor {
 private:
     std::unique_ptr<LogicalPlanNode> currentPlan; // Current plan being built
+    std::set<std::string> visibleVariables;       // Variables already bound in the stream
     
     // Helper: Build expression tree from AST ExpressionNode
     std::unique_ptr<LogicalPlanNode> buildExpression(ASTNode* expr);

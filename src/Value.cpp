@@ -106,3 +106,23 @@ bool Value::operator==(const Value& other) const {
      }
      return false; 
 }
+
+bool Value::isNumber() const {
+    if (holds_alternative<int>(data) || holds_alternative<double>(data)) return true;
+    if (auto pval = get_if<string>(&data)) {
+        if (pval->empty()) return false;
+        try {
+            size_t pos;
+            stod(*pval, &pos);
+            return pos == pval->size();
+        } catch (...) { return false; }
+    }
+    return false;
+}
+
+bool compareValues(const Value& a, const Value& b) {
+    if (a.isNumber() && b.isNumber()) {
+        return a.toDouble() == b.toDouble();
+    }
+    return a.operator==(b); 
+}

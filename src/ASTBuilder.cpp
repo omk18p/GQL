@@ -1146,17 +1146,37 @@ antlrcpp::Any ASTBuilder::visitInsertGraphPattern(GQLParser::InsertGraphPatternC
 }
 
 antlrcpp::Any ASTBuilder::visitInsertPathPattern(GQLParser::InsertPathPatternContext* ctx) {
-    // Pattern: insertNodePattern (insertEdgePattern insertNodePattern)*
+    std::string prevNodeVar = "";
+    
     // Visit first node pattern
     if (!ctx->insertNodePattern().empty()) {
         visit(ctx->insertNodePattern(0));
+        prevNodeVar = lastInsertedNodeVar;
     }
+    
     // Visit edge-node pairs
     for (size_t i = 0; i < ctx->insertEdgePattern().size(); i++) {
         visit(ctx->insertEdgePattern(i));
-        // Each edge is followed by a node (index i+1 since first node is at index 0)
+        
+        // Find the edge we just added to set its source
+        EdgePatternNode* edge = nullptr;
+        for (auto it = root->children.rbegin(); it != root->children.rend(); ++it) {
+            if ((*it)->type == ASTNode::INSERT_STATEMENT) {
+                InsertStatementNode* insertNode = static_cast<InsertStatementNode*>(it->get());
+                if (!insertNode->insertPatterns.empty()) {
+                    edge = static_cast<EdgePatternNode*>(insertNode->insertPatterns.back().get());
+                }
+                break;
+            }
+        }
+        
+        if (edge) edge->sourceVar = prevNodeVar;
+        
+        // Visit following node and set as edge target
         if (i + 1 < ctx->insertNodePattern().size()) {
             visit(ctx->insertNodePattern(i + 1));
+            if (edge) edge->targetVar = lastInsertedNodeVar;
+            prevNodeVar = lastInsertedNodeVar;
         }
     }
     return nullptr;
@@ -1167,7 +1187,7 @@ antlrcpp::Any ASTBuilder::visitInsertNodePattern(GQLParser::InsertNodePatternCon
     if (ctx->insertElementPatternFiller()) {
         auto nodePattern = std::make_unique<NodePatternNode>();
         
-        // Extract variable and labels from insertElementPatternFiller
+        // Extract variable and labels
         auto filler = ctx->insertElementPatternFiller();
         if (filler->elementVariableDeclaration()) {
             auto varDecl = filler->elementVariableDeclaration();
@@ -1175,6 +1195,8 @@ antlrcpp::Any ASTBuilder::visitInsertNodePattern(GQLParser::InsertNodePatternCon
                 nodePattern->variable = varDecl->elementVariable()->bindingVariable()->getText();
             }
         }
+        
+        lastInsertedNodeVar = nodePattern->variable;
         
         // Extract labels and properties from labelAndPropertySetSpecification
         if (filler->labelAndPropertySetSpecification()) {

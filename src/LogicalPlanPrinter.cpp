@@ -21,6 +21,9 @@ void LogicalPlanPrinter::visitNodeScan(NodeScanNode* n) {
     if (!n->variable.empty()) {
         std::cout << ", var=" << n->variable;
     }
+    if (!n->isNewNode) {
+        std::cout << " [EXISTING]";
+    }
     std::cout << ")\n";
     
     // Visit children

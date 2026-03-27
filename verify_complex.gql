@@ -1,3 +1,0 @@
-MATCH (p:Products {name: 'Laptop'})
-SET p.price = (p.price + 10) * 2
-RETURN p.price;

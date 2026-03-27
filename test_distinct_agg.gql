@@ -1,1 +1,0 @@
-MATCH (u:Users)-[:PLACED]->(o:Orders) RETURN DISTINCT u.name, COUNT(o);

@@ -8,6 +8,7 @@ class ASTBuilder : public GQLBaseVisitor {
     NodePatternNode* currentNodePattern = nullptr;  // Track current node pattern being built (for properties)
     ReturnStatementNode* currentReturnNode = nullptr;  // Track current RETURN statement being built
     std::string currentQuantifier;  // Track quantifier for current edge pattern
+    std::string lastInsertedNodeVar; // Track the last node variable during INSERT path building
     
     // Helper methods for expression tree building
     std::unique_ptr<ExpressionNode> buildExpressionFromContext(GQLParser::BooleanValueExpressionContext* ctx);

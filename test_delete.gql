@@ -1,4 +1,0 @@
-MATCH (p:Products {name: 'DebugItem'})
-DELETE p;
-MATCH (p:Products {name: 'DebugItem'})
-RETURN p.name;

@@ -94,12 +94,12 @@ Value evaluate(const Row& row, const string& expr, Graph& graph) {
         if (pos != string::npos) {
             Value lv = evaluate(row, tExpr.substr(0, pos), graph);
             Value rv = evaluate(row, tExpr.substr(pos + op.length()), graph);
-            if (op == "=") return Value(lv.toString() == rv.toString());
+            if (op == "=") return Value(compareValues(lv, rv));
             if (op == ">") return Value(lv.toDouble() > rv.toDouble());
             if (op == "<") return Value(lv.toDouble() < rv.toDouble());
             if (op == ">=") return Value(lv.toDouble() >= rv.toDouble());
             if (op == "<=") return Value(lv.toDouble() <= rv.toDouble());
-            if (op == "<>") return Value(lv.toString() != rv.toString());
+            if (op == "<>") return Value(!compareValues(lv, rv));
         }
     }
 
@@ -204,9 +204,9 @@ void MemoryFullScan::open() {
             }
             
             if (node->properties.count(key)) {
-                string nodeVal = node->properties.at(key).toString();
-                cout << "[Debug] Comparing " << key << ": node='" << nodeVal << "' vs filter='" << targetVal << "'" << endl;
-                if (nodeVal != targetVal) { match = false; break; }
+                Value nodeValue = node->properties.at(key);
+                Value filterValue(targetVal); // Let Value sniff type if possible
+                if (!compareValues(nodeValue, filterValue)) { match = false; break; }
             } else { match = false; break; }
         }
         if (match) nodes.push_back(node);
@@ -260,11 +260,9 @@ void MemoryLabelScan::open() {
             }
 
             if (node->properties.count(key)) {
-                string nodeVal = node->properties.at(key).toString();
-                if (nodeVal != targetVal) { 
-        //            cout << "[Debug] Mismatch for " << key << ": '" << nodeVal << "' != '" << targetVal << "'" << endl;
-                    match = false; break; 
-                }
+                Value nodeValue = node->properties.at(key);
+                Value filterValue(targetVal);
+                if (!compareValues(nodeValue, filterValue)) { match = false; break; }
             } else { match = false; break; }
         }
         if (match) nodes.push_back(node);
@@ -835,21 +833,51 @@ bool MemoryInsert::next(Row& row) {
         int edgesCreatedThisRow = 0;
         unordered_map<string, int> createdVarIds;
         
+        auto getIntId = [&](const string& var) -> int {
+            if (row.values.count(var)) {
+                Value val = row.values.at(var);
+                if (holds_alternative<int>(val.data)) return get<int>(val.data);
+                if (holds_alternative<Node*>(val.data)) return get<Node*>(val.data)->id;
+            }
+            if (createdVarIds.count(var)) return createdVarIds[var];
+            return -1;
+        };
+
         // Insert Nodes
         for (const auto& n : insertNodes) {
+            // Check if variable already exists in row context OR is explicitly marked as old
+            if (row.values.count(n.variable) || !n.isNewNode) {
+                int existingId = getIntId(n.variable);
+                if (existingId != -1) {
+                    cout << "[Insert Debug] Reusing node " << n.variable << " (id: " << existingId << ")" << endl;
+                } else {
+                    cerr << "[Warning] Variable " << n.variable << " marked as reuse but ID not found!" << endl;
+                }
+                continue; 
+            }
+
             unordered_map<string, Value> props;
             for (auto& p : n.properties) {
                 props[p.key] = evaluate(row, p.expressionString, graph);
             }
+            
+            int oldNextId = graph.nextNodeId;
             auto node = graph.createNode(n.labels, props);
             if (!node) {
                 cerr << "[Execution Error] Failed to create node (validation failed)." << endl;
                 continue;
             }
-            nodesCreatedThisRow++;
-            insertedNodesCount++;
+            
+            if (node->id < oldNextId) {
+                cout << "[Insert Debug] Uniqueness hit: Reusing node " << n.variable << " (id: " << node->id << ")" << endl;
+            } else {
+                cout << "[Insert Debug] Creating new node " << n.variable << " (id: " << node->id << ")" << endl;
+                nodesCreatedThisRow++;
+                insertedNodesCount++;
+            }
+            
             createdVarIds[n.variable] = node->id;
-            row.values[n.variable] = Value((int)node->id); // Feed newly created node into context
+            row.values[n.variable] = Value((int)node->id); // Feed newly created (or reused) node into context
         }
         
         // Insert Edges
@@ -859,20 +887,8 @@ bool MemoryInsert::next(Row& row) {
                 props[p.key] = evaluate(row, p.expressionString, graph);
             }
             
-            int sourceId = -1;
-            int targetId = -1;
-            
-            if (row.values.count(e.sourceVar) && holds_alternative<int>(row.values.at(e.sourceVar).data)) {
-                sourceId = get<int>(row.values.at(e.sourceVar).data);
-            } else if (createdVarIds.count(e.sourceVar)) {
-                sourceId = createdVarIds[e.sourceVar];
-            }
-            
-            if (row.values.count(e.targetVar) && holds_alternative<int>(row.values.at(e.targetVar).data)) {
-                targetId = get<int>(row.values.at(e.targetVar).data);
-            } else if (createdVarIds.count(e.targetVar)) {
-                targetId = createdVarIds[e.targetVar];
-            }
+            int sourceId = getIntId(e.sourceVar);
+            int targetId = getIntId(e.targetVar);
             
             if (sourceId != -1 && targetId != -1) {
                 auto edge = graph.createEdge(sourceId, targetId, e.labels.empty() ? "" : e.labels[0], props);
@@ -889,14 +905,13 @@ bool MemoryInsert::next(Row& row) {
         
         if (!child) done = true; // Simple INSERT finishes after one row attempt
 
+        // Return true if we did SOMETHING, or if we have a child we might do something in next call
+        // Actually, if we are here and nothing was created, but we have a child, we should loop.
         if (nodesCreatedThisRow > 0 || edgesCreatedThisRow > 0) {
             return true;
         }
 
-        // If we reach here, no nodes or edges were created for this row.
-        // If there's no child, we're completely done.
         if (!child) return false;
-        // Otherwise, continue to the next row from child.
     }
 }
 

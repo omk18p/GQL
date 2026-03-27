@@ -257,6 +257,7 @@ void PhysicalPlanner::visitInsertOp(InsertOpNode* node) {
             NodeScanNode* nodeScan = static_cast<NodeScanNode*>(pattern.get());
             PhysicalInsertNode pNode;
             pNode.variable = nodeScan->variable;
+            pNode.isNewNode = nodeScan->isNewNode;
             if (!nodeScan->label.empty()) {
                 pNode.labels.push_back(nodeScan->label);
             }

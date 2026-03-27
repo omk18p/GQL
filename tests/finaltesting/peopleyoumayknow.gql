@@ -1,0 +1,63 @@
+INSERT
+
+// 👤 USERS
+(u1:Users {user_id: 201, name: 'Rohit', country: 'India'}),
+(u2:Users {user_id: 202, name: 'Aman', country: 'India'}),
+(u3:Users {user_id: 203, name: 'Priya', country: 'India'}),
+(u4:Users {user_id: 204, name: 'Sneha', country: 'India'}),
+(u5:Users {user_id: 205, name: 'Karan', country: 'India'}),
+(u6:Users {user_id: 206, name: 'Neha', country: 'India'}),
+(u7:Users {user_id: 207, name: 'Arjun', country: 'India'}),
+(u8:Users {user_id: 208, name: 'Meera', country: 'India'}),
+(u9:Users {user_id: 209, name: 'Rahul', country: 'India'}),
+(u10:Users {user_id: 210, name: 'Ananya', country: 'India'}),
+
+// 🧑‍🤝‍🧑 FOLLOWS RELATIONSHIPS (REALISTIC SOCIAL GRAPH)
+
+// Rohit network
+(u1)-[:FOLLOWS]->(u2),
+(u1)-[:FOLLOWS]->(u3),
+(u1)-[:FOLLOWS]->(u4),
+
+// Layer 2 connections
+(u2)-[:FOLLOWS]->(u5),
+(u2)-[:FOLLOWS]->(u6),
+
+(u3)-[:FOLLOWS]->(u6),
+(u3)-[:FOLLOWS]->(u7),
+
+(u4)-[:FOLLOWS]->(u7),
+(u4)-[:FOLLOWS]->(u8),
+
+// Cross connections (important for recommendations)
+(u5)-[:FOLLOWS]->(u9),
+(u6)-[:FOLLOWS]->(u9),
+(u7)-[:FOLLOWS]->(u10),
+(u8)-[:FOLLOWS]->(u10),
+
+// Mutual loops
+(u9)-[:FOLLOWS]->(u1),
+(u10)-[:FOLLOWS]->(u2),
+
+// Additional density (more realistic)
+(u5)-[:FOLLOWS]->(u6),
+(u6)-[:FOLLOWS]->(u7),
+(u7)-[:FOLLOWS]->(u8),
+(u8)-[:FOLLOWS]->(u5);
+
+
+MATCH (u:Users {name: 'Rohit'})-[:FOLLOWS]->(f1)-[:FOLLOWS]->(f2)
+WHERE f2.name <> 'Rohit'
+RETURN DISTINCT f2.name;
+
+
+
+MATCH (u:Users {name: 'Rohit'})-[:FOLLOWS]->(f1)-[:FOLLOWS]->(f2)
+WHERE f2.name <> 'Rohit'
+
+RETURN 
+f2.name,
+COUNT(f1) AS mutual_count
+
+ORDER BY mutual_count DESC
+LIMIT 5;

@@ -28,12 +28,15 @@ struct Value {
     string toString() const;
     double toDouble() const;
     bool toBool() const;
+    bool isNumber() const;
     
     // Comparison helpers
     bool operator>(const Value& other) const;
     bool operator<(const Value& other) const;
     bool operator==(const Value& other) const;
 };
+
+bool compareValues(const Value& a, const Value& b);
 
 struct Row {
     unordered_map<string, Value> values; // key: "variable.property" or just "variable" for node objects? 

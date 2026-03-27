@@ -1,1 +1,0 @@
-MATCH (u:Users) RETURN DISTINCT u.name ORDER BY u.name LIMIT 3;

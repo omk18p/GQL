@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <map>
 #include "Value.h"
 
 using namespace std;
@@ -47,6 +48,17 @@ public:
 
     // Adjacency: sourceId -> [EdgeId]
     unordered_map<int, vector<int>> outEdges;
+
+    // Uniqueness Constraints: Label -> Unique Property Key
+    unordered_map<string, string> uniquePropertyKeys = {
+        {"Users", "user_id"},
+        {"Products", "product_id"},
+        {"Orders", "order_id"},
+        {"Categories", "category_id"}
+    };
+
+    // Uniqueness Index: Label -> (Unique Value -> NodeId)
+    unordered_map<string, map<Value, int>> uniqueIndex;
 
     bool validateNode(const vector<string>& labels, const unordered_map<string, Value>& properties) {
         if (labels.empty()) {
@@ -91,6 +103,14 @@ public:
         nodes[node->id] = node;
         for (const auto& label : node->labels) {
             labelIndex[label].push_back(node->id);
+            
+            // Index the unique property if it exists
+            if (uniquePropertyKeys.count(label)) {
+                string uniqueKey = uniquePropertyKeys[label];
+                if (node->properties.count(uniqueKey)) {
+                    uniqueIndex[label][node->properties[uniqueKey]] = node->id;
+                }
+            }
         }
     }
 
@@ -100,9 +120,46 @@ public:
         outEdges[edge->sourceId].push_back(edge->id);
     }
 
+    shared_ptr<Node> findNodeByUniqueKey(const string& label, const unordered_map<string, Value>& props) {
+        if (!uniquePropertyKeys.count(label)) return nullptr;
+        
+        string uniqueKey = uniquePropertyKeys[label];
+        if (!props.count(uniqueKey)) return nullptr;
+        
+        Value targetValue = props.at(uniqueKey);
+        
+        // 1. Try index first
+        if (uniqueIndex.count(label) && uniqueIndex[label].count(targetValue)) {
+            int id = uniqueIndex[label][targetValue];
+            if (nodes.count(id)) return nodes[id];
+        }
+        
+        // 2. Fallback to scan (should not happen often if index is maintained)
+        auto candidates = getNodesByLabel(label);
+        for (auto& node : candidates) {
+            if (node->properties.count(uniqueKey)) {
+                if (compareValues(node->properties.at(uniqueKey), targetValue)) {
+                    // Update index if it was missing
+                    uniqueIndex[label][targetValue] = node->id;
+                    return node;
+                }
+            }
+        }
+        return nullptr;
+    }
+
     shared_ptr<Node> createNode(vector<string> labels, unordered_map<string, Value> props) {
         if (!validateNode(labels, props)) return nullptr;
         
+        // Check uniqueness before creation
+        for (const string& label : labels) {
+            shared_ptr<Node> existing = findNodeByUniqueKey(label, props);
+            if (existing) {
+                // cout << "[Graph Debug] Reusing existing node for uniqueness (label: " << label << ", id: " << existing->id << ")" << endl;
+                return existing;
+            }
+        }
+
         auto node = make_shared<Node>();
         node->id = nextNodeId++;
         node->labels = labels;

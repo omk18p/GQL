@@ -241,6 +241,7 @@ struct PhysicalInsertNode {
     string variable;
     vector<string> labels;
     vector<PhysicalProperty> properties;
+    bool isNewNode = true;
 };
 
 struct PhysicalInsertEdge {

@@ -1,3 +1,0 @@
-MATCH (p:Products {name: 'Smartphone'})
-SET p.price = 450
-RETURN p.price;

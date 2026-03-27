@@ -1,4 +1,0 @@
-MATCH (p:Products {name: 'DebugItem'})
-SET p.price = 777.0;
-MATCH (p:Products {name: 'DebugItem'})
-RETURN p.name, p.price;

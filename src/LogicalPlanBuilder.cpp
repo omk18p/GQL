@@ -11,7 +11,7 @@ using namespace std;
 unique_ptr<LogicalPlanNode> LogicalPlanBuilder::build(QueryNode* astRoot) {
     currentPlan = nullptr;
     
-    // Visit AST root - this will build the logical plan
+    visibleVariables.clear();
     astRoot->accept(this);
     
     return move(currentPlan);
@@ -436,6 +436,14 @@ void LogicalPlanBuilder::visitNodePattern(NodePatternNode* n) {
     
     nodeScan->variable = n->variable;
     
+    if (!n->variable.empty()) {
+        if (visibleVariables.count(n->variable)) {
+            nodeScan->isNewNode = false; // Already bound!
+        } else {
+            visibleVariables.insert(n->variable);
+        }
+    }
+    
     // Extract label (first label for now)
     if (!n->labels.empty()) {
         nodeScan->label = n->labels[0];
@@ -462,6 +470,10 @@ void LogicalPlanBuilder::visitEdgePattern(EdgePatternNode* n) {
     
     // Copy properties
     edgeScan->properties = n->properties;
+    
+    if (!n->variable.empty()) {
+        visibleVariables.insert(n->variable);
+    }
     
     currentPlan = move(edgeScan);
 }
