@@ -1,0 +1,1 @@
+MATCH (p:Products {name: 'Laptop'}) RETURN p.price;

@@ -1,0 +1,591 @@
+{
+  "metadata": {
+    "nextNodeId": 35,
+    "nextEdgeId": 28
+  },
+  "nodes": [
+    {
+      "id": 34,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-18",
+        "status": "DELIVERED",
+        "amount": 90,
+        "product_id": 10,
+        "user_id": 110,
+        "order_id": 1009
+      }
+    },
+    {
+      "id": 33,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-15",
+        "status": "DELIVERED",
+        "amount": 70,
+        "product_id": 9,
+        "user_id": 109,
+        "order_id": 1008
+      }
+    },
+    {
+      "id": 32,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-12",
+        "status": "DELIVERED",
+        "amount": 600,
+        "product_id": 8,
+        "user_id": 108,
+        "order_id": 1007
+      }
+    },
+    {
+      "id": 31,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-10",
+        "status": "DELIVERED",
+        "amount": 80,
+        "product_id": 7,
+        "user_id": 107,
+        "order_id": 1006
+      }
+    },
+    {
+      "id": 30,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-05",
+        "status": "DELIVERED",
+        "amount": 30,
+        "product_id": 6,
+        "user_id": 106,
+        "order_id": 1005
+      }
+    },
+    {
+      "id": 13,
+      "labels": ["Products"],
+      "properties": {
+        "price": 610.000000,
+        "name": "Gaming Console",
+        "category_id": 5,
+        "product_id": 8
+      }
+    },
+    {
+      "id": 12,
+      "labels": ["Products"],
+      "properties": {
+        "price": 90.000000,
+        "name": "Shoes",
+        "category_id": 4,
+        "product_id": 7
+      }
+    },
+    {
+      "id": 11,
+      "labels": ["Products"],
+      "properties": {
+        "price": 30,
+        "name": "T-Shirt",
+        "category_id": 4,
+        "product_id": 6
+      }
+    },
+    {
+      "id": 10,
+      "labels": ["Products"],
+      "properties": {
+        "price": 210.000000,
+        "name": "Headphones",
+        "category_id": 1,
+        "product_id": 5
+      }
+    },
+    {
+      "id": 9,
+      "labels": ["Products"],
+      "properties": {
+        "price": 20,
+        "name": "Novel",
+        "category_id": 3,
+        "product_id": 4
+      }
+    },
+    {
+      "id": 8,
+      "labels": ["Products"],
+      "properties": {
+        "price": 160.000000,
+        "name": "Microwave",
+        "category_id": 2,
+        "product_id": 3
+      }
+    },
+    {
+      "id": 7,
+      "labels": ["Products"],
+      "properties": {
+        "price": 1210.000000,
+        "name": "Laptop",
+        "category_id": 1,
+        "product_id": 2
+      }
+    },
+    {
+      "id": 6,
+      "labels": ["Products"],
+      "properties": {
+        "price": 510.000000,
+        "name": "Smartphone",
+        "category_id": 1,
+        "product_id": 1
+      }
+    },
+    {
+      "id": 5,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Gaming",
+        "category_id": 5
+      }
+    },
+    {
+      "id": 4,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Fashion",
+        "category_id": 4
+      }
+    },
+    {
+      "id": 3,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Books",
+        "category_id": 3
+      }
+    },
+    {
+      "id": 2,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Appliances",
+        "category_id": 2
+      }
+    },
+    {
+      "id": 1,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Electronics",
+        "category_id": 1
+      }
+    },
+    {
+      "id": 14,
+      "labels": ["Products"],
+      "properties": {
+        "price": 80.000000,
+        "name": "Gaming Mouse",
+        "category_id": 5,
+        "product_id": 9
+      }
+    },
+    {
+      "id": 15,
+      "labels": ["Products"],
+      "properties": {
+        "price": 100.000000,
+        "name": "Textbook",
+        "category_id": 3,
+        "product_id": 10
+      }
+    },
+    {
+      "id": 16,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Vaibhav",
+        "user_id": 101
+      }
+    },
+    {
+      "id": 17,
+      "labels": ["Users"],
+      "properties": {
+        "country": "USA",
+        "name": "John",
+        "user_id": 102
+      }
+    },
+    {
+      "id": 18,
+      "labels": ["Users"],
+      "properties": {
+        "country": "Germany",
+        "name": "Max",
+        "user_id": 103
+      }
+    },
+    {
+      "id": 19,
+      "labels": ["Users"],
+      "properties": {
+        "country": "Japan",
+        "name": "Yuki",
+        "user_id": 104
+      }
+    },
+    {
+      "id": 20,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Omkar",
+        "user_id": 105
+      }
+    },
+    {
+      "id": 21,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Atharva",
+        "user_id": 106
+      }
+    },
+    {
+      "id": 22,
+      "labels": ["Users"],
+      "properties": {
+        "country": "UK",
+        "name": "Sophia",
+        "user_id": 107
+      }
+    },
+    {
+      "id": 23,
+      "labels": ["Users"],
+      "properties": {
+        "country": "Canada",
+        "name": "Liam",
+        "user_id": 108
+      }
+    },
+    {
+      "id": 24,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Aarav",
+        "user_id": 109
+      }
+    },
+    {
+      "id": 25,
+      "labels": ["Users"],
+      "properties": {
+        "country": "USA",
+        "name": "Emma",
+        "user_id": 110
+      }
+    },
+    {
+      "id": 26,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-05-01",
+        "status": "DELIVERED",
+        "amount": 1200,
+        "product_id": 2,
+        "user_id": 101,
+        "order_id": 1001
+      }
+    },
+    {
+      "id": 27,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-01-10",
+        "status": "DELIVERED",
+        "amount": 500,
+        "product_id": 1,
+        "user_id": 101,
+        "order_id": 1002
+      }
+    },
+    {
+      "id": 28,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-02-15",
+        "status": "DELIVERED",
+        "amount": 150,
+        "product_id": 3,
+        "user_id": 101,
+        "order_id": 1003
+      }
+    },
+    {
+      "id": 29,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-01",
+        "status": "DELIVERED",
+        "amount": 200,
+        "product_id": 5,
+        "user_id": 105,
+        "order_id": 1004
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": 27,
+      "sourceId": 15,
+      "targetId": 3,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 26,
+      "sourceId": 34,
+      "targetId": 15,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 25,
+      "sourceId": 25,
+      "targetId": 34,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 24,
+      "sourceId": 14,
+      "targetId": 5,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 23,
+      "sourceId": 33,
+      "targetId": 14,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 22,
+      "sourceId": 24,
+      "targetId": 33,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 21,
+      "sourceId": 13,
+      "targetId": 5,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 20,
+      "sourceId": 32,
+      "targetId": 13,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 19,
+      "sourceId": 23,
+      "targetId": 32,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 18,
+      "sourceId": 12,
+      "targetId": 4,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 17,
+      "sourceId": 31,
+      "targetId": 12,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 16,
+      "sourceId": 22,
+      "targetId": 31,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 15,
+      "sourceId": 11,
+      "targetId": 4,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 14,
+      "sourceId": 30,
+      "targetId": 11,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 1,
+      "sourceId": 16,
+      "targetId": 26,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 2,
+      "sourceId": 26,
+      "targetId": 7,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 3,
+      "sourceId": 7,
+      "targetId": 1,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 4,
+      "sourceId": 16,
+      "targetId": 27,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 5,
+      "sourceId": 27,
+      "targetId": 6,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 6,
+      "sourceId": 6,
+      "targetId": 1,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 7,
+      "sourceId": 16,
+      "targetId": 28,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 8,
+      "sourceId": 28,
+      "targetId": 8,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 9,
+      "sourceId": 8,
+      "targetId": 2,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 10,
+      "sourceId": 20,
+      "targetId": 29,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 11,
+      "sourceId": 29,
+      "targetId": 10,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 12,
+      "sourceId": 10,
+      "targetId": 1,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 13,
+      "sourceId": 21,
+      "targetId": 30,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    }
+  ]
+}

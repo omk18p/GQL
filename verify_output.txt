@@ -1,0 +1,135 @@
+[Debug] ASTBuilder: attached property name = 'Smartphone' to node
+
+==================== PARSE TREE ====================
+└── gqlProgram
+    ├── programActivity
+    │   └── transactionActivity
+    │       └── procedureBody
+    │           └── statementBlock
+    │               └── statement
+    │                   └── linearDataModifyingStatement
+    │                       └── ambientLinearDataModifyingStatement
+    │                           ├── simpleDataAccessingStatement
+    │                           │   └── simpleQueryStatement
+    │                           │       └── primitiveQueryStatement
+    │                           │           └── matchStatement
+    │                           │               ├── 'MATCH'
+    │                           │               └── graphPatternBindingTable
+    │                           │                   └── graphPattern
+    │                           │                       └── pathPattern
+    │                           │                           └── pathPatternExpression
+    │                           │                               └── pathTerm
+    │                           │                                   └── pathFactor
+    │                           │                                       └── pathPrimary
+    │                           │                                           └── elementPattern
+    │                           │                                               ├── '('
+    │                           │                                               ├── elementPatternFiller
+    │                           │                                               │   ├── elementVariableDeclaration
+    │                           │                                               │   │   └── elementVariable
+    │                           │                                               │   │       └── bindingVariable
+    │                           │                                               │   │           └── regularIdentifier
+    │                           │                                               │   │               └── 'p'
+    │                           │                                               │   ├── isLabelExpression
+    │                           │                                               │   │   ├── isOrColon
+    │                           │                                               │   │   │   └── ':'
+    │                           │                                               │   │   └── labelExpression
+    │                           │                                               │   │       └── labelName
+    │                           │                                               │   │           └── identifier
+    │                           │                                               │   │               └── regularIdentifier
+    │                           │                                               │   │                   └── 'Products'
+    │                           │                                               │   └── elementPatternPredicate
+    │                           │                                               │       └── elementPropertySpecification
+    │                           │                                               │           ├── '{'
+    │                           │                                               │           ├── propertyKeyValuePairList
+    │                           │                                               │           │   └── propertyKeyValuePair
+    │                           │                                               │           │       ├── propertyName
+    │                           │                                               │           │       │   └── identifier
+    │                           │                                               │           │       │       └── regularIdentifier
+    │                           │                                               │           │       │           └── 'name'
+    │                           │                                               │           │       ├── ':'
+    │                           │                                               │           │       └── valueExpression
+    │                           │                                               │           │           └── valueExpressionPrimary
+    │                           │                                               │           │               └── unsignedValueSpecification
+    │                           │                                               │           │                   └── unsignedLiteral
+    │                           │                                               │           │                       └── generalLiteral
+    │                           │                                               │           │                           └── characterStringLiteral
+    │                           │                                               │           │                               └── ''Smartphone''
+    │                           │                                               │           └── '}'
+    │                           │                                               └── ')'
+    │                           ├── simpleDataAccessingStatement
+    │                           │   └── primitiveDataModifyingStatement
+    │                           │       ├── 'SET'
+    │                           │       └── setItem
+    │                           │           ├── bindingVariableReference
+    │                           │           │   └── bindingVariable
+    │                           │           │       └── regularIdentifier
+    │                           │           │           └── 'p'
+    │                           │           ├── '.'
+    │                           │           ├── propertyName
+    │                           │           │   └── identifier
+    │                           │           │       └── regularIdentifier
+    │                           │           │           └── 'price'
+    │                           │           ├── '='
+    │                           │           └── valueExpression
+    │                           │               └── valueExpressionPrimary
+    │                           │                   └── unsignedValueSpecification
+    │                           │                       └── unsignedLiteral
+    │                           │                           └── unsignedNumericLiteral
+    │                           │                               └── exactNumericLiteral
+    │                           │                                   └── unsignedInteger
+    │                           │                                       └── '333'
+    │                           └── primitiveResultStatement
+    │                               ├── 'RETURN'
+    │                               └── returnItem
+    │                                   └── aggregatingValueExpression
+    │                                       └── valueExpression
+    │                                           └── valueExpressionPrimary
+    │                                               ├── valueExpressionPrimary
+    │                                               │   └── bindingVariableReference
+    │                                               │       └── bindingVariable
+    │                                               │           └── regularIdentifier
+    │                                               │               └── 'p'
+    │                                               ├── '.'
+    │                                               └── propertyName
+    │                                                   └── identifier
+    │                                                       └── regularIdentifier
+    │                                                           └── 'price'
+    ├── ';'
+    └── 'EOF'
+
+
+==================== AST ====================
+Query
+  MatchStatement
+    NodePattern: p:Products {name: 'Smartphone'}
+    ReturnStatement
+      Expression: PROPERTY_ACCESS
+        Object:
+          Expression: VARIABLE (p)
+      Property: price
+  SetStatement
+    SetItem: p Type: PROPERTY Property: price
+      Expression: LITERAL (333) <INTEGER>
+
+==================== LOGICAL PLAN ====================
+Project([])
+  EXPRESSIONS:
+    PropertyAccess(p.price)
+  UpdateOp(1 items)
+    - SET_PROPERTY [p / price]
+      Literal(333 : INTEGER)
+    NodeScan(Products, var=p)
+
+==================== PHYSICAL PLAN ====================
+MemProject([p.price])
+  MemUpdate(Items: 1)
+    - p.price = 333
+    MemLabelScan(label: Products, variable: p, properties: {name: 'Smartphone'})
+
+==================== EXECUTION RESULTS ====================
+[Storage] Loading graph from graph_data.json...
+[Storage] Tokenized file: 1723 tokens found.
+[Storage] Loaded 34 nodes and 27 edges.
+Row 1: { p.price: 333.000000 }
+[Storage] Mutation detected. Saving changes to graph_data.json...
+[Storage] Saving 34 nodes and 27 edges to graph_data.json...

@@ -133,11 +133,25 @@ void LogicalPlanBuilder::visitSetStatement(SetStatementNode* n) {
     }
     
     if (previousPlan) {
-        if (previousPlan->type == LogicalPlanNode::PROJECT) {
-            // Swap: UpdateOp should be child of Project
-            updateOp->children.push_back(move(previousPlan->children[0]));
-            previousPlan->children[0] = move(updateOp);
-            currentPlan = move(previousPlan);
+        LogicalPlanNode* current = previousPlan.get();
+        auto isProjectLike = [](LogicalPlanNode::Type t) {
+            return t == LogicalPlanNode::PROJECT || t == LogicalPlanNode::AGGREGATE ||
+                   t == LogicalPlanNode::SORT || t == LogicalPlanNode::LIMIT ||
+                   t == LogicalPlanNode::OFFSET || t == LogicalPlanNode::DISTINCT;
+        };
+
+        if (isProjectLike(current->type)) {
+            while (!current->children.empty() && isProjectLike(current->children[0]->type)) {
+                current = current->children[0].get();
+            }
+            if (!current->children.empty()) {
+                updateOp->children.push_back(move(current->children[0]));
+                current->children[0] = move(updateOp);
+                currentPlan = move(previousPlan);
+            } else {
+                updateOp->children.push_back(move(previousPlan));
+                currentPlan = move(updateOp);
+            }
         } else {
             updateOp->children.push_back(move(previousPlan));
             currentPlan = move(updateOp);
@@ -164,10 +178,25 @@ void LogicalPlanBuilder::visitRemoveStatement(RemoveStatementNode* n) {
     }
     
     if (previousPlan) {
-        if (previousPlan->type == LogicalPlanNode::PROJECT) {
-            updateOp->children.push_back(move(previousPlan->children[0]));
-            previousPlan->children[0] = move(updateOp);
-            currentPlan = move(previousPlan);
+        LogicalPlanNode* current = previousPlan.get();
+        auto isProjectLike = [](LogicalPlanNode::Type t) {
+            return t == LogicalPlanNode::PROJECT || t == LogicalPlanNode::AGGREGATE ||
+                   t == LogicalPlanNode::SORT || t == LogicalPlanNode::LIMIT ||
+                   t == LogicalPlanNode::OFFSET || t == LogicalPlanNode::DISTINCT;
+        };
+
+        if (isProjectLike(current->type)) {
+            while (!current->children.empty() && isProjectLike(current->children[0]->type)) {
+                current = current->children[0].get();
+            }
+            if (!current->children.empty()) {
+                updateOp->children.push_back(move(current->children[0]));
+                current->children[0] = move(updateOp);
+                currentPlan = move(previousPlan);
+            } else {
+                updateOp->children.push_back(move(previousPlan));
+                currentPlan = move(updateOp);
+            }
         } else {
             updateOp->children.push_back(move(previousPlan));
             currentPlan = move(updateOp);
@@ -191,10 +220,25 @@ void LogicalPlanBuilder::visitDeleteStatement(DeleteStatementNode* n) {
     }
     
     if (previousPlan) {
-        if (previousPlan->type == LogicalPlanNode::PROJECT) {
-            deleteOp->children.push_back(move(previousPlan->children[0]));
-            previousPlan->children[0] = move(deleteOp);
-            currentPlan = move(previousPlan);
+        LogicalPlanNode* current = previousPlan.get();
+        auto isProjectLike = [](LogicalPlanNode::Type t) {
+            return t == LogicalPlanNode::PROJECT || t == LogicalPlanNode::AGGREGATE ||
+                   t == LogicalPlanNode::SORT || t == LogicalPlanNode::LIMIT ||
+                   t == LogicalPlanNode::OFFSET || t == LogicalPlanNode::DISTINCT;
+        };
+
+        if (isProjectLike(current->type)) {
+            while (!current->children.empty() && isProjectLike(current->children[0]->type)) {
+                current = current->children[0].get();
+            }
+            if (!current->children.empty()) {
+                deleteOp->children.push_back(move(current->children[0]));
+                current->children[0] = move(deleteOp);
+                currentPlan = move(previousPlan);
+            } else {
+                deleteOp->children.push_back(move(previousPlan));
+                currentPlan = move(deleteOp);
+            }
         } else {
             deleteOp->children.push_back(move(previousPlan));
             currentPlan = move(deleteOp);

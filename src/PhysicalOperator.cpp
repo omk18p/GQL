@@ -103,6 +103,30 @@ Value evaluate(const Row& row, const string& expr, Graph& graph) {
         }
     }
 
+    // Arithmetic operators (+, -, *, /)
+    // Precedence: handle +/- first because recursive descent finds them last but they split first
+    string addOps[] = {"+", "-"};
+    for (const string& op : addOps) {
+        size_t pos = findOpDepth(tExpr, op);
+        if (pos != string::npos) {
+            Value lv = evaluate(row, tExpr.substr(0, pos), graph);
+            Value rv = evaluate(row, tExpr.substr(pos + op.length()), graph);
+            if (op == "+") return Value(lv.toDouble() + rv.toDouble());
+            if (op == "-") return Value(lv.toDouble() - rv.toDouble());
+        }
+    }
+
+    string mulOps[] = {"*", "/"};
+    for (const string& op : mulOps) {
+        size_t pos = findOpDepth(tExpr, op);
+        if (pos != string::npos) {
+            Value lv = evaluate(row, tExpr.substr(0, pos), graph);
+            Value rv = evaluate(row, tExpr.substr(pos + op.length()), graph);
+            if (op == "*") return Value(lv.toDouble() * rv.toDouble());
+            if (op == "/") return (rv.toDouble() != 0) ? Value(lv.toDouble() / rv.toDouble()) : Value(0.0);
+        }
+    }
+
     if (tExpr.find('.') != string::npos) {
         size_t dotPos = tExpr.find('.');
         string var = tExpr.substr(0, dotPos);
@@ -884,18 +908,24 @@ bool MemoryUpdate::next(Row& row) {
                 if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
                     Value newValue = evaluate(row, item.expressionString, graph);
                     targetNode->properties[item.key] = newValue;
+                    // Update the row context so subsequent operators see the change
+                    row.values[item.variable + "." + item.key] = newValue;
                     updatedCount++;
                 } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
                     targetNode->properties.erase(item.key);
+                    row.values.erase(item.variable + "." + item.key);
                     updatedCount++;
                 }
             } else if (targetEdge) {
                 if (item.type == PhysicalUpdateItem::SET_PROPERTY) {
                     Value newValue = evaluate(row, item.expressionString, graph);
                     targetEdge->properties[item.key] = newValue;
+                    // Update the row context
+                    row.values[item.variable + "." + item.key] = newValue;
                     updatedCount++;
                 } else if (item.type == PhysicalUpdateItem::REMOVE_PROPERTY) {
                     targetEdge->properties.erase(item.key);
+                    row.values.erase(item.variable + "." + item.key);
                     updatedCount++;
                 }
             }

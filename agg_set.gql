@@ -1,0 +1,3 @@
+MATCH (u:Users)-[:PLACED]->(o:Orders)-[:CONTAINS]->(p:Products)
+SET p.price = p.price + 5
+RETURN p.name, COUNT(*);
