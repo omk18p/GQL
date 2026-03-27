@@ -212,6 +212,42 @@ function App() {
     }
   };
 
+  const handleReset = async () => {
+    if (!window.confirm('Are you sure you want to reset the database? This will revert the graph to its initial state.')) {
+      return;
+    }
+
+    setIsLoading(true);
+    setStatus('idle');
+    
+    try {
+      const response = await axios.post('http://localhost:3001/api/reset');
+      if (response.data.success) {
+        setStatus('success');
+        handleClear();
+        // If we are on graph tab, it will re-fetch due to setGlobalGraphData(null) in useEffect
+        if (activeTab === 'graph') {
+          setGlobalGraphData(null);
+          const res = await axios.get('http://localhost:3001/api/dataset');
+          setGlobalGraphData(res.data);
+        } else {
+          // Force a fetch anyway so it's ready when they switch
+          const res = await axios.get('http://localhost:3001/api/dataset');
+          setGlobalGraphData(res.data);
+        }
+        alert('Database reset successfully!');
+      } else {
+        setStatus('error');
+        setErrorDetails(response.data.message || 'Failed to reset database');
+      }
+    } catch (err) {
+      setStatus('error');
+      setErrorDetails(err.response?.data?.message || err.message || 'Failed to connect to the backend server.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleHistoryItemClick = (hQuery) => {
     setQuery(hQuery);
     setIsHistoryOpen(false);
@@ -246,6 +282,15 @@ function App() {
           </div>
         </div>
         <div className="header-right">
+          <button 
+            className="btn btn-danger"
+            style={{ marginRight: '8px' }}
+            onClick={handleReset}
+            disabled={isLoading}
+            title="Reset Database to Initial State"
+          >
+            <Database size={14} /> Reset DB
+          </button>
           <button 
             className={`btn btn-secondary ${isHistoryOpen ? 'active' : ''}`}
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}

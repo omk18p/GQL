@@ -504,6 +504,19 @@ body {
   box-shadow: none;
 }
 
+.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+}
+
 /* Animation Utils */
 .pulse-hover:hover:not(:disabled) { animation: none; }
 @keyframes pulse {

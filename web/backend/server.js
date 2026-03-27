@@ -67,6 +67,40 @@ app.post('/api/execute', (req, res) => {
     });
 });
 
+app.post('/api/reset', (req, res) => {
+    const dataPath = path.join(__dirname, 'graph_data.json');
+    const lockPath = path.join(__dirname, 'graph.lock');
+
+    let deletedFiles = [];
+    let errors = [];
+
+    [dataPath, lockPath].forEach(filePath => {
+        if (fs.existsSync(filePath)) {
+            try {
+                fs.unlinkSync(filePath);
+                deletedFiles.push(path.basename(filePath));
+            } catch (err) {
+                console.error(`Error deleting ${filePath}:`, err);
+                errors.push(`Failed to delete ${path.basename(filePath)}`);
+            }
+        }
+    });
+
+    if (errors.length > 0) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to reset database completely",
+            errors: errors
+        });
+    }
+
+    res.json({
+        success: true,
+        message: "Database reset successfully",
+        deleted: deletedFiles
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`GQL Backend Server running on http://localhost:${PORT}`);
 });
