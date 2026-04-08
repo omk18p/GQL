@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <unordered_map>
 using namespace std;
+int nodesScanned = 0;
+int edgesTraversed = 0;
 
 // --- Helper Functions ---
 
@@ -193,6 +195,7 @@ void MemoryFullScan::open() {
     }
     auto allNodes = graph.getAllNodes();
     for (auto& node : allNodes) {
+        nodesScanned++;
         bool match = true;
         for (auto const& [key, val] : properties) {
             // Strip quotes from string literals for comparison
@@ -249,6 +252,7 @@ void MemoryLabelScan::open() {
     }
     auto candidates = graph.getNodesByLabel(label);
     for (auto& node : candidates) {
+        nodesScanned++;
         bool match = true;
         for (auto const& [key, val] : properties) {
             // Strip quotes from string literals for comparison
@@ -314,6 +318,7 @@ void MemoryEdgeScan::open() {
     } else {
         edges = graph.getEdgesByLabel(label);
     }
+    edgesTraversed += edges.size();
     currentIndex = 0;
 }
 

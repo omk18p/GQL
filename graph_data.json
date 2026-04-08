@@ -1,226 +1,64 @@
 {
   "metadata": {
-    "nextNodeId": 36,
-    "nextEdgeId": 32
+    "nextNodeId": 45,
+    "nextEdgeId": 70
   },
   "nodes": [
     {
-      "id": 20,
-      "labels": ["Users"],
-      "properties": {
-        "country": "India",
-        "name": "Omkar",
-        "user_id": 105
-      }
-    },
-    {
-      "id": 6,
+      "id": 10,
       "labels": ["Products"],
       "properties": {
-        "price": 338.000000,
-        "name": "Smartphone",
+        "price": 205.000000,
+        "name": "Headphones",
         "category_id": 1,
-        "product_id": 1
+        "product_id": 5
       }
     },
     {
-      "id": 29,
-      "labels": ["Orders"],
-      "properties": {
-        "order_date": "2023-06-01",
-        "status": "DELIVERED",
-        "amount": 200,
-        "product_id": 5,
-        "user_id": 105,
-        "order_id": 1004
-      }
-    },
-    {
-      "id": 32,
-      "labels": ["Orders"],
-      "properties": {
-        "order_date": "2023-06-12",
-        "status": "DELIVERED",
-        "amount": 600,
-        "product_id": 8,
-        "user_id": 108,
-        "order_id": 1007
-      }
-    },
-    {
-      "id": 3,
-      "labels": ["Categories"],
-      "properties": {
-        "category_name": "Books",
-        "category_id": 3
-      }
-    },
-    {
-      "id": 16,
+      "id": 22,
       "labels": ["Users"],
       "properties": {
-        "country": "India",
-        "name": "Vaibhav",
-        "user_id": 101
+        "country": "UK",
+        "name": "Sophia",
+        "user_id": 107
       }
     },
     {
-      "id": 27,
-      "labels": ["Orders"],
-      "properties": {
-        "order_date": "2023-01-10",
-        "status": "DELIVERED",
-        "amount": 500,
-        "product_id": 1,
-        "user_id": 101,
-        "order_id": 1002
-      }
-    },
-    {
-      "id": 2,
-      "labels": ["Categories"],
-      "properties": {
-        "category_name": "Appliances",
-        "category_id": 2
-      }
-    },
-    {
-      "id": 31,
-      "labels": ["Orders"],
-      "properties": {
-        "order_date": "2023-06-10",
-        "status": "DELIVERED",
-        "amount": 80,
-        "product_id": 7,
-        "user_id": 107,
-        "order_id": 1006
-      }
-    },
-    {
-      "id": 11,
+      "id": 9,
       "labels": ["Products"],
       "properties": {
-        "price": 35.000000,
-        "name": "T-Shirt",
-        "category_id": 4,
-        "product_id": 6
+        "price": 20,
+        "name": "Novel",
+        "category_id": 3,
+        "product_id": 4
       }
     },
     {
-      "id": 4,
-      "labels": ["Categories"],
-      "properties": {
-        "category_name": "Fashion",
-        "category_id": 4
-      }
-    },
-    {
-      "id": 33,
-      "labels": ["Orders"],
-      "properties": {
-        "order_date": "2023-06-15",
-        "status": "DELIVERED",
-        "amount": 70,
-        "product_id": 9,
-        "user_id": 109,
-        "order_id": 1008
-      }
-    },
-    {
-      "id": 7,
-      "labels": ["Products"],
-      "properties": {
-        "price": 2445.000000,
-        "name": "Laptop",
-        "category_id": 1,
-        "product_id": 2
-      }
-    },
-    {
-      "id": 18,
+      "id": 19,
       "labels": ["Users"],
       "properties": {
-        "country": "Germany",
-        "name": "Max",
-        "user_id": 103
+        "country": "Japan",
+        "name": "Yuki",
+        "user_id": 104
       }
     },
     {
-      "id": 5,
-      "labels": ["Categories"],
-      "properties": {
-        "category_name": "Gaming",
-        "category_id": 5
-      }
-    },
-    {
-      "id": 34,
-      "labels": ["Orders"],
-      "properties": {
-        "order_date": "2023-06-18",
-        "status": "DELIVERED",
-        "amount": 90,
-        "product_id": 10,
-        "user_id": 110,
-        "order_id": 1009
-      }
-    },
-    {
-      "id": 8,
-      "labels": ["Products"],
-      "properties": {
-        "price": 155.000000,
-        "name": "Microwave",
-        "category_id": 2,
-        "product_id": 3
-      }
-    },
-    {
-      "id": 21,
+      "id": 17,
       "labels": ["Users"],
       "properties": {
-        "country": "India",
-        "name": "Atharva",
-        "user_id": 106
+        "country": "USA",
+        "name": "John",
+        "user_id": 102
       }
     },
     {
-      "id": 35,
-      "labels": ["Users"],
-      "properties": {
-        "country": "India",
-        "name": "Rohit",
-        "user_id": 201.000000
-      }
-    },
-    {
-      "id": 1,
-      "labels": ["Categories"],
-      "properties": {
-        "category_name": "Electronics",
-        "category_id": 1
-      }
-    },
-    {
-      "id": 30,
-      "labels": ["Orders"],
-      "properties": {
-        "order_date": "2023-06-05",
-        "status": "DELIVERED",
-        "amount": 30,
-        "product_id": 6,
-        "user_id": 106,
-        "order_id": 1005
-      }
-    },
-    {
-      "id": 14,
+      "id": 15,
       "labels": ["Products"],
       "properties": {
-        "price": 75.000000,
-        "name": "Gaming Mouse",
-        "category_id": 5,
-        "product_id": 9
+        "price": 95.000000,
+        "name": "Textbook",
+        "category_id": 3,
+        "product_id": 10
       }
     },
     {
@@ -236,78 +74,109 @@
       }
     },
     {
-      "id": 15,
+      "id": 14,
       "labels": ["Products"],
       "properties": {
-        "price": 95.000000,
-        "name": "Textbook",
-        "category_id": 3,
-        "product_id": 10
+        "price": 75.000000,
+        "name": "Gaming Mouse",
+        "category_id": 5,
+        "product_id": 9
       }
     },
     {
-      "id": 17,
-      "labels": ["Users"],
+      "id": 30,
+      "labels": ["Orders"],
       "properties": {
-        "country": "USA",
-        "name": "John",
-        "user_id": 102
+        "order_date": "2023-06-05",
+        "status": "DELIVERED",
+        "amount": 30,
+        "product_id": 6,
+        "user_id": 106,
+        "order_id": 1005
       }
     },
     {
-      "id": 19,
-      "labels": ["Users"],
+      "id": 1,
+      "labels": ["Categories"],
       "properties": {
-        "country": "Japan",
-        "name": "Yuki",
-        "user_id": 104
+        "category_name": "Electronics",
+        "category_id": 1
       }
     },
     {
-      "id": 9,
-      "labels": ["Products"],
-      "properties": {
-        "price": 20,
-        "name": "Novel",
-        "category_id": 3,
-        "product_id": 4
-      }
-    },
-    {
-      "id": 22,
-      "labels": ["Users"],
-      "properties": {
-        "country": "UK",
-        "name": "Sophia",
-        "user_id": 107
-      }
-    },
-    {
-      "id": 10,
-      "labels": ["Products"],
-      "properties": {
-        "price": 205.000000,
-        "name": "Headphones",
-        "category_id": 1,
-        "product_id": 5
-      }
-    },
-    {
-      "id": 23,
-      "labels": ["Users"],
-      "properties": {
-        "country": "Canada",
-        "name": "Liam",
-        "user_id": 108
-      }
-    },
-    {
-      "id": 24,
+      "id": 21,
       "labels": ["Users"],
       "properties": {
         "country": "India",
-        "name": "Aarav",
-        "user_id": 109
+        "name": "Atharva",
+        "user_id": 106
+      }
+    },
+    {
+      "id": 8,
+      "labels": ["Products"],
+      "properties": {
+        "price": 155.000000,
+        "name": "Microwave",
+        "category_id": 2,
+        "product_id": 3
+      }
+    },
+    {
+      "id": 34,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-18",
+        "status": "DELIVERED",
+        "amount": 90,
+        "product_id": 10,
+        "user_id": 110,
+        "order_id": 1009
+      }
+    },
+    {
+      "id": 5,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Gaming",
+        "category_id": 5
+      }
+    },
+    {
+      "id": 18,
+      "labels": ["Users"],
+      "properties": {
+        "country": "Germany",
+        "name": "Max",
+        "user_id": 103
+      }
+    },
+    {
+      "id": 36,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Aman",
+        "user_id": 202.000000
+      }
+    },
+    {
+      "id": 7,
+      "labels": ["Products"],
+      "properties": {
+        "price": 2445.000000,
+        "name": "Laptop",
+        "category_id": 1,
+        "product_id": 2
+      }
+    },
+    {
+      "id": 37,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Priya",
+        "user_id": 203.000000
       }
     },
     {
@@ -321,12 +190,30 @@
       }
     },
     {
+      "id": 41,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Arjun",
+        "user_id": 207.000000
+      }
+    },
+    {
       "id": 25,
       "labels": ["Users"],
       "properties": {
         "country": "USA",
         "name": "Emma",
         "user_id": 110
+      }
+    },
+    {
+      "id": 38,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Sneha",
+        "user_id": 204.000000
       }
     },
     {
@@ -350,32 +237,289 @@
         "category_id": 5,
         "product_id": 8
       }
+    },
+    {
+      "id": 42,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Meera",
+        "user_id": 208.000000
+      }
+    },
+    {
+      "id": 39,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Karan",
+        "user_id": 205.000000
+      }
+    },
+    {
+      "id": 40,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Neha",
+        "user_id": 206.000000
+      }
+    },
+    {
+      "id": 11,
+      "labels": ["Products"],
+      "properties": {
+        "price": 35.000000,
+        "name": "T-Shirt",
+        "category_id": 4,
+        "product_id": 6
+      }
+    },
+    {
+      "id": 43,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Rahul",
+        "user_id": 209.000000
+      }
+    },
+    {
+      "id": 44,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Ananya",
+        "user_id": 210.000000
+      }
+    },
+    {
+      "id": 24,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Aarav",
+        "user_id": 109
+      }
+    },
+    {
+      "id": 23,
+      "labels": ["Users"],
+      "properties": {
+        "country": "Canada",
+        "name": "Liam",
+        "user_id": 108
+      }
+    },
+    {
+      "id": 4,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Fashion",
+        "category_id": 4
+      }
+    },
+    {
+      "id": 33,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-15",
+        "status": "DELIVERED",
+        "amount": 70,
+        "product_id": 9,
+        "user_id": 109,
+        "order_id": 1008
+      }
+    },
+    {
+      "id": 31,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-10",
+        "status": "DELIVERED",
+        "amount": 80,
+        "product_id": 7,
+        "user_id": 107,
+        "order_id": 1006
+      }
+    },
+    {
+      "id": 2,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Appliances",
+        "category_id": 2
+      }
+    },
+    {
+      "id": 27,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-01-10",
+        "status": "DELIVERED",
+        "amount": 500,
+        "product_id": 1,
+        "user_id": 101,
+        "order_id": 1002
+      }
+    },
+    {
+      "id": 16,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Vaibhav",
+        "user_id": 101
+      }
+    },
+    {
+      "id": 3,
+      "labels": ["Categories"],
+      "properties": {
+        "category_name": "Books",
+        "category_id": 3
+      }
+    },
+    {
+      "id": 32,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-12",
+        "status": "DELIVERED",
+        "amount": 600,
+        "product_id": 8,
+        "user_id": 108,
+        "order_id": 1007
+      }
+    },
+    {
+      "id": 29,
+      "labels": ["Orders"],
+      "properties": {
+        "order_date": "2023-06-01",
+        "status": "DELIVERED",
+        "amount": 200,
+        "product_id": 5,
+        "user_id": 105,
+        "order_id": 1004
+      }
+    },
+    {
+      "id": 6,
+      "labels": ["Products"],
+      "properties": {
+        "price": 338.000000,
+        "name": "Smartphone",
+        "category_id": 1,
+        "product_id": 1
+      }
+    },
+    {
+      "id": 35,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Rohit",
+        "user_id": 201.000000
+      }
+    },
+    {
+      "id": 20,
+      "labels": ["Users"],
+      "properties": {
+        "country": "India",
+        "name": "Omkar",
+        "user_id": 105
+      }
     }
   ],
   "edges": [
     {
-      "id": 9,
-      "sourceId": 8,
-      "targetId": 2,
-      "label": "BELONGS_TO",
+      "id": 69,
+      "sourceId": 42,
+      "targetId": 39,
+      "label": "FOLLOWS",
       "properties": {
 
       }
     },
     {
-      "id": 8,
-      "sourceId": 28,
-      "targetId": 8,
-      "label": "CONTAINS",
+      "id": 68,
+      "sourceId": 41,
+      "targetId": 42,
+      "label": "FOLLOWS",
       "properties": {
 
       }
     },
     {
-      "id": 12,
-      "sourceId": 10,
-      "targetId": 1,
-      "label": "BELONGS_TO",
+      "id": 67,
+      "sourceId": 40,
+      "targetId": 41,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 66,
+      "sourceId": 39,
+      "targetId": 40,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 65,
+      "sourceId": 44,
+      "targetId": 36,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 64,
+      "sourceId": 43,
+      "targetId": 35,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 63,
+      "sourceId": 42,
+      "targetId": 44,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 62,
+      "sourceId": 41,
+      "targetId": 44,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 61,
+      "sourceId": 40,
+      "targetId": 43,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 60,
+      "sourceId": 39,
+      "targetId": 43,
+      "label": "FOLLOWS",
       "properties": {
 
       }
@@ -384,15 +528,6 @@
       "id": 25,
       "sourceId": 25,
       "targetId": 34,
-      "label": "PLACED",
-      "properties": {
-
-      }
-    },
-    {
-      "id": 16,
-      "sourceId": 22,
-      "targetId": 31,
       "label": "PLACED",
       "properties": {
 
@@ -417,19 +552,91 @@
       }
     },
     {
-      "id": 22,
-      "sourceId": 24,
-      "targetId": 33,
+      "id": 23,
+      "sourceId": 33,
+      "targetId": 14,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 32,
+      "sourceId": 35,
+      "targetId": 36,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 33,
+      "sourceId": 35,
+      "targetId": 37,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 34,
+      "sourceId": 35,
+      "targetId": 38,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 6,
+      "sourceId": 6,
+      "targetId": 1,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 35,
+      "sourceId": 36,
+      "targetId": 39,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 7,
+      "sourceId": 16,
+      "targetId": 28,
       "label": "PLACED",
       "properties": {
 
       }
     },
     {
-      "id": 21,
-      "sourceId": 13,
-      "targetId": 5,
-      "label": "BELONGS_TO",
+      "id": 36,
+      "sourceId": 36,
+      "targetId": 40,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 37,
+      "sourceId": 37,
+      "targetId": 40,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 50,
+      "sourceId": 42,
+      "targetId": 39,
+      "label": "FOLLOWS",
       "properties": {
 
       }
@@ -444,6 +651,15 @@
       }
     },
     {
+      "id": 49,
+      "sourceId": 41,
+      "targetId": 42,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
       "id": 19,
       "sourceId": 23,
       "targetId": 32,
@@ -453,10 +669,91 @@
       }
     },
     {
-      "id": 23,
-      "sourceId": 33,
-      "targetId": 14,
-      "label": "CONTAINS",
+      "id": 48,
+      "sourceId": 40,
+      "targetId": 41,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 47,
+      "sourceId": 39,
+      "targetId": 40,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 46,
+      "sourceId": 44,
+      "targetId": 36,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 16,
+      "sourceId": 22,
+      "targetId": 31,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 45,
+      "sourceId": 43,
+      "targetId": 35,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 44,
+      "sourceId": 42,
+      "targetId": 44,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 43,
+      "sourceId": 41,
+      "targetId": 44,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 42,
+      "sourceId": 40,
+      "targetId": 43,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 41,
+      "sourceId": 39,
+      "targetId": 43,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 40,
+      "sourceId": 38,
+      "targetId": 42,
+      "label": "FOLLOWS",
       "properties": {
 
       }
@@ -466,6 +763,69 @@
       "sourceId": 20,
       "targetId": 29,
       "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 39,
+      "sourceId": 38,
+      "targetId": 41,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 38,
+      "sourceId": 37,
+      "targetId": 41,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 12,
+      "sourceId": 10,
+      "targetId": 1,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 21,
+      "sourceId": 13,
+      "targetId": 5,
+      "label": "BELONGS_TO",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 8,
+      "sourceId": 28,
+      "targetId": 8,
+      "label": "CONTAINS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 22,
+      "sourceId": 24,
+      "targetId": 33,
+      "label": "PLACED",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 9,
+      "sourceId": 8,
+      "targetId": 2,
+      "label": "BELONGS_TO",
       "properties": {
 
       }
@@ -615,19 +975,82 @@
       }
     },
     {
-      "id": 6,
-      "sourceId": 6,
-      "targetId": 1,
-      "label": "BELONGS_TO",
+      "id": 51,
+      "sourceId": 35,
+      "targetId": 36,
+      "label": "FOLLOWS",
       "properties": {
 
       }
     },
     {
-      "id": 7,
-      "sourceId": 16,
-      "targetId": 28,
-      "label": "PLACED",
+      "id": 52,
+      "sourceId": 35,
+      "targetId": 37,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 53,
+      "sourceId": 35,
+      "targetId": 38,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 54,
+      "sourceId": 36,
+      "targetId": 39,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 55,
+      "sourceId": 36,
+      "targetId": 40,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 56,
+      "sourceId": 37,
+      "targetId": 40,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 57,
+      "sourceId": 37,
+      "targetId": 41,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 58,
+      "sourceId": 38,
+      "targetId": 41,
+      "label": "FOLLOWS",
+      "properties": {
+
+      }
+    },
+    {
+      "id": 59,
+      "sourceId": 38,
+      "targetId": 42,
+      "label": "FOLLOWS",
       "properties": {
 
       }

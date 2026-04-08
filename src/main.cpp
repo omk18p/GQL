@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <chrono>
 #include "antlr4-runtime.h"
 #include "GQLLexer.h"
 #include "GQLParser.h"
@@ -358,6 +359,11 @@ int main(int argc, char* argv[]) {
 
                 // 3. Run Pipeline
                 if (rootOp) {
+                    // Reset metrics for each execution
+                    nodesScanned = 0;
+                    edgesTraversed = 0;
+
+                    auto startTime = chrono::high_resolution_clock::now();
                     rootOp->open();
                     
                     Row row;
@@ -375,6 +381,14 @@ int main(int argc, char* argv[]) {
                     }
                     
                     rootOp->close();
+                    auto endTime = chrono::high_resolution_clock::now();
+                    auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
+
+                    // Print Metrics for Backend Parsing
+                    cout << "\n==================== METRICS ====================\n";
+                    cout << "[Metrics] Execution Time: " << duration << " ms" << endl;
+                    cout << "[Metrics] Nodes Scanned: " << nodesScanned << endl;
+                    cout << "[Metrics] Edges Traversed: " << edgesTraversed << endl;
 
                     if (isMutation) {
                         cerr << "[Storage] Mutation detected. Saving changes to " << DB_FILE << "..." << endl;

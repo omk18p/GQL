@@ -51,13 +51,3 @@ WHERE f2.name <> 'Rohit'
 RETURN DISTINCT f2.name;
 
 
-
-MATCH (u:Users {name: 'Rohit'})-[:FOLLOWS]->(f1)-[:FOLLOWS]->(f2)
-WHERE f2.name <> 'Rohit'
-
-RETURN 
-f2.name,
-COUNT(f1) AS mutual_count
-
-ORDER BY mutual_count DESC
-LIMIT 5;

@@ -11,7 +11,6 @@ function App() {
   const [errorDetails, setErrorDetails] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState('idle'); // idle, success, error
-  const [executionTime, setExecutionTime] = useState(0);
   const [activeTab, setActiveTab] = useState('graph'); // default to 'graph' array tab
   const [parsedData, setParsedData] = useState(null);
   const graphContainerRef = useRef(null);
@@ -21,6 +20,7 @@ function App() {
   const [globalGraphData, setGlobalGraphData] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
+  const [metrics, setMetrics] = useState(null);
 
   // Search State
   const [searchTerm, setSearchTerm] = useState("");
@@ -106,14 +106,10 @@ function App() {
       });
     }
 
-    const startTime = performance.now();
-
     try {
       const response = await axios.post('http://localhost:3001/api/execute', { query });
-      const endTime = performance.now();
-      setExecutionTime(endTime - startTime);
-
-      const { stdout, stderr, exitCode } = response.data;
+      const { stdout, stderr, metrics: respMetrics, exitCode } = response.data;
+      setMetrics(respMetrics);
 
       if (exitCode === 0) {
         setStatus('success');
@@ -146,8 +142,6 @@ function App() {
         }
       }
     } catch (err) {
-      const endTime = performance.now();
-      setExecutionTime(endTime - startTime);
       setStatus('error');
       setErrorDetails(err.message || 'Failed to connect to the backend server.');
     } finally {
@@ -210,7 +204,7 @@ function App() {
     setOutput('');
     setErrorDetails('');
     setStatus('idle');
-    setExecutionTime(0);
+    setMetrics(null);
     setParsedData(null);
     if (monacoRef.current && editorRef.current) {
       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'gql', []);
@@ -341,10 +335,10 @@ function App() {
           >
             <Share2 size={14} /> Dataset Visualizer
           </button>
-          {executionTime > 0 && (
+          {metrics && metrics.executionTime !== null && (
             <div className="execution-time">
               <Clock size={14} className="text-muted" />
-              <span>{executionTime.toFixed(2)} ms</span>
+              <span>{metrics.executionTime} ms</span>
             </div>
           )}
           <div className={`status-badge ${status}`}>
@@ -505,6 +499,39 @@ function App() {
                       <span className="terminal-title">gqlparser output</span>
                     </div>
                     <pre className="stdout">{output}</pre>
+                  </div>
+                )}
+
+                {/* Performance Metrics Panel */}
+                {metrics && (
+                  <div className="metrics-panel animate-fade-in">
+                    <div className="metrics-header">
+                      <Clock size={16} className="text-accent" />
+                      <span>Query Performance</span>
+                    </div>
+                    <div className="metrics-grid">
+                      <div className="metric-item">
+                        <div className="metric-icon">⏱</div>
+                        <div className="metric-info">
+                          <span className="metric-label">Execution Time</span>
+                          <span className="metric-value">{metrics.executionTime} ms</span>
+                        </div>
+                      </div>
+                      <div className="metric-item">
+                        <div className="metric-icon">🔍</div>
+                        <div className="metric-info">
+                          <span className="metric-label">Nodes Scanned</span>
+                          <span className="metric-value">{metrics.nodesScanned}</span>
+                        </div>
+                      </div>
+                      <div className="metric-item">
+                        <div className="metric-icon">🔗</div>
+                        <div className="metric-info">
+                          <span className="metric-label">Edges Traversed</span>
+                          <span className="metric-value">{metrics.edgesTraversed}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 

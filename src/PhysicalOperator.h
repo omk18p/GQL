@@ -9,6 +9,8 @@
 #include "PhysicalPlan.h"
 
 using namespace std;
+extern int nodesScanned;
+extern int edgesTraversed;
 
 // Base Physical Operator
 class PhysicalOperator {

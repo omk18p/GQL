@@ -51,6 +51,17 @@ app.post('/api/execute', (req, res) => {
         const command = `"${GQL_BINARY_PATH}" "${tempFilePath}"`;
         
         exec(command, (error, stdout, stderr) => {
+            // Extract metrics from stdout
+            const timeMatch = stdout.match(/Execution Time: ([\d.]+) ms/);
+            const nodesMatch = stdout.match(/Nodes Scanned: (\d+)/);
+            const edgesMatch = stdout.match(/Edges Traversed: (\d+)/);
+
+            const metrics = {
+                nodesScanned: nodesMatch ? parseInt(nodesMatch[1]) : 0,
+                edgesTraversed: edgesMatch ? parseInt(edgesMatch[1]) : 0,
+                executionTime: timeMatch ? parseFloat(timeMatch[1]) : null
+            };
+
             // Clean up the temp file
             fs.unlink(tempFilePath, (unlinkErr) => {
                 if (unlinkErr) console.error('Error deleting temp file:', unlinkErr);
@@ -61,6 +72,7 @@ app.post('/api/execute', (req, res) => {
             res.json({
                 stdout: stdout || '',
                 stderr: stderr || '',
+                metrics: metrics,
                 exitCode: error ? error.code : 0
             });
         });
