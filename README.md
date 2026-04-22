@@ -1,20 +1,13 @@
-# 🚀 GQL Engine
+# GQL Engine
 **A High-Performance C++ Graph Query Language Engine based on the ISO GQL Standard**
-
-[![C++](https://img.shields.io/badge/C++-17-orange.svg)](https://isocpp.org/)
-[![GQL Standard](https://img.shields.io/badge/Standard-ISO%20GQL-blueviolet.svg)](https://www.iso.org/standard/76537.html)
-[![License](https://img.shields.io/badge/license-Academic-blue.svg)](LICENSE)
-[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)](build.sh)
 
 GQL Engine is a fast, lightweight, and portable embedded graph query engine that brings the power of the ISO/IEC 39075:2024 Graph Query Language (GQL) standard into a seamless compilation-to-execution pipeline.
 
 Built using a compiler-inspired architecture, GQL transforms high-level declarative graph queries into optimized physical execution plans. The system is designed to support efficient graph traversal, analytical workloads, and extensible query execution strategies.
 
-![GQL Workbench Mockup](./docs/images/gql_workbench_mockup.png)
-
 ---
 
-## ✨ Features
+## Features
 
 - **ISO GQL Standard Compliance**  
   Implements core concepts from the ISO/IEC 39075:2024 specification for standardized graph querying.
@@ -39,7 +32,7 @@ Built using a compiler-inspired architecture, GQL transforms high-level declarat
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The GQL Engine follows a structured compiler-style query processing pipeline:
 
@@ -67,12 +60,12 @@ graph TD
 
 ---
 
-## ⚙️ Prerequisites
+## Prerequisites
 
 Before building GQL, ensure the following dependencies are installed:
 
 ### System Requirements
-* **GCC/G++ ≥ 9** — Required for C++17 support.
+* **GCC/G++ >= 9** — Required for C++17 support.
 * **ANTLR4 C++ Runtime**
   ```bash
   sudo apt install libantlr4-runtime-dev
@@ -81,7 +74,7 @@ Before building GQL, ensure the following dependencies are installed:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Step 1: Clone & Build
 ```bash
@@ -114,7 +107,7 @@ Open in your browser: [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 ```text
 GQL/
 ├── src/          # Core engine (AST, logical/physical planning, execution)
@@ -127,7 +120,7 @@ GQL/
 
 ---
 
-## 🧪 Testing
+## Testing
 
 GQL includes a structured test suite categorized by analytical complexity:
 
@@ -143,7 +136,7 @@ Run any specific test:
 
 ---
 
-## 🎯 Design Goals
+## Design Goals
 * **Standardization**: Unified graph querying using the ISO GQL standard.
 * **Efficiency**: Optimized execution of complex analytical graph queries.
 * **Modularity**: Clear separation between parsing, planning, and execution layers.
@@ -152,7 +145,7 @@ Run any specific test:
 
 ---
 
-## 🔬 Research Motivation
+## Research Motivation
 
 Existing graph databases often rely on proprietary languages, leading to vendor lock-in and a lack of portability. GQL Engine is designed to bridge this gap by:
 
@@ -162,7 +155,7 @@ Existing graph databases often rely on proprietary languages, leading to vendor 
 
 ---
 
-## 🙏 Acknowledgements
+## Acknowledgements
 * **ANTLR4** — For providing a robust parser generation framework.
 * **ISO/IEC 39075:2024** — For the Graph Query Language specification that defines the future of graph data.
 * **OpenGQL Initiative** — For their dedication to open-source graph standardization.
