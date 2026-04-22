@@ -7,9 +7,9 @@ Built with a compiler-inspired architecture, GQL translates high-level queries i
 
 ## Features
 - **ISO GQL Standard** - Implementation based on the ISO/IEC 39075:2024 GQL specification.
-- **Pattern Matching** - Powerful `MATCH` clauses for complex graph traversal.
+- **Pattern Matching** - Node and relationship traversal using `MATCH` clauses.
 - **Pipelined Execution** - Volcano-style "Open-Next-Close" iterator engine for efficient processing.
-- **Query Optimization** - Multi-stage optimization including logical filter pushdown and physical scan selection.
+- **Full Pipeline** - Multi-stage translation from raw GQL to AST, Logical Plans, and Physical Execution trees.
 - **Graph Workbench** - Integrated Web-based UI for query execution and graph visualization.
 - **Pure C++17** - Memory-efficient and performant implementation using modern C++ standards.
 
@@ -109,15 +109,8 @@ GQL includes a comprehensive test suite categorized by complexity:
 
 Run tests by executing the binary with any `.gql` file in the `tests/` directory.
 
-## License
-This project is licensed under the **Academic License**. See the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgements
 - **ANTLR4** - For the powerful parser generation.
 - **ISO/IEC 39075:2024** - For the Graph Query Language specification.
 - **OpenGQL** - Inspiration for grammar optimization.
-
----
-**Developed by Vaibhav Kondekar**  
-*Advancing methodologies in Graph Query Processing.*
 
