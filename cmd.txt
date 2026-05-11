@@ -22,8 +22,7 @@ node server.js
 
 5.Terminal 2 (Frontend UI):
 
-cd web/frontend
-npm run dev
+   
 
 6.Whn you change data in main.cpp file then run this command
 ./build.sh

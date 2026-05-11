@@ -1,0 +1,9 @@
+// Detect a single user creating multiple separate orders for a low-stock event (Ticket Hoarding)
+MATCH (u:Users), (o1:TicketOrders), (o2:TicketOrders), (e:Events)
+WHERE u.user_id = o1.user_id 
+  AND u.user_id = o2.user_id 
+  AND o1.event_id = e.event_id 
+  AND o2.event_id = e.event_id 
+  AND e.stock < 10
+  AND o1.order_id <> o2.order_id
+RETURN u.name, o1.order_id, o2.order_id, e.name;

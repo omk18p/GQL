@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrace: Ticket Fraud Detection</title>
+    <!-- Include Vis.js for network graphs -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- Include Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #090a0f;
+            --bg-panel: rgba(20, 22, 28, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #8b5cf6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Background Glows */
+        .glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .glow-1 { top: -200px; left: -100px; }
+        .glow-2 { bottom: -300px; right: -200px; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(0,0,0,0) 70%); }
+
+        /* Glassmorphism Panel Base */
+        .glass-panel {
+            background: linear-gradient(180deg, rgba(20, 22, 28, 0.72), rgba(20, 22, 28, 0.52));
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(16px);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.28);
+        }
+
+        .sidebar {
+            width: 380px;
+            margin: 16px;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        .header {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #ef4444, #f59e0b);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 4px 0 0 0;
+            line-height: 1.4;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn.btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn.btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn.btn-primary {
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+            color: white;
+            border: none;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .btn.btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Terminal Results styling */
+        .terminal-container {
+            flex: 1;
+            margin-top: 24px;
+            background: linear-gradient(180deg, rgba(13, 15, 18, 1), rgba(13, 15, 18, 0.85));
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 16px 44px rgba(0,0,0,0.35);
+        }
+
+        .terminal-top-bar {
+            background: linear-gradient(180deg, rgba(26,29,36,0.95), rgba(26,29,36,0.75));
+            height: 32px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mac-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .mac-btn { width: 10px; height: 10px; border-radius: 50%; }
+        .mac-btn.close { background: #ff5f56; }
+        .mac-btn.min { background: #ffbd2e; }
+        .mac-btn.max { background: #27c93f; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-right: 36px;
+        }
+
+        .results-panel {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #a7f3d0;
+            line-height: 1.5;
+        }
+
+        /* Graph Area */
+        .main-content {
+            flex: 1;
+            margin: 16px 16px 16px 0;
+            position: relative;
+        }
+
+        #network-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-header {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(20, 22, 28, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(8px);
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(20, 22, 28, 0.8);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(8px);
+        }
+        
+        .legend h3 {
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--text-main);
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .status-badge {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="sidebar glass-panel">
+        <div class="header">
+            <div class="header-logo">
+                <div class="logo-icon">
+                    <i data-lucide="ticket"></i>
+                </div>
+                <div>
+                    <h1>FinTrace Security</h1>
+                    <p>Ticket Scalping Detection Engine</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="resetGraph()">
+                <i data-lucide="refresh-cw" width="16"></i> View Normal Activity
+            </button>
+            <button class="btn btn-danger" onclick="runIPDetection()">
+                <i data-lucide="monitor-smartphone" width="16"></i> Detect Same IP Address
+            </button>
+            <button class="btn btn-danger" onclick="runCCDetection()">
+                <i data-lucide="credit-card" width="16"></i> Detect Same Payment Card
+            </button>
+        </div>
+
+        <div class="terminal-container">
+            <div class="terminal-top-bar">
+                <div class="mac-btns">
+                    <span class="mac-btn close"></span>
+                    <span class="mac-btn min"></span>
+                    <span class="mac-btn max"></span>
+                </div>
+                <span class="terminal-title">gqlparser output</span>
+            </div>
+            <div id="results" class="results-panel">
+                <span style="color:var(--text-muted)">Waiting for engine execution...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content glass-panel">
+        <div class="graph-header">
+            <i data-lucide="network" width="16" color="var(--accent-color)"></i>
+            <span style="font-size: 13px; font-weight: 500;">Dataset Visualizer</span>
+            <span class="status-badge" id="node-count">0 Nodes</span>
+        </div>
+
+        <div id="network-container"></div>
+
+        <div class="legend">
+            <h3>Graph Entities</h3>
+            <div class="legend-item"><div class="legend-color" style="background: #BB86FC; color: #BB86FC;"></div> Buyer Account</div>
+            <div class="legend-item"><div class="legend-color" style="background: #03DAC6; color: #03DAC6;"></div> Ticket Order</div>
+            <div class="legend-item"><div class="legend-color" style="background: #CF6679; color: #CF6679;"></div> Shipping Address</div>
+            <div class="legend-item"><div class="legend-color" style="background: #F2C94C; color: #F2C94C;"></div> Credit Card</div>
+            <div class="legend-item"><div class="legend-color" style="background: #3b82f6; color: #3b82f6;"></div> Concert/Event</div>
+            <div class="legend-item"><div class="legend-color" style="background: #27AE60; color: #27AE60;"></div> IP Address</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        let network = null;
+        let nodesDataset = new vis.DataSet();
+        let edgesDataset = new vis.DataSet();
+        let rawGraphData = null;
+
+        // Color mapping for nodes
+        const colorMap = {
+            "Users": { background: '#BB86FC', border: '#BB86FC' },
+            "TicketOrders": { background: '#03DAC6', border: '#03DAC6' },
+            "ShippingAddresses": { background: '#CF6679', border: '#CF6679' },
+            "CreditCards": { background: '#F2C94C', border: '#F2C94C' },
+            "Events": { background: '#3b82f6', border: '#3b82f6' },
+            "IPAddresses": { background: '#27AE60', border: '#27AE60' }
+        };
+
+        async function initializeGraph() {
+            const container = document.getElementById('network-container');
+            const data = { nodes: nodesDataset, edges: edgesDataset };
+            const options = {
+                nodes: {
+                    shape: 'dot',
+                    size: 15,
+                    font: { color: '#ffffff', size: 12, face: 'Inter' },
+                    borderWidth: 0,
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10 }
+                },
+                edges: {
+                    width: 1,
+                    color: { color: 'rgba(255,255,255,0.1)', highlight: '#facc15' },
+                    arrows: 'to',
+                    smooth: { type: 'continuous' }
+                },
+                physics: {
+                    barnesHut: {
+                        gravitationalConstant: -2000,
+                        centralGravity: 0.2,
+                        springLength: 150,
+                        springConstant: 0.05,
+                        damping: 0.09
+                    },
+                    stabilization: { iterations: 100 }
+                },
+                interaction: { hover: true, tooltipDelay: 100 }
+            };
+
+            network = new vis.Network(container, data, options);
+            await fetchDataset();
+        }
+
+        async function fetchDataset() {
+            try {
+                const response = await fetch('/api/dataset');
+                rawGraphData = await response.json();
+                renderGraph(rawGraphData);
+            } catch (error) {
+                document.getElementById('results').innerHTML = `<span style="color:var(--danger)">Error loading dataset: ${error}</span>`;
+            }
+        }
+
+        function renderGraph(data) {
+            nodesDataset.clear();
+            edgesDataset.clear();
+
+            const formattedNodes = data.nodes.map(n => {
+                const label = n.labels[0];
+                const colors = colorMap[label] || { background: '#999', border: '#999' };
+                let displayLabel = "";
+                
+                if (label === 'Users') displayLabel = n.properties.name;
+                else if (label === 'TicketOrders') displayLabel = n.properties.order_id;
+                else if (label === 'ShippingAddresses') displayLabel = n.properties.address;
+                else if (label === 'CreditCards') displayLabel = `*${n.properties.last4}`;
+                else if (label === 'Events') displayLabel = n.properties.name;
+                else if (label === 'IPAddresses') displayLabel = n.properties.ip;
+
+                return {
+                    id: n.id,
+                    label: displayLabel,
+                    title: JSON.stringify(n.properties, null, 2),
+                    color: colors,
+                    group: label
+                };
+            });
+
+            const formattedEdges = data.edges.map(e => ({
+                id: e.id,
+                from: e.sourceId,
+                to: e.targetId,
+                label: e.label,
+                font: { size: 0 } // Hide text
+            }));
+
+            nodesDataset.add(formattedNodes);
+            edgesDataset.add(formattedEdges);
+
+            document.getElementById('node-count').innerText = `${formattedNodes.length} Nodes`;
+        }
+
+        function resetGraph() {
+            if (rawGraphData) {
+                renderGraph(rawGraphData);
+                document.getElementById('results').innerHTML = '<span style="color:var(--text-muted)">Graph view reset. Select a detection query.</span>';
+            }
+        }
+
+        async function runIPDetection() {
+            const query = `
+MATCH (u1:Users), (o1:TicketOrders), (u2:Users), (o2:TicketOrders), (ip:IPAddresses)
+WHERE u1.user_id = o1.user_id 
+  AND u2.user_id = o2.user_id 
+  AND o1.ip_id = ip.ip_id 
+  AND o2.ip_id = ip.ip_id 
+  AND u1.name <> u2.name
+RETURN ip.ip, u1.name, u2.name;
+            `.trim();
+            await executeQueryAndRender(query, 'IPAddresses', '10.0.0.99_Suspicious');
+        }
+
+        async function runCCDetection() {
+            const query = `
+MATCH (u1:Users), (o1:TicketOrders), (u2:Users), (o2:TicketOrders), (cc:CreditCards)
+WHERE u1.user_id = o1.user_id 
+  AND u2.user_id = o2.user_id 
+  AND o1.card_id = cc.card_id 
+  AND o2.card_id = cc.card_id 
+  AND u1.name <> u2.name
+RETURN cc.last4, u1.name, u2.name;
+            `.trim();
+            await executeQueryAndRender(query, 'CreditCards', '9999');
+        }
+
+        async function executeQueryAndRender(queryStr, targetGroup, targetString) {
+            document.getElementById('results').innerHTML = '<span style="color:#aaa">Executing GQL Engine...</span>';
+            try {
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: queryStr })
+                });
+
+                const result = await response.json();
+                
+                let finalOutput = "";
+                let statsHtml = "";
+                const execResultsMatch = result.stdout.match(/==================== EXECUTION RESULTS ====================\n([\s\S]*?)(?=\n====================|$)/);
+                const metricsMatch = result.stdout.match(/==================== METRICS ====================\n([\s\S]*?)$/);
+                
+                if (metricsMatch) {
+                    // Metrics parsing removed from UI per user request
+                    statsHtml = "";
+                }
+                
+                if (execResultsMatch) {
+                    finalOutput += "<strong style='color:var(--success)'>GQL RESULTS:</strong><br>";
+                    let rows = execResultsMatch[1].split('\n').filter(line => line.startsWith('Row '));
+                    let displayRows = rows.slice(0, 5).join('<br>');
+                    finalOutput += displayRows + "<br>";
+                    if (rows.length > 5) finalOutput += `<span style="color:var(--warning)">...and ${rows.length - 5} more permutations.</span><br><br>`;
+                }
+                
+                let outputHtml = statsHtml + finalOutput || result.stdout.substring(result.stdout.length - 500).replace(/\n/g, '<br>');
+                if (result.stderr) outputHtml += `<br><span style="color:var(--danger)">Errors: ${result.stderr.replace(/\n/g, '<br>')}</span>`;
+
+                document.getElementById('results').innerHTML = outputHtml;
+
+                if (targetGroup) {
+                    highlightFraud(result.stdout, targetGroup, targetString);
+                }
+            } catch (error) {
+                document.getElementById('results').innerHTML = `<span style="color:var(--danger)">Execution Error: ${error}</span>`;
+            }
+        }
+
+        function highlightFraud(stdout, targetGroup, targetString) {
+            const allNodes = nodesDataset.get();
+            const updates = [];
+            
+            // Dim all nodes slightly
+            allNodes.forEach(node => {
+                updates.push({
+                    id: node.id,
+                    opacity: 0.15,
+                    borderWidth: 0
+                });
+            });
+
+            // Highlight nodes whose labels or properties appear in the stdout
+            allNodes.forEach(node => {
+                // If it's the target group and in output
+                if (node.group === targetGroup && stdout.includes(targetString)) {
+                    if (node.title.includes(targetString)) {
+                        updates.push({ id: node.id, color: { background: '#ef4444' }, opacity: 1, borderWidth: 4, size: 25, shadow: {color: '#ef4444', size: 20} });
+                    }
+                }
+                // If it's a bot user connected to that target
+                if (node.group === 'Users' && stdout.includes(node.label)) {
+                     updates.push({ id: node.id, color: { background: '#f59e0b' }, opacity: 1, borderWidth: 3, shadow: {color: '#f59e0b', size: 15} });
+                }
+            });
+
+            // Highlight the edges connecting them
+            const allEdges = edgesDataset.get();
+            const edgeUpdates = [];
+            
+            let fraudOrders = [];
+            allEdges.forEach(e => {
+                if (e.label === 'PLACED_ORDER') {
+                    let fromNode = nodesDataset.get(e.from);
+                    if (fromNode.group === 'Users' && stdout.includes(fromNode.label)) {
+                        fraudOrders.push(e.to);
+                        edgeUpdates.push({ id: e.id, color: { color: '#ef4444', opacity: 1 }, width: 3 });
+                    }
+                }
+            });
+
+            // Highlight edges from fraud orders to the target
+            allEdges.forEach(e => {
+                if ((e.label === 'SHIPPED_TICKETS_TO' || e.label === 'PAID_WITH') && fraudOrders.includes(e.from)) {
+                    edgeUpdates.push({ id: e.id, color: { color: '#ef4444', opacity: 1 }, width: 3 });
+                }
+                if (e.label === 'LOGGED_IN_FROM') {
+                    let fromNode = nodesDataset.get(e.from);
+                    if (fromNode && fromNode.group === 'Users' && stdout.includes(fromNode.label)) {
+                        edgeUpdates.push({ id: e.id, color: { color: '#ef4444', opacity: 1 }, width: 3 });
+                    }
+                }
+            });
+
+            // Dim other edges
+            allEdges.forEach(e => {
+               if(!edgeUpdates.find(eu => eu.id === e.id)) {
+                   edgeUpdates.push({ id: e.id, color: { opacity: 0.05 } });
+               }
+            });
+
+            nodesDataset.update(updates);
+            edgesDataset.update(edgeUpdates);
+        }
+
+        // Initialize when page loads
+        window.onload = initializeGraph;
+    </script>
+</body>
+</html>
