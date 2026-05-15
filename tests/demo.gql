@@ -1,3 +1,70 @@
+// ======================================================
+//  GQL GRAPH QUERY DEMO COLLECTION
+// Purpose:
+// Demonstrate graph traversal, aggregation,
+// filtering, recommendation systems,
+// and social network analytics using the custom GQL engine.
+// ======================================================
+
+
+
+// ======================================================
+// 🔹 QUERY 1 — FETCH ALL USERS
+// Purpose:
+// Retrieve all users with their country information.
+// Demonstrates basic MATCH and property retrieval.
+// ======================================================
+
+MATCH (u:Users)
+RETURN u.name, u.country;
+
+
+
+// ======================================================
+// 🔹 QUERY 2 — TOTAL REVENUE CALCULATION
+// Purpose:
+// Calculate total order revenue using aggregation.
+// Demonstrates SUM() function.
+// ======================================================
+
+MATCH (o:Orders)
+RETURN SUM(o.amount);
+
+
+
+// ======================================================
+// 🔹 QUERY 3 — TOP SPENDING USERS
+// Purpose:
+// Find users with highest total spending.
+// Demonstrates traversal + aggregation + sorting.
+// ======================================================
+
+MATCH (u:Users)-[:PLACED]->(o:Orders)
+RETURN u.name, SUM(o.amount) AS total
+ORDER BY total DESC;
+
+
+
+// ======================================================
+// 🔹 QUERY 4 — FILTER USERS BY COUNTRY
+// Purpose:
+// Retrieve users located in India.
+// Demonstrates WHERE filtering.
+// ======================================================
+
+MATCH (u:Users)
+WHERE u.country = 'India'
+RETURN u.name;
+
+
+
+// ======================================================
+// 🔹 QUERY 5 — INSERT SOCIAL NETWORK DATASET
+// Purpose:
+// Create realistic social graph using FOLLOWS relationships.
+// Demonstrates node and relationship creation.
+// ======================================================
+
 INSERT
 
 // 👤 USERS
@@ -12,14 +79,11 @@ INSERT
 (u9:Users {user_id: 209, name: 'Rahul', country: 'India'}),
 (u10:Users {user_id: 210, name: 'Ananya', country: 'India'}),
 
-// 🧑‍🤝‍🧑 FOLLOWS RELATIONSHIPS (REALISTIC SOCIAL GRAPH)
-
-// Rohit network
+// 🧑‍🤝‍🧑 FOLLOWS RELATIONSHIPS
 (u1)-[:FOLLOWS]->(u2),
 (u1)-[:FOLLOWS]->(u3),
 (u1)-[:FOLLOWS]->(u4),
 
-// Layer 2 connections
 (u2)-[:FOLLOWS]->(u5),
 (u2)-[:FOLLOWS]->(u6),
 
@@ -29,63 +93,105 @@ INSERT
 (u4)-[:FOLLOWS]->(u7),
 (u4)-[:FOLLOWS]->(u8),
 
-// Cross connections (important for recommendations)
 (u5)-[:FOLLOWS]->(u9),
 (u6)-[:FOLLOWS]->(u9),
 (u7)-[:FOLLOWS]->(u10),
 (u8)-[:FOLLOWS]->(u10),
 
-// Mutual loops
 (u9)-[:FOLLOWS]->(u1),
 (u10)-[:FOLLOWS]->(u2),
 
-// Additional density (more realistic)
 (u5)-[:FOLLOWS]->(u6),
 (u6)-[:FOLLOWS]->(u7),
 (u7)-[:FOLLOWS]->(u8),
 (u8)-[:FOLLOWS]->(u5);
 
 
+
+// ======================================================
+// 🔹 DEMO 1 — PEOPLE YOU MAY KNOW
+// Purpose:
+// Recommend second-degree connections.
+// Demonstrates multi-hop traversal.
+// ======================================================
+
 MATCH (u:Users {name: 'Rohit'})-[:FOLLOWS]->(f1)-[:FOLLOWS]->(f2)
 WHERE f2.name <> 'Rohit'
 RETURN DISTINCT f2.name;
 
-// DEMO 2: Find "Influencers" (Most Followers)
-// Who has the most followers in the network?
+
+
+// ======================================================
+// 🔹 DEMO 2 — INFLUENCER DETECTION
+// Purpose:
+// Find users with highest followers.
+// Demonstrates COUNT() + ORDER BY.
+// ======================================================
+
 MATCH (follower:Users)-[:FOLLOWS]->(influencer:Users)
 RETURN influencer.name, COUNT(follower)
 ORDER BY COUNT(follower) DESC;
 
-// DEMO 3: 3rd Degree Connections
-// Who is 3 hops away from Rohit? (Friends of friends of friends)
+
+
+// ======================================================
+// 🔹 DEMO 3 — 3RD DEGREE CONNECTIONS
+// Purpose:
+// Find users reachable in 3 hops.
+// Demonstrates deep graph traversal.
+// ======================================================
+
 MATCH (u:Users {name: 'Rohit'})-[:FOLLOWS]->(f1)-[:FOLLOWS]->(f2)-[:FOLLOWS]->(f3)
 WHERE f3.name <> 'Rohit'
 RETURN DISTINCT f3.name;
 
-// DEMO 4: Find "Active Users" (Following the most people)
-// Who is following the highest number of other users?
+
+
+// ======================================================
+// 🔹 DEMO 4 — MOST ACTIVE USERS
+// Purpose:
+// Find users following the most people.
+// Demonstrates outgoing relationship analytics.
+// ======================================================
+
 MATCH (u:Users)-[:FOLLOWS]->(followed:Users)
 RETURN u.name, COUNT(followed)
 ORDER BY COUNT(followed) DESC;
 
-// DEMO 5: Mutual Connections (Common Friends)
-// Who do both Aman and Priya follow? (The answer should be Neha)
+
+
+// ======================================================
+// 🔹 DEMO 5 — MUTUAL CONNECTIONS
+// Purpose:
+// Find common friends between Aman and Priya.
+// Demonstrates shared relationship traversal.
+// ======================================================
+
 MATCH (u1:Users {name: 'Aman'})-[:FOLLOWS]->(common:Users)<-[:FOLLOWS]-(u2:Users {name: 'Priya'})
 RETURN common.name;
 
-// DEMO 6: Path to Target (2-Hop Distance)
-// Who can reach Ananya through exactly one intermediary?
+
+
+// ======================================================
+// 🔹 DEMO 6 — PATH TO TARGET
+// Purpose:
+// Find users who can reach Ananya in 2 hops.
+// Demonstrates reachability analysis.
+// ======================================================
+
 MATCH (u:Users)-[:FOLLOWS]->(intermediary:Users)-[:FOLLOWS]->(target:Users {name: 'Ananya'})
 RETURN DISTINCT u.name;
 
-// DEMO 7: Find Social "Cliques" (4-Person Loops)
-// Find a closed group of 4 people who all follow each other in a chain.
-MATCH (a:Users)-[:FOLLOWS]->(b:Users)-[:FOLLOWS]->(c:Users)-[:FOLLOWS]->(d:Users)-[:FOLLOWS]->(a:Users)
-RETURN DISTINCT a.name, b.name, c.name, d.name;
 
-// DEMO 8: Filtering on Properties after Traversal
-// Find 2nd-degree connections who are specifically located in India.
+
+// ======================================================
+// 🔹 DEMO 7 — FILTERING AFTER TRAVERSAL
+// Purpose:
+// Find second-degree Indian connections.
+// Demonstrates traversal + property filtering.
+// ======================================================
+
 MATCH (u:Users {name: 'Rohit'})-[:FOLLOWS]->(f1:Users)-[:FOLLOWS]->(f2:Users)
-WHERE f2.country = 'India' AND f2.name <> 'Rohit'
+WHERE f2.country = 'India'
+AND f2.name <> 'Rohit'
 RETURN DISTINCT f2.name;
-

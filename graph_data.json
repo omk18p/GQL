@@ -6,7 +6,9 @@
   "nodes": [
     {
       "id": 20,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 105,
         "name": "Omkar",
@@ -15,7 +17,9 @@
     },
     {
       "id": 35,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 201.000000,
         "name": "Rohit",
@@ -24,7 +28,9 @@
     },
     {
       "id": 6,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 1,
         "category_id": 1,
@@ -34,7 +40,9 @@
     },
     {
       "id": 29,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1004,
         "user_id": 105,
@@ -46,7 +54,9 @@
     },
     {
       "id": 32,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1007,
         "user_id": 108,
@@ -58,7 +68,9 @@
     },
     {
       "id": 3,
-      "labels": ["Categories"],
+      "labels": [
+        "Categories"
+      ],
       "properties": {
         "category_id": 3,
         "category_name": "Books"
@@ -66,7 +78,9 @@
     },
     {
       "id": 16,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 101,
         "name": "Vaibhav",
@@ -75,7 +89,9 @@
     },
     {
       "id": 27,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1002,
         "user_id": 101,
@@ -87,7 +103,9 @@
     },
     {
       "id": 2,
-      "labels": ["Categories"],
+      "labels": [
+        "Categories"
+      ],
       "properties": {
         "category_id": 2,
         "category_name": "Appliances"
@@ -95,7 +113,9 @@
     },
     {
       "id": 31,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1006,
         "user_id": 107,
@@ -107,7 +127,9 @@
     },
     {
       "id": 33,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1008,
         "user_id": 109,
@@ -119,7 +141,9 @@
     },
     {
       "id": 4,
-      "labels": ["Categories"],
+      "labels": [
+        "Categories"
+      ],
       "properties": {
         "category_id": 4,
         "category_name": "Fashion"
@@ -127,7 +151,9 @@
     },
     {
       "id": 23,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 108,
         "name": "Liam",
@@ -136,7 +162,9 @@
     },
     {
       "id": 24,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 109,
         "name": "Aarav",
@@ -145,7 +173,9 @@
     },
     {
       "id": 44,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 210.000000,
         "name": "Ananya",
@@ -154,7 +184,9 @@
     },
     {
       "id": 34,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1009,
         "user_id": 110,
@@ -166,7 +198,9 @@
     },
     {
       "id": 5,
-      "labels": ["Categories"],
+      "labels": [
+        "Categories"
+      ],
       "properties": {
         "category_id": 5,
         "category_name": "Gaming"
@@ -174,7 +208,9 @@
     },
     {
       "id": 8,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 3,
         "category_id": 2,
@@ -184,7 +220,9 @@
     },
     {
       "id": 37,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 203.000000,
         "name": "Priya",
@@ -193,7 +231,9 @@
     },
     {
       "id": 21,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 106,
         "name": "Atharva",
@@ -202,7 +242,9 @@
     },
     {
       "id": 1,
-      "labels": ["Categories"],
+      "labels": [
+        "Categories"
+      ],
       "properties": {
         "category_id": 1,
         "category_name": "Electronics"
@@ -210,7 +252,9 @@
     },
     {
       "id": 30,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1005,
         "user_id": 106,
@@ -222,7 +266,9 @@
     },
     {
       "id": 14,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 9,
         "category_id": 5,
@@ -232,7 +278,9 @@
     },
     {
       "id": 43,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 209.000000,
         "name": "Rahul",
@@ -241,7 +289,9 @@
     },
     {
       "id": 28,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1003,
         "user_id": 101,
@@ -253,7 +303,9 @@
     },
     {
       "id": 15,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 10,
         "category_id": 3,
@@ -263,7 +315,9 @@
     },
     {
       "id": 17,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 102,
         "name": "John",
@@ -272,7 +326,9 @@
     },
     {
       "id": 19,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 104,
         "name": "Yuki",
@@ -281,7 +337,9 @@
     },
     {
       "id": 9,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 4,
         "category_id": 3,
@@ -291,7 +349,9 @@
     },
     {
       "id": 38,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 204.000000,
         "name": "Sneha",
@@ -300,7 +360,9 @@
     },
     {
       "id": 22,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 107,
         "name": "Sophia",
@@ -309,7 +371,9 @@
     },
     {
       "id": 10,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 5,
         "category_id": 1,
@@ -319,7 +383,9 @@
     },
     {
       "id": 39,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 205.000000,
         "name": "Karan",
@@ -328,7 +394,9 @@
     },
     {
       "id": 18,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 103,
         "name": "Max",
@@ -337,7 +405,9 @@
     },
     {
       "id": 36,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 202.000000,
         "name": "Aman",
@@ -346,7 +416,9 @@
     },
     {
       "id": 7,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 2,
         "category_id": 1,
@@ -356,7 +428,9 @@
     },
     {
       "id": 12,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 7,
         "category_id": 4,
@@ -366,7 +440,9 @@
     },
     {
       "id": 41,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 207.000000,
         "name": "Arjun",
@@ -375,7 +451,9 @@
     },
     {
       "id": 25,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 110,
         "name": "Emma",
@@ -384,7 +462,9 @@
     },
     {
       "id": 26,
-      "labels": ["Orders"],
+      "labels": [
+        "Orders"
+      ],
       "properties": {
         "order_id": 1001,
         "user_id": 101,
@@ -396,7 +476,9 @@
     },
     {
       "id": 13,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 8,
         "category_id": 5,
@@ -406,7 +488,9 @@
     },
     {
       "id": 42,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 208.000000,
         "name": "Meera",
@@ -415,7 +499,9 @@
     },
     {
       "id": 40,
-      "labels": ["Users"],
+      "labels": [
+        "Users"
+      ],
       "properties": {
         "user_id": 206.000000,
         "name": "Neha",
@@ -424,7 +510,9 @@
     },
     {
       "id": 11,
-      "labels": ["Products"],
+      "labels": [
+        "Products"
+      ],
       "properties": {
         "product_id": 6,
         "category_id": 4,
@@ -439,792 +527,616 @@
       "sourceId": 42,
       "targetId": 39,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 87,
       "sourceId": 41,
       "targetId": 42,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 86,
       "sourceId": 40,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 85,
       "sourceId": 39,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 84,
       "sourceId": 44,
       "targetId": 36,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 83,
       "sourceId": 43,
       "targetId": 35,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 82,
       "sourceId": 42,
       "targetId": 44,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 81,
       "sourceId": 41,
       "targetId": 44,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 80,
       "sourceId": 40,
       "targetId": 43,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 79,
       "sourceId": 39,
       "targetId": 43,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 78,
       "sourceId": 38,
       "targetId": 42,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 77,
       "sourceId": 38,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 76,
       "sourceId": 37,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 75,
       "sourceId": 37,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 74,
       "sourceId": 36,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 73,
       "sourceId": 36,
       "targetId": 39,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 72,
       "sourceId": 35,
       "targetId": 38,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 71,
       "sourceId": 35,
       "targetId": 37,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 70,
       "sourceId": 35,
       "targetId": 36,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 59,
       "sourceId": 38,
       "targetId": 42,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 58,
       "sourceId": 38,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 57,
       "sourceId": 37,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 56,
       "sourceId": 37,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 55,
       "sourceId": 36,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 54,
       "sourceId": 36,
       "targetId": 39,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 53,
       "sourceId": 35,
       "targetId": 38,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 52,
       "sourceId": 35,
       "targetId": 37,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 51,
       "sourceId": 35,
       "targetId": 36,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 5,
       "sourceId": 27,
       "targetId": 6,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 46,
       "sourceId": 44,
       "targetId": 36,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 47,
       "sourceId": 39,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 48,
       "sourceId": 40,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 19,
       "sourceId": 23,
       "targetId": 32,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 49,
       "sourceId": 41,
       "targetId": 42,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 20,
       "sourceId": 32,
       "targetId": 13,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 50,
       "sourceId": 42,
       "targetId": 39,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 23,
       "sourceId": 33,
       "targetId": 14,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 69,
       "sourceId": 42,
       "targetId": 39,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 10,
       "sourceId": 20,
       "targetId": 29,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 68,
       "sourceId": 41,
       "targetId": 42,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 9,
       "sourceId": 8,
       "targetId": 2,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 67,
       "sourceId": 40,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 8,
       "sourceId": 28,
       "targetId": 8,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 37,
       "sourceId": 37,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 66,
       "sourceId": 39,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 7,
       "sourceId": 16,
       "targetId": 28,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 27,
       "sourceId": 15,
       "targetId": 3,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 36,
       "sourceId": 36,
       "targetId": 40,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 65,
       "sourceId": 44,
       "targetId": 36,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 6,
       "sourceId": 6,
       "targetId": 1,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 26,
       "sourceId": 34,
       "targetId": 15,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 35,
       "sourceId": 36,
       "targetId": 39,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 64,
       "sourceId": 43,
       "targetId": 35,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 25,
       "sourceId": 25,
       "targetId": 34,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 34,
       "sourceId": 35,
       "targetId": 38,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 63,
       "sourceId": 42,
       "targetId": 44,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 4,
       "sourceId": 16,
       "targetId": 27,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 33,
       "sourceId": 35,
       "targetId": 37,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 62,
       "sourceId": 41,
       "targetId": 44,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 3,
       "sourceId": 7,
       "targetId": 1,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 32,
       "sourceId": 35,
       "targetId": 36,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 61,
       "sourceId": 40,
       "targetId": 43,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 2,
       "sourceId": 26,
       "targetId": 7,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 60,
       "sourceId": 39,
       "targetId": 43,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 1,
       "sourceId": 16,
       "targetId": 26,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 16,
       "sourceId": 22,
       "targetId": 31,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 45,
       "sourceId": 43,
       "targetId": 35,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 44,
       "sourceId": 42,
       "targetId": 44,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 43,
       "sourceId": 41,
       "targetId": 44,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 42,
       "sourceId": 40,
       "targetId": 43,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 41,
       "sourceId": 39,
       "targetId": 43,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 40,
       "sourceId": 38,
       "targetId": 42,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 39,
       "sourceId": 38,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 38,
       "sourceId": 37,
       "targetId": 41,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 12,
       "sourceId": 10,
       "targetId": 1,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 21,
       "sourceId": 13,
       "targetId": 5,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 22,
       "sourceId": 24,
       "targetId": 33,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 24,
       "sourceId": 14,
       "targetId": 5,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 11,
       "sourceId": 29,
       "targetId": 10,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 18,
       "sourceId": 12,
       "targetId": 4,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 31,
       "sourceId": 16,
       "targetId": 17,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 17,
       "sourceId": 31,
       "targetId": 12,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 30,
       "sourceId": 16,
       "targetId": 17,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 29,
       "sourceId": 16,
       "targetId": 17,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 15,
       "sourceId": 11,
       "targetId": 4,
       "label": "BELONGS_TO",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 14,
       "sourceId": 30,
       "targetId": 11,
       "label": "CONTAINS",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 13,
       "sourceId": 21,
       "targetId": 30,
       "label": "PLACED",
-      "properties": {
-
-      }
+      "properties": {}
     },
     {
       "id": 28,
       "sourceId": 16,
       "targetId": 17,
       "label": "FOLLOWS",
-      "properties": {
-
-      }
+      "properties": {}
     }
   ]
 }

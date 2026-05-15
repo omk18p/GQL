@@ -53,12 +53,8 @@ app.post('/api/execute', (req, res) => {
         exec(command, (error, stdout, stderr) => {
             // Extract metrics from stdout
             const timeMatch = stdout.match(/Execution Time: ([\d.]+) ms/);
-            const nodesMatch = stdout.match(/Nodes Scanned: (\d+)/);
-            const edgesMatch = stdout.match(/Edges Traversed: (\d+)/);
 
             const metrics = {
-                nodesScanned: nodesMatch ? parseInt(nodesMatch[1]) : 0,
-                edgesTraversed: edgesMatch ? parseInt(edgesMatch[1]) : 0,
                 executionTime: timeMatch ? parseFloat(timeMatch[1]) : null
             };
 

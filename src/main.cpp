@@ -360,9 +360,6 @@ int main(int argc, char* argv[]) {
                 // 3. Run Pipeline
                 if (rootOp) {
                     // Reset metrics for each execution
-                    nodesScanned = 0;
-                    edgesTraversed = 0;
-
                     auto startTime = chrono::high_resolution_clock::now();
                     rootOp->open();
                     
@@ -387,8 +384,6 @@ int main(int argc, char* argv[]) {
                     // Print Metrics for Backend Parsing
                     cout << "\n==================== METRICS ====================\n";
                     cout << "[Metrics] Execution Time: " << duration << " ms" << endl;
-                    cout << "[Metrics] Nodes Scanned: " << nodesScanned << endl;
-                    cout << "[Metrics] Edges Traversed: " << edgesTraversed << endl;
 
                     if (isMutation) {
                         cerr << "[Storage] Mutation detected. Saving changes to " << DB_FILE << "..." << endl;

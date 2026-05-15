@@ -517,20 +517,7 @@ function App() {
                           <span className="metric-value">{metrics.executionTime} ms</span>
                         </div>
                       </div>
-                      <div className="metric-item">
-                        <div className="metric-icon">🔍</div>
-                        <div className="metric-info">
-                          <span className="metric-label">Nodes Scanned</span>
-                          <span className="metric-value">{metrics.nodesScanned}</span>
-                        </div>
-                      </div>
-                      <div className="metric-item">
-                        <div className="metric-icon">🔗</div>
-                        <div className="metric-info">
-                          <span className="metric-label">Edges Traversed</span>
-                          <span className="metric-value">{metrics.edgesTraversed}</span>
-                        </div>
-                      </div>
+
                     </div>
                   </div>
                 )}
